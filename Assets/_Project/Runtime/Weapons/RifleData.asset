@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8de15e308f3be414da596ebebeb4ec08, type: 3}
+  m_Name: RifleData
+  m_EditorClassIdentifier: 
+  weaponName: Rifle
+  weaponPrefab: {fileID: 5835875615246309398, guid: 072b7a0409312354aa816465a6384700, type: 3}
+  bulletRange: 100
+  fireRate: 0.1
+  maxAmmo: 30
+  reloadTime: 2
+  isAutomatic: 1
+  impactForce: 20
+  bulletHoleSize: 0.1
+  bulletHoleLifetime: 10
+  bulletHoleMaterial: {fileID: 2100000, guid: b2a6a53178fc17641ba8f97c719776b4, type: 2}
+  maxBulletHoles: 50
+  muzzleFlashPrefab: {fileID: 0}
+  shootSound: {fileID: 8300000, guid: 5e4d03e991fe287418c08ef23cb7d3be, type: 3}
+  reloadSound: {fileID: 8300000, guid: 64424d3d4bcc48145ae89797cdbeb933, type: 3}
+  emptySound: {fileID: 8300000, guid: 170fb1fb8433ad64292130d32bd44d5e, type: 3}
+  bulletSpawnPoint: {fileID: 0}
+  hipPosition: {x: 0.2, y: -0.15, z: 2}
+  adsPosition: {x: 0, y: -0.06, z: 0.2}
+  hipRotation: {x: 0, y: -90, z: 0}
+  adsRotation: {x: 0, y: 0, z: 0}
+  recoilAmount: 0.5
+  horizontalRecoilVariance: 0.3
+  recoilRecoverySpeed: 200
