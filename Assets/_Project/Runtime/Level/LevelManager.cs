@@ -1,0 +1,286 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+
+public class LevelManager : MonoBehaviour
+{
+    [Serializable]
+    public class LevelData
+    {
+        public string levelName;
+        public string sceneName;
+        public Sprite previewImage;
+    }
+
+    [Header("Level Configuration")]
+    [SerializeField] private List<LevelData> availableLevels = new List<LevelData>();
+    [SerializeField] private string mainMenuSceneName = "MainMenu";
+    [SerializeField] private float loadingFadeTime = 1.0f;
+    
+    [Header("References")]
+    [SerializeField] private Player playerPrefab;
+    [SerializeField] private CanvasGroup loadingScreenCanvasGroup;
+    
+    private static LevelManager _instance;
+    private Player _currentPlayer;
+    private int _currentLevelIndex = -1;
+    private bool _isLoading = false;
+
+    public static LevelManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindObjectOfType<LevelManager>();
+                
+                if (_instance == null)
+                {
+                    Debug.LogError("No LevelManager found in the scene. Make sure to add one!");
+                }
+            }
+            return _instance;
+        }
+    }
+    
+    public int CurrentLevelIndex => _currentLevelIndex;
+    public List<LevelData> AvailableLevels => availableLevels;
+    public bool IsLoading => _isLoading;
+    
+    private int _highestUnlockedLevel = 0;
+    public int HighestUnlockedLevel => _highestUnlockedLevel;
+
+    private void Awake()
+    {
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        _instance = this;
+        DontDestroyOnLoad(gameObject);
+        
+        if (loadingScreenCanvasGroup != null)
+        {
+            loadingScreenCanvasGroup.alpha = 0;
+            loadingScreenCanvasGroup.gameObject.SetActive(false);
+        }
+        
+        LoadProgress();
+    }
+    
+    public void LoadProgress()
+    {
+        _highestUnlockedLevel = PlayerPrefs.GetInt("HighestUnlockedLevel", 0);
+    }
+    
+    public void SaveProgress()
+    {
+        if (_currentLevelIndex > _highestUnlockedLevel)
+        {
+            _highestUnlockedLevel = _currentLevelIndex;
+            PlayerPrefs.SetInt("HighestUnlockedLevel", _highestUnlockedLevel);
+            PlayerPrefs.Save();
+        }
+    }
+
+    public void LoadMainMenu()
+    {
+        StartCoroutine(LoadSceneRoutine(mainMenuSceneName, -1));
+    }
+
+    public void LoadLevel(int levelIndex)
+    {
+        if (levelIndex < 0 || levelIndex >= availableLevels.Count)
+        {
+            Debug.LogError($"Invalid level index: {levelIndex}");
+            return;
+        }
+
+        StartCoroutine(LoadSceneRoutine(availableLevels[levelIndex].sceneName, levelIndex));
+    }
+
+    public void LoadNextLevel()
+    {
+        int nextLevel = _currentLevelIndex + 1;
+        
+        if (nextLevel >= availableLevels.Count)
+        {
+            LoadMainMenu();
+            return;
+        }
+        
+        LoadLevel(nextLevel);
+    }
+
+    public void RestartCurrentLevel()
+    {
+        if (_currentLevelIndex >= 0)
+        {
+            LoadLevel(_currentLevelIndex);
+        }
+    }
+
+    private IEnumerator LoadSceneRoutine(string sceneName, int levelIndex)
+    {
+        if (_isLoading) yield break;
+        _isLoading = true;
+        
+        Debug.Log($"Loading scene: {sceneName}, level index: {levelIndex}");
+
+        if (loadingScreenCanvasGroup != null)
+        {
+            loadingScreenCanvasGroup.gameObject.SetActive(true);
+            yield return FadeLoadingScreen(1);
+        }
+
+        AsyncOperation asyncLoad = null;
+        
+        try
+        {
+            asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+            
+            if (asyncLoad == null)
+            {
+                Debug.LogError($"Failed to load scene: {sceneName}. Scene may not be in build settings.");
+                _isLoading = false;
+                yield break;
+            }
+            
+            asyncLoad.allowSceneActivation = false;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"Error loading scene {sceneName}: {e.Message}");
+            _isLoading = false;
+            yield break;
+        }
+
+        while (asyncLoad != null && asyncLoad.progress < 0.9f)
+        {
+            yield return null;
+        }
+
+        if (asyncLoad != null)
+        {
+            asyncLoad.allowSceneActivation = true;
+            
+            while (!asyncLoad.isDone)
+            {
+                yield return null;
+            }
+        }
+
+        _currentLevelIndex = levelIndex;
+
+        yield return new WaitForSeconds(0.1f);
+
+        bool isGameplayLevel = _currentLevelIndex >= 0;
+        Debug.Log($"Is gameplay level: {isGameplayLevel}");
+        
+        if (isGameplayLevel)
+        {
+            SpawnPlayer();
+            SaveProgress();
+        }
+        
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.OnLevelLoaded(isGameplayLevel);
+        }
+        else
+        {
+            Debug.LogWarning("GameManager instance not found");
+        }
+
+        if (loadingScreenCanvasGroup != null)
+        {
+            yield return FadeLoadingScreen(0);
+            loadingScreenCanvasGroup.gameObject.SetActive(false);
+        }
+
+        _isLoading = false;
+    }
+
+    private IEnumerator FadeLoadingScreen(float targetAlpha)
+    {
+        float startAlpha = loadingScreenCanvasGroup.alpha;
+        float time = 0;
+
+        while (time < loadingFadeTime)
+        {
+            time += Time.deltaTime;
+            loadingScreenCanvasGroup.alpha = Mathf.Lerp(startAlpha, targetAlpha, time / loadingFadeTime);
+            yield return null;
+        }
+
+        loadingScreenCanvasGroup.alpha = targetAlpha;
+    }
+
+    private void SpawnPlayer()
+    {
+        Debug.Log($"SpawnPlayer called for level index: {_currentLevelIndex}");
+
+        if (playerPrefab == null)
+        {
+            Debug.LogError("Player prefab is not assigned in LevelManager!");
+            return;
+        }
+
+        Transform spawnPoint = FindSpawnPoint();
+        
+        if (spawnPoint == null)
+        {
+            Debug.LogWarning("No PlayerSpawnPoint found in scene. Creating default spawn point.");
+            GameObject defaultSpawn = new GameObject("DefaultSpawnPoint");
+            spawnPoint = defaultSpawn.transform;
+            spawnPoint.position = new Vector3(0, 2, 0);
+        }
+        
+        Debug.Log($"Using spawn point at position: {spawnPoint.position}");
+
+        if (_currentPlayer == null)
+        {
+            Debug.Log("Instantiating new player");
+            _currentPlayer = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
+            
+            if (GameManager.Instance != null)
+            {
+                Debug.Log("Registering player with GameManager");
+                GameManager.Instance.RegisterPlayer(_currentPlayer);
+            }
+            else
+            {
+                Debug.LogWarning("GameManager instance not found!");
+            }
+        }
+        else
+        {
+            Debug.Log("Teleporting existing player");
+            _currentPlayer.Teleport(spawnPoint.position);
+            _currentPlayer.transform.rotation = spawnPoint.rotation;
+        }
+        
+        _currentPlayer.gameObject.SetActive(true);
+        _currentPlayer.EnableGameplayMode(true);
+        Debug.Log("Player gameplay mode enabled");
+    }
+
+    private Transform FindSpawnPoint()
+    {
+        Debug.Log("Looking for PlayerSpawnPoint...");
+        PlayerSpawnPoint[] spawnPoints = FindObjectsOfType<PlayerSpawnPoint>();
+        
+        if (spawnPoints != null && spawnPoints.Length > 0)
+        {
+            Debug.Log($"Found {spawnPoints.Length} PlayerSpawnPoint(s) in scene");
+            return spawnPoints[0].transform;
+        }
+        
+        Debug.LogWarning("No PlayerSpawnPoint found in scene");
+        return null;
+    }
+}

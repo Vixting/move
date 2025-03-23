@@ -1,0 +1,1951 @@
+# CONCRETE/HOSTILES_CONCRETE1_UNPAINTED_TRIM
+newmtl material_0
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_0.tga
+
+# CONCRETE/HL2REV_CONCRETEWALL065B
+newmtl material_1
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_1.tga
+
+# PLASTER/WALL_TAN03
+newmtl material_2
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_2.tga
+
+# METAL/METALWALL074A
+newmtl material_3
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_3.tga
+
+# CONCRETE/CINDERBLOCK2
+newmtl material_4
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_4.tga
+
+# CONCRETE/CONCRETEFLOOR027A
+newmtl material_5
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_5.tga
+
+# CONCRETE/CONCRETEWALL065C
+newmtl material_6
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_6.tga
+
+# CONCRETE/CONCRETEWALL065A
+newmtl material_7
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_7.tga
+
+# CONCRETE/CONCRETE_FLOOR_C2A2SILO_01
+newmtl material_8
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_8.tga
+
+# METAL/METALHULL003A
+newmtl material_9
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_9.tga
+
+# maps/zs_obj_npst_v15/concrete/-0out_crt2a_-13248_0_2142
+newmtl material_10
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_10.tga
+
+# TILE/FIFTIES_CEILING_3SQUARE
+newmtl material_11
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_11.tga
+
+# METAL/METALHULL010B
+newmtl material_12
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_12.tga
+
+# CONCRETE/CONCRETEWALL071D
+newmtl material_13
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_13.tga
+
+# DEV/DEV_CORRUGATEDMETAL
+newmtl material_14
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_14.tga
+
+# maps/zs_obj_npst_v15/concrete/csrev_concretefloor_02_-13248_0_2142
+newmtl material_15
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_15.tga
+
+# METAL/METALFLOOR002A
+newmtl material_16
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_16.tga
+
+# CONCRETE/CINDERBLOCK1
+newmtl material_17
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_17.tga
+
+# CONCRETE/CONCRETEWALL073B
+newmtl material_18
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_18.tga
+
+# maps/zs_obj_npst_v15/concrete/asphalt_highway2_-13248_0_2142
+newmtl material_19
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_19.tga
+
+# CONCRETE/CONCRETEWALL006A
+newmtl material_20
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_20.tga
+
+# LIGHTS/FLUORESCENTCOOL003A
+newmtl material_21
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_21.tga
+
+# METAL/METALWALL054B
+newmtl material_22
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_22.tga
+
+newmtl material_23
+Kd 1.0000 1.0000 1.0000
+illum 0
+
+# METAL/METALTRUSS017A
+newmtl material_24
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_24.tga
+
+# PROPS/WOODCRATE003B
+newmtl material_25
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_25.tga
+
+# PROPS/METALLOCKERS003B
+newmtl material_26
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_26.tga
+
+# PROPS/WOODCRATE003A
+newmtl material_27
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_27.tga
+
+# maps/zs_obj_npst_v15/glass/labglass_c2a4_2windowbreak070a_-13248_0_2142
+newmtl material_28
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_28.tga
+
+# maps/zs_obj_npst_v15/metal/metaldoor043a_-13248_0_2142
+newmtl material_29
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_29.tga
+
+# LAB/OFFICEFLOOR01
+newmtl material_30
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_30.tga
+
+# METAL/METALWALL005B
+newmtl material_31
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_31.tga
+
+# CONCRETE/CURBA
+newmtl material_32
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_32.tga
+
+# METAL/METALHULL010C
+newmtl material_33
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_33.tga
+
+# PLASTER/CSREV_OFFICEWALL01B
+newmtl material_34
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_34.tga
+
+# maps/zs_obj_npst_v15/brick/fifties_w12_no-trim_-13248_0_2142
+newmtl material_35
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_35.tga
+
+# maps/zs_obj_npst_v15/concrete/rapidcore_concrete_labwall_a_-13248_0_2142
+newmtl material_36
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_36.tga
+
+# WOOD/WOODBEAM002A
+newmtl material_37
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_37.tga
+
+# METAL/METALTRUSS009A
+newmtl material_38
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_38.tga
+
+# PROPS/PLASTICCEILING002A
+newmtl material_39
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_39.tga
+
+# CONCRETE/HOSTILES_CONCRETE1_RED
+newmtl material_40
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_40.tga
+
+# maps/zs_obj_npst_v15/metal/metal_duct_wall_dirty_03_-13248_0_2142
+newmtl material_41
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_41.tga
+
+# CONCRETE/CONCRETEWALL071B
+newmtl material_42
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_42.tga
+
+# maps/zs_obj_npst_v15/plaster/csrev_officewall01a_-13248_0_2142
+newmtl material_43
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_43.tga
+
+# CONCRETE/HOSTILES_CONCRETE1_BLUE
+newmtl material_44
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_44.tga
+
+# METAL/METALTRUSS008A
+newmtl material_45
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_45.tga
+
+# PROPS/METALCRATE002D
+newmtl material_46
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_46.tga
+
+# CONCRETE/C1A4I_W1A
+newmtl material_47
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_47.tga
+
+# maps/zs_obj_npst_v15/metal/metal_notches2_-13248_0_2142
+newmtl material_48
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_48.tga
+
+# CONCRETE/CONCRETESTAIR006A
+newmtl material_49
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_49.tga
+
+# CONCRETE/HOSTILES_CONCRETE1_YELLOW
+newmtl material_50
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_50.tga
+
+# maps/zs_obj_npst_v15/metal/office_doubledoor_frame02_-13248_0_2142
+newmtl material_51
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_51.tga
+
+# METAL/METALSTAIR001A
+newmtl material_52
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_52.tga
+
+# maps/zs_obj_npst_v15/lab/labboard_-13248_0_2142
+newmtl material_53
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_53.tga
+
+# maps/zs_obj_npst_v15/glass/infblindsa_-13248_0_2142
+newmtl material_54
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_54.tga
+
+# maps/zs_obj_npst_v15/glass/glasswindow007a_-13248_0_2142
+newmtl material_55
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_55.tga
+
+# maps/zs_obj_npst_v15/wood/woodwall016b_-13248_0_2142
+newmtl material_56
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_56.tga
+
+# METAL/CSREV_MILWALL005
+newmtl material_57
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_57.tga
+
+# maps/zs_obj_npst_v15/tile/tilefloor020a_-13248_0_2142
+newmtl material_58
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_58.tga
+
+# CONCRETE/CONCRETEWALL064B
+newmtl material_59
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_59.tga
+
+# maps/zs_obj_npst_v15/building_template/building_trainstation_window001a_-13248_0_2142
+newmtl material_60
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_60.tga
+
+# maps/zs_obj_npst_v15/tile/tilefloor012a_-13248_0_2142
+newmtl material_61
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_61.tga
+
+# CONCRETE/CONCRETEWALL059C
+newmtl material_62
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_62.tga
+
+# maps/zs_obj_npst_v15/metal/metalcombine001_-13248_0_2142
+newmtl material_63
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_63.tga
+
+# maps/zs_obj_npst_v15/tile/tilefloor011a_-13248_0_2142
+newmtl material_64
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_64.tga
+
+# CONCRETE/CINDERBLOCK1_STRIPES
+newmtl material_65
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_65.tga
+
+# maps/zs_obj_npst_v15/lab/lab_metalwall01_grey_-13248_0_2142
+newmtl material_66
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_66.tga
+
+# METAL/METALVENT003A
+newmtl material_67
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_67.tga
+
+# maps/zs_obj_npst_v15/concrete/tnnl_flr8_-13248_0_2142
+newmtl material_68
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_68.tga
+
+# CONCRETE/CRETE2_WALL01
+newmtl material_69
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_69.tga
+
+# PROPS/METALDUCT003A
+newmtl material_70
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_70.tga
+
+# maps/zs_obj_npst_v15/metal/wgh_cafeteria_menu_-13248_0_2142
+newmtl material_71
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_71.tga
+
+# METAL/METALWALL061F
+newmtl material_72
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_72.tga
+
+# maps/zs_obj_npst_v15/wood/woodwall016a_-13248_0_2142
+newmtl material_73
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_73.tga
+
+# TILE/TILEFLOOR005A
+newmtl material_74
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_74.tga
+
+# maps/zs_obj_npst_v15/stone/stonewall051b_-13248_0_2142
+newmtl material_75
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_75.tga
+
+# METAL/METALHULL002A
+newmtl material_76
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_76.tga
+
+# WOOD/WOODWALL005A
+newmtl material_77
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_77.tga
+
+# CONCRETE/CONCRETEWALL043A
+newmtl material_78
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_78.tga
+
+# METAL/METALFLOOR006A
+newmtl material_79
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_79.tga
+
+# maps/zs_obj_npst_v15/metal/metalfloor001a_-13248_0_2142
+newmtl material_80
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_80.tga
+
+# METAL/METALFLOOR010A
+newmtl material_81
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_81.tga
+
+# METAL/METALFLOOR007A
+newmtl material_82
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_82.tga
+
+# CONCRETE/BA_CANAL1B0002_01
+newmtl material_83
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_83.tga
+
+# CONCRETE/CONCRETEFLOOR016A
+newmtl material_84
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_84.tga
+
+# LIGHTS/LIGHT_NEON01_ON
+newmtl material_85
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_85.tga
+
+# maps/zs_obj_npst_v15/metal/metalwall048a_-13248_0_2142
+newmtl material_86
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_86.tga
+
+# CONCRETE/C2A1_W1
+newmtl material_87
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_87.tga
+
+# CONCRETE/CONCRETEFLOOR008A
+newmtl material_88
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_88.tga
+
+# CONCRETE/HOSTILES_CONCRETE1_GREEN
+newmtl material_89
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_89.tga
+
+# WOOD/WOODWALL028A
+newmtl material_90
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_90.tga
+
+# METAL/METALPIPE003A
+newmtl material_91
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_91.tga
+
+# maps/zs_obj_npst_v15/concrete/oar_concrete_trackbase_-13248_0_2142
+newmtl material_92
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_92.tga
+
+# maps/zs_obj_npst_v15/metal/c2a3x_redmetalwall_painted02_-13248_0_2142
+newmtl material_93
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_93.tga
+
+# STONE/STONEWALL036B
+newmtl material_94
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_94.tga
+
+# CONCRETE/CONCRETE_FLOOR_TNNLFLR7D
+newmtl material_95
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_95.tga
+
+# CUSTOM/NPST_CREDITS
+newmtl material_96
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_96.tga
+
+# WOOD/WOODFLOOR005A
+newmtl material_97
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_97.tga
+
+# CONCRETE/CONCRETEWALL065B
+newmtl material_98
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_98.tga
+
+# CONCRETE/CONCRETEWALL024A
+newmtl material_99
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_99.tga
+
+# CONCRETE/BA_TRAM10007_02
+newmtl material_100
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_100.tga
+
+# METAL/METALFLOOR003A
+newmtl material_101
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_101.tga
+
+# METAL/METALFENCE003A
+newmtl material_102
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_102.tga
+
+# METAL/METALRAIL006B
+newmtl material_103
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_103.tga
+
+# maps/zs_obj_npst_v15/lab/c2a4x_transitsign_001_-13248_0_2142
+newmtl material_104
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_104.tga
+
+# PROPS/TARPAPERROOF002A
+newmtl material_105
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_105.tga
+
+# METAL/METALVENT001A
+newmtl material_106
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_106.tga
+
+# maps/zs_obj_npst_v15/concrete/csrev_concretefloor_03_-13248_0_2142
+newmtl material_107
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_107.tga
+
+# METAL/METALWALL030A
+newmtl material_108
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_108.tga
+
+# maps/zs_obj_npst_v15/metal/metalroof005a_-13248_0_2142
+newmtl material_109
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_109.tga
+
+# CONCRETE/CONCRETEWALL040A
+newmtl material_110
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_110.tga
+
+# maps/zs_obj_npst_v15/tile/tilefloor016a_-13248_0_2142
+newmtl material_111
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_111.tga
+
+# maps/zs_obj_npst_v15/glass/glasswindow018a_-13248_0_2142
+newmtl material_112
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_112.tga
+
+# CARPET/OFFICECARPET01
+newmtl material_113
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_113.tga
+
+# METAL/METAL_DUCT_VENT_DIRTY_01
+newmtl material_114
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_114.tga
+
+# WOOD/WOODFLOOR002A
+newmtl material_115
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_115.tga
+
+# METAL/METALWALL021F
+newmtl material_116
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_116.tga
+
+# PROPS/METALBREAKER002A
+newmtl material_117
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_117.tga
+
+# METAL/CITADEL_METALWALL060A
+newmtl material_118
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_118.tga
+
+# maps/zs_obj_npst_v15/tile/tilefloor012b_-13248_0_2142
+newmtl material_119
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_119.tga
+
+# PLASTER/PLASTERWALL037E
+newmtl material_120
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_120.tga
+
+# CONCRETE/CONCRETEWALL060C
+newmtl material_121
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_121.tga
+
+# maps/zs_obj_npst_v15/concrete/concretefloor005a_-13248_0_2142
+newmtl material_122
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_122.tga
+
+# CUSTOM/FENCH FAG
+newmtl material_123
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_123.tga
+
+# CUSTOM/NPST2
+newmtl material_124
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_124.tga
+
+# WOOD/WOODSHELF001A
+newmtl material_125
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_125.tga
+
+# DEV/DEV_LOWERMETALDOOR02A
+newmtl material_126
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_126.tga
+
+# METAL/METALWALL025A
+newmtl material_127
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_127.tga
+
+# PROPS/METALSTAINLESS01
+newmtl material_128
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_128.tga
+
+# maps/zs_obj_npst_v15/metal/c2a3x_redmetalwall_painted01_-13248_0_2142
+newmtl material_129
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_129.tga
+
+# METAL/METALWALL074D
+newmtl material_130
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_130.tga
+
+# maps/zs_obj_npst_v15/metal/silowall_0_backwall_-13248_0_2142
+newmtl material_131
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_131.tga
+
+# CONCRETE/CONCRETEWALL022A
+newmtl material_132
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_132.tga
+
+# PROPS/METALCOMPUTERPANEL001A
+newmtl material_133
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_133.tga
+
+# PROPS/METALPANEL009A
+newmtl material_134
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_134.tga
+
+# SIGNS/HIGH_SEC_STORAGE
+newmtl material_135
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_135.tga
+
+# CONCRETE/CONCRETEWALL040D
+newmtl material_136
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_136.tga
+
+# NATURE/ROCKWALL006A
+newmtl material_137
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_137.tga
+
+# CONCRETE/CONCRETEWALL008A
+newmtl material_138
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_138.tga
+
+# maps/zs_obj_npst_v15/metal/citadel_tilefloor016a_cheap_-13248_0_2142
+newmtl material_139
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_139.tga
+
+# CONCRETE/CONCRETEWALL019A
+newmtl material_140
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_140.tga
+
+# METAL/METALGRATE013A2
+newmtl material_141
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_141.tga
+
+# maps/zs_obj_npst_v15/metal/elevator_doors_-13248_0_2142
+newmtl material_142
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_142.tga
+
+# DEV/REFLECTIVITY_30
+newmtl material_143
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_143.tga
+
+# maps/zs_obj_npst_v15/dev/dev_blendmeasure_wvt_patch
+newmtl material_144
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_144.tga
+
+# CARPET/CSREV_OFFFLRC
+newmtl material_145
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_145.tga
+
+# DEV/DEV_LOWERWALLMETAL01A
+newmtl material_146
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_146.tga
+
+# nature/water_coast01_beneath
+newmtl material_147
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_147.tga
+
+# maps/zs_obj_npst_v15/nature/water_coast01_-13248_0_2142
+newmtl material_148
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_148.tga
+
+# LAB/INSULATION_CEILING01
+newmtl material_149
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_149.tga
+
+# CONCRETE/CONCRETEFLOOR038A
+newmtl material_150
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_150.tga
+
+# HALFLIFE/BLACK
+newmtl material_151
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_151.tga
+
+# METAL/METALDOOR032A
+newmtl material_152
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_152.tga
+
+# maps/zs_obj_npst_v15/tile/tilefloor013a_c17_-13248_0_2142
+newmtl material_153
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_153.tga
+
+# CONCRETE/CONCRETEWALL004B
+newmtl material_154
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_154.tga
+
+# STOREFRONT_TEMPLATE/STOREFRONT_TEMPLATE001G
+newmtl material_155
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_155.tga
+
+# TILE/FIFTIES_F02A
+newmtl material_156
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_156.tga
+
+# maps/zs_obj_npst_v15/concrete/crete_ceiling_silo2_c2gray_-13248_0_2142
+newmtl material_157
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_157.tga
+
+# CONCRETE/CONCRETEFLOOR006A
+newmtl material_158
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_158.tga
+
+# nature/water_movingplane_beneath
+newmtl material_159
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_159.tga
+
+# maps/zs_obj_npst_v15/nature/water_movingplane_-13248_0_2142
+newmtl material_160
+Kd 0.3137 0.2510 0.1490
+d 1.0000
+illum 0
+map_Kd npst_material_160.tga
+
+# CONCRETE/CONCRETEWALL002C
+newmtl material_161
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_161.tga
+
+# dev/dev_waterbeneath2
+newmtl material_162
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_162.tga
+
+# maps/zs_obj_npst_v15/dev/dev_water2_cheap_-13248_0_2142
+newmtl material_163
+Kd 0.6275 0.7333 0.7882
+d 1.0000
+illum 0
+map_Kd npst_material_163.tga
+
+# CONCRETE/CONCRETEFLOOR012A
+newmtl material_164
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_164.tga
+
+# maps/zs_obj_npst_v15/plaster/csrev_officewall_-13248_0_2142
+newmtl material_165
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_165.tga
+
+# PLASTER/CSREV_TILEWALL04
+newmtl material_166
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_166.tga
+
+# CONCRETE/C2A1_W1A
+newmtl material_167
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_167.tga
+
+# WOOD/WOODDOOR013A
+newmtl material_168
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_168.tga
+
+# maps/zs_obj_npst_v15/nature/mudfloor001a_-13248_0_2142
+newmtl material_169
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_169.tga
+
+# CONCRETE/CONCRETEWALL036A
+newmtl material_170
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_170.tga
+
+# maps/zs_obj_npst_v15/metal/metaldoor059a_-13248_0_2142
+newmtl material_171
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_171.tga
+
+# liquids/!greenslime_beneath
+newmtl material_172
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_172.tga
+
+# LIQUIDS/SLIME
+newmtl material_173
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_173.tga
+
+# STONE/STONEWALL036A
+newmtl material_174
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_174.tga
+
+# METAL/METALDOOR009A
+newmtl material_175
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_175.tga
+
+# CONCRETE/CONCRETEFLOOR015A
+newmtl material_176
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_176.tga
+
+# CONCRETE/CONCRETEFLOOR016A_STRIPES
+newmtl material_177
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_177.tga
+
+# BRICK/BRICKWALL017A
+newmtl material_178
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_178.tga
+
+# maps/zs_obj_npst_v15/metal/metalwall047a_-13248_0_2142
+newmtl material_179
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_179.tga
+
+# CONCRETE/CONCRETEFLOOR031A
+newmtl material_180
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_180.tga
+
+# maps/zs_obj_npst_v15/metal/metaldoor046a_-13248_0_2142
+newmtl material_181
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_181.tga
+
+# CONCRETE/CONCRETEWALL004A
+newmtl material_182
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_182.tga
+
+# CONCRETE/CONCRETEWALL002A
+newmtl material_183
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_183.tga
+
+# STONE/STONEWALL006B
+newmtl material_184
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_184.tga
+
+# METAL/METALGRATE013B
+newmtl material_185
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_185.tga
+
+# EFFECTS/CLOUDSPERIMETERFORGROUND
+newmtl material_186
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_186.tga
+
+# CUSTOM/NATURE/FOREST_GRASS_01
+newmtl material_187
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_187.tga
+
+# CONCRETE/CONCRETEFLOOR007A
+newmtl material_188
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_188.tga
+
+# CONCRETE/CONCRETEFLOOR013A_C17
+newmtl material_189
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_189.tga
+
+# NATURE/BLENDSANDWEED005A
+newmtl material_190
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_190.tga
+
+# NATURE/DIRTFLOOR005B
+newmtl material_191
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_191.tga
+
+# maps/zs_obj_npst_v15/xen/blend_2way_nihil_floor_-13248_0_2142
+newmtl material_192
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_192.tga
+
+# maps/zs_obj_npst_v15/xen/blend_2way_nihil_wall_-13248_0_2142
+newmtl material_193
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_193.tga
+
+# maps/zs_obj_npst_v15/xen/blend_2way_nihil_ceiling_-13248_0_2142
+newmtl material_194
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_194.tga
+
+# CUSTOM/NPSTRACE
+newmtl material_195
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_195.tga
+
+# COLOUR/NEON/RED_NEON
+newmtl material_196
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_196.tga
+
+# DEV/DEV_HAZZARDSTRIPE01A
+newmtl material_197
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_197.tga
+
+# METAL/METALFENCE007A
+newmtl material_198
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_198.tga
+
+# METAL/METALDOOR032C
+newmtl material_199
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_199.tga
+
+# maps/zs_obj_npst_v15/sewage/sewagescumintersection_drainage01_-13248_0_2142
+newmtl material_200
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_200.tga
+
+# METAL/METALTRUSS002A
+newmtl material_201
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_201.tga
+
+# METAL/METALGATE005A
+newmtl material_202
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_202.tga
+
+# DECALS/DECALTILEHATCH001A
+newmtl material_203
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_203.tga
+
+# LUFFAREN/MILRIVER03
+newmtl material_204
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_204.tga
+
+# METAL/METALWALL020A
+newmtl material_205
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_205.tga
+
+# METAL/METALTRUSS022A
+newmtl material_206
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_206.tga
+
+# METAL/METALTRUSS012A
+newmtl material_207
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_207.tga
+
+# JS/JS_BRAISES1
+newmtl material_208
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_208.tga
+
+# METAL/METALTRUSS026A
+newmtl material_209
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_209.tga
+
+# METAL/METALCEILING010A
+newmtl material_210
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_210.tga
+
+# METAL/METALTRUSS011A
+newmtl material_211
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_211.tga
+
+# DECALS/SIGNS/CAUTION_CRANEOPERATING
+newmtl material_212
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_212.tga
+
+# METAL/METALTRACK001A
+newmtl material_213
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_213.tga
+
+# METAL/METALDOOR053A
+newmtl material_214
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_214.tga
+
+# maps/zs_obj_npst_v15/metal/metaldoor004a_-13248_0_2142
+newmtl material_215
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_215.tga
+
+# EFFECTS/CLOUD_FUNNEL_01
+newmtl material_216
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_216.tga
+
+# SPRITES/CLOUDGLOW1_NOFOG
+newmtl material_217
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_217.tga
+
+# CUSTOM/BOUTON
+newmtl material_218
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_218.tga
+
+# CUSTOM/NUMERO2
+newmtl material_219
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_219.tga
+
+# CUSTOM/NUMERO1
+newmtl material_220
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_220.tga
+
+# CUSTOM/BAGUETTENPST
+newmtl material_221
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_221.tga
+
+# CUSTOM/HOWTOUNLOCK
+newmtl material_222
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_222.tga
+
+# CUSTOM/DEMOCRACY
+newmtl material_223
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_223.tga
+
+# DECALS/LETTERS/DECAL_LETTERS_RED_N
+newmtl material_224
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_224.tga
+
+# DECALS/LETTERS/DECAL_LETTERS_RED_P
+newmtl material_225
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_225.tga
+
+# DECALS/LETTERS/DECAL_LETTERS_RED_T
+newmtl material_226
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_226.tga
+
+# DECALS/LETTERS/DECAL_NUMBERS_BLACK_03
+newmtl material_227
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_227.tga
+
+# METAL/METALLADDER001A
+newmtl material_228
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_228.tga
+
+# METAL/METALDOOR032B
+newmtl material_229
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_229.tga
+
+# CABLE/RED_BACK
+newmtl material_230
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_230.tga
+
+# SKYBOX/URBAN_HORIZON_EVEN
+newmtl material_231
+Kd 0.4980 0.4980 0.4980
+d 1.0000
+illum 0
+map_Kd npst_material_231.tga
+
+# models\props_marines\Sandbags
+newmtl material_232
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_232.tga
+
+# models\props_wasteland/barricade_composite01
+newmtl material_233
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_233.tga
+
+# models\props_c17/door01a_skin2
+newmtl material_234
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_234.tga
+
+# models\props_c17/door01a_skin5
+newmtl material_235
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_235.tga
+
+# models\props_c17/door01a_skin13
+newmtl material_236
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_236.tga
+
+# models\props_c17/door01a_skin4
+newmtl material_237
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_237.tga
+
+# models\props_wasteland/cafeteria_tables01
+newmtl material_238
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_238.tga
+
+# models\props_blackmesa\tarp_crate
+newmtl material_239
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_239.tga
+
+# models\props_industrial\ceilinggunleveruv
+newmtl material_240
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_240.tga
+
+# models\props_office\48x60tx
+newmtl material_241
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_241.tga
+
+# models\props_debris/woodset01
+newmtl material_242
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_242.tga
+
+# models\props_doors\OC_door_sheet
+newmtl material_243
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_243.tga
+
+# models\props_combine/health_charger_glass
+newmtl material_244
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_244.tga
+
+# models\props_combine/health_charger001
+newmtl material_245
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_245.tga
+
+# models\props_c17/shelfunit01a
+newmtl material_246
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_246.tga
+
+# models\props_industrial\CageLight03_RedOff
+newmtl material_247
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_247.tga
+
+# models\props_blackmesa\SecurityCamera
+newmtl material_248
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_248.tga
+
+# models\props_blackmesa\SecurityCamera_Glass
+newmtl material_249
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_249.tga
+
+# models\props_wasteland/prison_yard001
+newmtl material_250
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_250.tga
+
+# models\props_wasteland/fence_alpha
+newmtl material_251
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_251.tga
+
+# models\props_junk/i-beam_cluster01
+newmtl material_252
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_252.tga
+
+# models\props_marines\AmmoCrate01
+newmtl material_253
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_253.tga
+
+# models\props_c17/streetsigns_composite02
+newmtl material_254
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_254.tga
+
+# models\props_wasteland/wood_fence01a_skin2
+newmtl material_255
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_255.tga
+
+# models\props_junk/Wood_PalletCrate001a
+newmtl material_256
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_256.tga
+
+# models\props_am\am_testchamber_door_top
+newmtl material_257
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_257.tga
+
+# models\props_am\am_testchamber_door_bottom
+newmtl material_258
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_258.tga
+
+# models\props_junk/Cardboard_boxes001a
+newmtl material_259
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_259.tga
+
+# models\props_junk/cinderblock01a
+newmtl material_260
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_260.tga
+
+# models\props_junk/TrafficCone001a
+newmtl material_261
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_261.tga
+
+# models\props_c17/Oil_Drum001f
+newmtl material_262
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_262.tga
+
+# models\props_c17/Oil_Drum001a
+newmtl material_263
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_263.tga
+
+# models\props_canteen\sodamachine01a
+newmtl material_264
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_264.tga
+
+# models\props_canteen\sodamachine01b
+newmtl material_265
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_265.tga
+
+# models\props_office\light_ceiling_off
+newmtl material_266
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_266.tga
+
+# models\props_junk\WetFloorSign
+newmtl material_267
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_267.tga
+
+# models\props_wasteland/controlroom_filecabinets001
+newmtl material_268
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_268.tga
+
+# models\props_office\lamp_flexible
+newmtl material_269
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_269.tga
+
+# models\props_sewer\ladderrung
+newmtl material_270
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_270.tga
+
+# models\props_junk\metalgascan
+newmtl material_271
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_271.tga
+
+# models\props_office\partition_48x48
+newmtl material_272
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_272.tga
+
+# models\props_office\Light_Sconce01_Off
+newmtl material_273
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_273.tga
+
+# models\props_office\light_sconce01_on
+newmtl material_274
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_274.tga
+
+# models\props_blackmesa\light_wall02_on
+newmtl material_275
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_275.tga
+
+# models\props_office\Light_Ceiling_On
+newmtl material_276
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_276.tga
+
+# models\props_office\Light_Ceiling_Cover1
+newmtl material_277
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_277.tga
+
+# models\props_blackmesa\railing01_rails_skin4
+newmtl material_278
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_278.tga
+
+# models\props_blackmesa\railing01_joints_skin4
+newmtl material_279
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_279.tga
+
+# models\props_c17/bench01a
+newmtl material_280
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_280.tga
+
+# models\props_canal/Canal_Bars004
+newmtl material_281
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_281.tga
+
+# models\props_office\Computer_Devices
+newmtl material_282
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_282.tga
+
+# models\props_blackmesa\bms_valvewheel
+newmtl material_283
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_283.tga
+
+# models\props_lab/lab_objects02
+newmtl material_284
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_284.tga
+
+# models\props_generic\ledindicator_small
+newmtl material_285
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_285.tga
+
+# models\Combine_turrets\Floor_turret\combine_gun002
+newmtl material_286
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_286.tga
+
+# models\props_wasteland/prison_objects002
+newmtl material_287
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_287.tga
+
+# models\props_industrial\light_strip03_on
+newmtl material_288
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_288.tga
+
+# models\props_industrial\light_strip03_bulb2
+newmtl material_289
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_289.tga
+
+# models\props_junk/woodcrates01a
+newmtl material_290
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_290.tga
+
+# models\props_wasteland/controlroom_001
+newmtl material_291
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_291.tga
+
+# models\props_industrial\cagelight01_clearon
+newmtl material_292
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_292.tga
+
+# models\props_wasteland/cranemagnet01a
+newmtl material_293
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_293.tga
+
+# models\crane_docks/crane_base
+newmtl material_294
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_294.tga
+
+# models\crane_docks/crane_chair
+newmtl material_295
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_295.tga
+
+# models\crane_docks/crane_body
+newmtl material_296
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_296.tga
+
+# models\props_lab/elevatorbutton_sheet
+newmtl material_297
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_297.tga
+
+# models\props_vents/borealis_vent001b
+newmtl material_298
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_298.tga
+
+# models\props_vehicles/car003b_01
+newmtl material_299
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_299.tga
+
+# models\props_blackmesa\railing01_rails_skin2
+newmtl material_300
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_300.tga
+
+# models\props_blackmesa\railing01_joints_skin2
+newmtl material_301
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_301.tga
+
+# models\FoodNHouseholdItems\cj_baguette
+newmtl material_302
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_302.tga
+
+# models\props_office\light_strip01_on
+newmtl material_303
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_303.tga
+
+# models\props_c17/chairchrome01
+newmtl material_304
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_304.tga
+
+# models\props_c17/chairfab01
+newmtl material_305
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_305.tga
+
+# models\props_interiors/interiors_potsnpans01a
+newmtl material_306
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_306.tga
+
+# models\props_junk/garbage001a_01
+newmtl material_307
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_307.tga
+
+# models\props_junk/plastic_junk001a
+newmtl material_308
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_308.tga
+
+# models\props_combine\cit_cloud001
+newmtl material_309
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_309.tga
+
+# models\props_combine\cit_cloud002
+newmtl material_310
+Kd 1.0000 1.0000 1.0000
+d 1.0000
+illum 0
+map_Kd npst_material_310.tga
+
+# models\props_xen\c4a1a\shockwave_loop
+newmtl material_311
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_311.tga
+
+# models\props_xen\interloper\interloper_tower_top_intro
+newmtl material_312
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_312.tga
+
+# models\xenians\nihilanth\Nihilanth_Body_Diffuse_Rim
+newmtl material_313
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_313.tga
+
+# models\props_xen\c4a1a\xen_interdimensional_track
+newmtl material_314
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_314.tga
+
+# models\props_xen\c4a1a\xen_interdimensional_bg
+newmtl material_315
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_315.tga
+
+# models\props_c17/cagebulb01
+newmtl material_316
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_316.tga
+
+# effects\lensflare\interdimensional_5_ray
+newmtl material_317
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_317.tga
+
+# models\props_xen\c4a1a\xen_interdimensional_energy
+newmtl material_318
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_318.tga
+
+# models\xenians\manta_jet\manta
+newmtl material_319
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_319.tga
+
+# models\props_junk\MopBucket01
+newmtl material_320
+Kd 1.0000 1.0000 1.0000
+illum 0
+map_Kd npst_material_320.tga
+

@@ -331,7 +331,6 @@ public class Weapon : MonoBehaviour
         targetRotation += scaledDelta;
     }
     
-    // Set an absolute rotation for the weapon
     public void SetWeaponRotation(Vector3 rotation, bool instant = false)
     {
         if (!enableCustomRotation) return;
@@ -345,15 +344,11 @@ public class Weapon : MonoBehaviour
         }
     }
     
-    // Reset weapon rotation to default (based on current aim state)
     public void ResetWeaponRotation(bool instant = false)
     {
-        // Default to hip rotation - for aim state you'll need to track that in this class
-        // or use the OnAim method
         SetWeaponRotation(weaponData.hipRotation, instant);
     }
     
-    // Enable or disable custom rotation
     public void SetCustomRotationEnabled(bool enabled)
     {
         enableCustomRotation = enabled;

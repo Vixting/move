@@ -1,0 +1,21 @@
+07:34:38.665 INFO  Loading C:\SteamLibrary\steamapps\common\GarrysMod\garrysmod\download\maps\zs_obj_npst_v15.bsp
+07:34:38.951 INFO  Using 'DStaticPropV10' for sprp version 10
+07:34:38.981 WARN  Tried reading lump 'LUMP_DISP_MULTIBLEND', but it is not supported by the bsp's version
+07:34:39.002 WARN  Lump LUMP_OVERLAY_SYSTEM_LEVELS is empty
+07:34:39.005 INFO  BSP version: 20
+07:34:39.006 INFO  Game: Garry's Mod
+07:34:39.014 INFO  Equal amount of areaporal entities and areaportal brushes. Using 'Ordered' method
+07:34:39.016 INFO  No occluders to reallocate...
+07:34:39.935 INFO  17721 (28.3%) exact brushside->origface matches
+07:34:39.940 INFO  44/237 (nondisp/disp) original faces left after exact brushside->origface matching
+07:34:40.012 INFO  373 (0.6%) partial brushside->origface matches
+07:34:40.014 INFO  Writing brushes and planes
+07:34:40.351 INFO  Writing displacements
+07:34:40.385 INFO  Writing entities
+07:34:40.500 INFO  Writing func_details
+07:34:40.728 INFO  Writing func_viscluster
+07:34:40.737 INFO  Writing info_overlays
+07:34:40.751 INFO  Writing prop_statics
+07:34:40.765 INFO  Writing env_cubemaps
+07:34:40.766 INFO  Writing func_ladders
+07:34:40.775 INFO  Finished decompiling C:\SteamLibrary\steamapps\common\GarrysMod\garrysmod\download\maps\zs_obj_npst_v15.bsp.

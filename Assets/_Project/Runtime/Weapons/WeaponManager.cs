@@ -169,9 +169,6 @@ public class WeaponManager : MonoBehaviour
             if (holder != null)
             {
                 currentWeaponHolder = holder;
-                
-                // Ensure proper initialization when switching weapons
-                // This fixes any potential rotation issues with the weapon model
                 holder.Initialize(playerCamera.transform, playerCharacter);
                 
                 // Reset the aiming state properly when switching weapons

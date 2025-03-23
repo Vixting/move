@@ -1,17 +1,24 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-
 public class Player : MonoBehaviour
 {
     [SerializeField] private PlayerCharacter playerCharacter;
     [SerializeField] private PlayerCamera playerCamera;
     [SerializeField] private WeaponManager weaponManager;
     private PlayerInputActions _inputActions;
+    private bool _isInputEnabled = true;
    
     void Start()
     {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        // Don't lock cursor on start if we're in a UI scene
+        if (IsGameplayScene())
+        {
+            EnableGameplayMode(true);
+        }
+        else
+        {
+            EnableGameplayMode(false);
+        }
        
         _inputActions = new PlayerInputActions();
         _inputActions.Enable();
@@ -27,6 +34,9 @@ public class Player : MonoBehaviour
    
     void Update()
     {
+        if (!_isInputEnabled)
+            return;
+            
         var input = _inputActions.Gameplay;
         var deltaTime = Time.deltaTime;
        
@@ -73,11 +83,20 @@ public class Player : MonoBehaviour
                 Teleport(hit.point);
             }
         }
+        
+        // Toggle cursor lock with Escape key for testing
+        if (Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            EnableGameplayMode(!_isInputEnabled);
+        }
         #endif
     }
    
     void LateUpdate()
     {
+        if (!_isInputEnabled)
+            return;
+            
         playerCamera.UpdatePosition(playerCharacter.GetCameraTarget());
     }
    
@@ -93,12 +112,18 @@ public class Player : MonoBehaviour
    
     private void OnAimStarted(InputAction.CallbackContext context)
     {
+        if (!_isInputEnabled)
+            return;
+            
         weaponManager.SetAiming(true);
         playerCamera.SetAiming(true);
     }
    
     private void OnAimCanceled(InputAction.CallbackContext context)
     {
+        if (!_isInputEnabled)
+            return;
+            
         weaponManager.SetAiming(false);
         playerCamera.SetAiming(false);
     }
@@ -106,5 +131,32 @@ public class Player : MonoBehaviour
     public void Teleport(Vector3 position)
     {
         playerCharacter.SetPosition(position);
+    }
+    
+    // Method to toggle gameplay mode (cursor lock and input)
+    public void EnableGameplayMode(bool enable)
+    {
+        _isInputEnabled = enable;
+        
+        if (enable)
+        {
+            // Lock cursor for gameplay
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else
+        {
+            // Unlock cursor for UI
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+    }
+    
+    // Helper method to check if we're in a gameplay scene
+    private bool IsGameplayScene()
+    {
+        // Determine if we're in a gameplay scene or UI scene
+        // You can check for specific scene names or objects
+        return !FindObjectOfType<LevelSelectionUI>();
     }
 }
