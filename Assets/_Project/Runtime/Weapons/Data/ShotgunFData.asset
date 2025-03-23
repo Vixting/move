@@ -1,0 +1,38 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8de15e308f3be414da596ebebeb4ec08, type: 3}
+  m_Name: ShotgunFData
+  m_EditorClassIdentifier: 
+  weaponName: 
+  weaponPrefab: {fileID: 0}
+  bulletRange: 100
+  fireRate: 0.1
+  maxAmmo: 30
+  reloadTime: 2
+  isAutomatic: 1
+  impactForce: 20
+  bulletHoleSize: 0.1
+  bulletHoleLifetime: 10
+  bulletHoleMaterial: {fileID: 0}
+  maxBulletHoles: 50
+  muzzleFlashPrefab: {fileID: 0}
+  shootSound: {fileID: 0}
+  reloadSound: {fileID: 0}
+  emptySound: {fileID: 0}
+  bulletSpawnPoint: {fileID: 0}
+  hipPosition: {x: 0.2, y: -0.15, z: 0.4}
+  adsPosition: {x: 0, y: -0.06, z: 0.2}
+  hipRotation: {x: 0, y: 0, z: 0}
+  adsRotation: {x: 0, y: 0, z: 0}
+  recoilAmount: 0.1
+  horizontalRecoilVariance: 0.3
+  recoilRecoverySpeed: 5

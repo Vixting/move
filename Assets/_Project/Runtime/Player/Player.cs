@@ -5,12 +5,14 @@ public class Player : MonoBehaviour
     [SerializeField] private PlayerCharacter playerCharacter;
     [SerializeField] private PlayerCamera playerCamera;
     [SerializeField] private WeaponManager weaponManager;
-    private PlayerInputActions _inputActions;
+    
+    // Changed from private to public to allow access from WeaponSelectionUI
+    public PlayerInputActions _inputActions;
+    
     private bool _isInputEnabled = true;
    
     void Start()
     {
-        // Don't lock cursor on start if we're in a UI scene
         if (IsGameplayScene())
         {
             EnableGameplayMode(true);
@@ -84,7 +86,6 @@ public class Player : MonoBehaviour
             }
         }
         
-        // Toggle cursor lock with Escape key for testing
         if (Keyboard.current.escapeKey.wasPressedThisFrame)
         {
             EnableGameplayMode(!_isInputEnabled);
@@ -133,30 +134,35 @@ public class Player : MonoBehaviour
         playerCharacter.SetPosition(position);
     }
     
-    // Method to toggle gameplay mode (cursor lock and input)
     public void EnableGameplayMode(bool enable)
     {
         _isInputEnabled = enable;
         
+        if (weaponManager != null)
+        {
+            weaponManager.SetEnabled(enable);
+        }
+        
         if (enable)
         {
-            // Lock cursor for gameplay
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
         else
         {
-            // Unlock cursor for UI
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
     }
     
-    // Helper method to check if we're in a gameplay scene
     private bool IsGameplayScene()
     {
-        // Determine if we're in a gameplay scene or UI scene
-        // You can check for specific scene names or objects
-        return !FindObjectOfType<LevelSelectionUI>();
+        return !FindAnyObjectByType<LevelSelectionUI>();
+    }
+    
+    // Helper method to retrieve input actions from outside classes
+    public PlayerInputActions GetInputActions()
+    {
+        return _inputActions;
     }
 }

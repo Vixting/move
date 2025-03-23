@@ -6,7 +6,6 @@ public class MainMenuController : MonoBehaviour
     [SerializeField] private UIDocument menuDocument;
     [SerializeField] private LevelManager levelManager;
    
-    // UI Elements references
     private VisualElement playPanel;
     private VisualElement levelsPanel;
    
@@ -44,11 +43,9 @@ public class MainMenuController : MonoBehaviour
         
         var root = menuDocument.rootVisualElement;
        
-        // Get panel references
         playPanel = root.Q<VisualElement>("PlayPanel");
         levelsPanel = root.Q<VisualElement>("LevelsPanel");
        
-        // Get button references
         playButton = root.Q<Button>("PlayButton");
         levelsButton = root.Q<Button>("LevelsButton");
         optionsButton = root.Q<Button>("OptionsButton");
@@ -61,7 +58,6 @@ public class MainMenuController : MonoBehaviour
         closeButton = root.Q<Button>("CloseButton");
         minimizeButton = root.Q<Button>("MinimizeButton");
        
-        // Register button event handlers
         if (playButton != null)
             playButton.clicked += () => ShowPanel(playPanel);
             
@@ -95,22 +91,18 @@ public class MainMenuController : MonoBehaviour
         if (minimizeButton != null)
             minimizeButton.clicked += MinimizeWindow;
        
-        // Show default panel
         ShowPanel(playPanel);
         SetStatusText("Ready");
        
-        // Unlock cursor for menu
         UnityEngine.Cursor.lockState = CursorLockMode.None;
         UnityEngine.Cursor.visible = true;
         
-        // Disable gameplay mode for player if present
         Player player = FindObjectOfType<Player>();
         if (player != null)
         {
             player.EnableGameplayMode(false);
         }
         
-        // Update level buttons based on progress
         UpdateLevelButtonsState();
     }
     
@@ -118,11 +110,9 @@ public class MainMenuController : MonoBehaviour
     {
         if (levelManager == null) return;
         
-        // Make sure progress is loaded
         levelManager.LoadProgress();
         int highestUnlockedLevel = levelManager.HighestUnlockedLevel;
         
-        // Update level buttons based on unlock status
         if (level1Button != null)
         {
             level1Button.SetEnabled(0 <= highestUnlockedLevel);
@@ -165,18 +155,15 @@ public class MainMenuController : MonoBehaviour
    
     private void ShowPanel(VisualElement panelToShow)
     {
-        // Hide all panels
         if (playPanel != null)
             playPanel.style.display = DisplayStyle.None;
             
         if (levelsPanel != null)
             levelsPanel.style.display = DisplayStyle.None;
        
-        // Show the selected panel
         if (panelToShow != null)
             panelToShow.style.display = DisplayStyle.Flex;
        
-        // Update button states
         if (playButton != null)
             playButton.RemoveFromClassList("selected-button");
             
@@ -189,7 +176,6 @@ public class MainMenuController : MonoBehaviour
         if (creditsButton != null)
             creditsButton.RemoveFromClassList("selected-button");
        
-        // Highlight the active button
         if (panelToShow == playPanel && playButton != null)
         {
             playButton.AddToClassList("selected-button");
@@ -229,7 +215,6 @@ public class MainMenuController : MonoBehaviour
     
     private void MinimizeWindow()
     {
-        // This is just visual - you can implement minimize behavior here
         SetStatusText("Minimize requested (not implemented)");
     }
    
