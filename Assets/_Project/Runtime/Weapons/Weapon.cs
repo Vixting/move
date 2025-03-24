@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.Events;
 using UnityEngine.Pool;
 using System.Collections;
@@ -22,6 +21,8 @@ public class Weapon : MonoBehaviour
     private ParticleSystem muzzleFlash;
     private Transform bulletOrigin;
     private WeaponHolder weaponHolder;
+    private Coroutine reloadCoroutine;
+    private PlayerCharacter playerCharacter;
     
     [Header("Rotation Settings")]
     [SerializeField] private bool enableCustomRotation = true;
@@ -41,6 +42,7 @@ public class Weapon : MonoBehaviour
         weaponData = data;
         playerCamera = camera;
         shootableLayers = layers;
+        playerCharacter = character;
         
         initialLocalRotation = transform.localRotation;
         
@@ -116,6 +118,8 @@ public class Weapon : MonoBehaviour
             Destroy(tempAudioSource);
             tempAudioSource = null;
         }
+        
+        CancelReload();
     }
     
     private void Update()
@@ -135,6 +139,25 @@ public class Weapon : MonoBehaviour
             
             transform.localRotation = initialLocalRotation * Quaternion.Euler(currentRotation);
         }
+    }
+    
+    public void ResetState()
+    {
+        isShooting = false;
+        isReloading = false;
+        nextTimeToFire = 0f;
+    }
+    
+    public void CancelReload()
+    {
+        if (reloadCoroutine != null)
+        {
+            StopCoroutine(reloadCoroutine);
+            reloadCoroutine = null;
+        }
+        
+        isReloading = false;
+        onReloadStateChanged?.Invoke(false);
     }
     
     public void OnAim(bool isAiming)
@@ -182,6 +205,13 @@ public class Weapon : MonoBehaviour
         {
             float recoilAmount = weaponData.recoilAmount > 0 ? weaponData.recoilAmount : 0.1f;
             weaponHolder.AddRecoil(recoilAmount);
+        }
+        
+        // Apply knockback to player if this weapon has knockback force
+        if (playerCharacter != null && weaponData.knockbackForce > 0)
+        {
+            Vector3 knockbackDirection = -playerCamera.transform.forward;
+            playerCharacter.ApplyKnockback(knockbackDirection, weaponData.knockbackForce);
         }
         
         if (muzzleFlash != null)
@@ -309,17 +339,23 @@ public class Weapon : MonoBehaviour
             isReloading = true;
             onReloadStateChanged?.Invoke(true);
             PlaySound(weaponData.reloadSound);
-            StartCoroutine(ReloadCoroutine());
+            reloadCoroutine = StartCoroutine(ReloadCoroutine());
         }
     }
 
     private IEnumerator ReloadCoroutine()
     {
         yield return new WaitForSeconds(weaponData.reloadTime);
-        currentAmmo = weaponData.maxAmmo;
-        isReloading = false;
-        onAmmoChanged?.Invoke(currentAmmo);
-        onReloadStateChanged?.Invoke(false);
+        
+        if (isReloading) // Check if still reloading (wasn't canceled)
+        {
+            currentAmmo = weaponData.maxAmmo;
+            isReloading = false;
+            onAmmoChanged?.Invoke(currentAmmo);
+            onReloadStateChanged?.Invoke(false);
+        }
+        
+        reloadCoroutine = null;
     }
 
     private void PlaySound(AudioClip clip)

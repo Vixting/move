@@ -39,13 +39,8 @@ public class WeaponManager : MonoBehaviour
 
     public void Initialize(PlayerCamera camera, PlayerInputActions sharedInputActions, PlayerCharacter character = null, WeaponData[] existingWeapons = null)
     {
-        Debug.Log($"[WM] Initialize called from: {new System.Diagnostics.StackTrace().ToString()}");
-        
         if (_isInitialized) 
-        {
-            Debug.Log("[WM] Already initialized, ignoring duplicate call");
             return;
-        }
         
         _isInitialized = true;
         
@@ -54,56 +49,24 @@ public class WeaponManager : MonoBehaviour
         playerCharacter = character;
         
         if (existingWeapons != null && existingWeapons.Length > 0)
-        {
             availableWeapons = existingWeapons;
-            Debug.Log($"[WM] Using existing weapon setup with {existingWeapons.Length} weapons");
-        }
         
         if (inputActions == null)
         {
             Debug.LogError("[WM] inputActions is null in Initialize!");
             return;
         }
-
-        Debug.Log("[WM] Setting up input callbacks");
         
-        weaponSwitchAction = ctx => 
-        {
-            Debug.Log($"[WM] Scroll wheel value: {ctx.ReadValue<float>()}");
-            HandleWeaponSwitch(ctx.ReadValue<float>());
-        };
-        
-        weapon1Action = ctx => 
-        {
-            Debug.Log("[WM] Weapon1 key pressed - Device: " + ctx.control.device.name);
-            Debug.Log("[WM] Weapon switching enabled: " + _isEnabled);
-            SelectWeaponBySlot(1);
-        };
-        
-        weapon2Action = ctx => 
-        {
-            Debug.Log("[WM] Weapon2 key pressed - Device: " + ctx.control.device.name);
-            Debug.Log("[WM] Weapon switching enabled: " + _isEnabled);
-            SelectWeaponBySlot(2);
-        };
-        
-        weapon3Action = ctx => 
-        {
-            Debug.Log("[WM] Weapon3 key pressed - Device: " + ctx.control.device.name);
-            Debug.Log("[WM] Weapon switching enabled: " + _isEnabled);
-            SelectWeaponBySlot(3);
-        };
-        
+        weaponSwitchAction = ctx => HandleWeaponSwitch(ctx.ReadValue<float>());
+        weapon1Action = _ => SelectWeaponBySlot(1);
+        weapon2Action = _ => SelectWeaponBySlot(2);
+        weapon3Action = _ => SelectWeaponBySlot(3);
         fireStartAction = _ => HandleFire(true);
         fireEndAction = _ => HandleFire(false);
         reloadAction = _ => HandleReload();
         aimStartAction = _ => SetAiming(true);
         aimEndAction = _ => SetAiming(false);
-        lastWeaponAction = _ => 
-        {
-            Debug.Log("[WM] LastWeapon key pressed");
-            SwitchToLastWeapon();
-        };
+        lastWeaponAction = _ => SwitchToLastWeapon();
         
         inputActions.Gameplay.WeaponSwitch.performed += weaponSwitchAction;
         inputActions.Gameplay.Weapon1.performed += weapon1Action;
@@ -121,7 +84,6 @@ public class WeaponManager : MonoBehaviour
 
     private void SwitchToLastWeapon()
     {
-        Debug.Log($"[WM] SwitchToLastWeapon - lastIndex: {lastWeaponIndex}, currentIndex: {currentWeaponIndex}");
         if (!_isEnabled) return;
         if (lastWeaponIndex >= 0 && lastWeaponIndex < weapons.Count && lastWeaponIndex != currentWeaponIndex)
         {
@@ -131,36 +93,20 @@ public class WeaponManager : MonoBehaviour
 
     private void SelectWeaponBySlot(int slotNumber)
     {
-        Debug.Log($"[WM] SelectWeaponBySlot({slotNumber}) - Available slots: {string.Join(", ", slotToIndexMap.Keys)}");
         if (!_isEnabled) 
-        {
-            Debug.Log("[WM] Weapon switching disabled");
             return;
-        }
         
         if (slotToIndexMap.TryGetValue(slotNumber, out int weaponIndex))
         {
-            Debug.Log($"[WM] Found weapon at index {weaponIndex} for slot {slotNumber}");
             if (weaponIndex != currentWeaponIndex)
             {
-                Debug.Log($"[WM] Switching to weapon at index {weaponIndex} from {currentWeaponIndex}");
                 SwitchWeapon(weaponIndex);
             }
-            else
-            {
-                Debug.Log($"[WM] Already using weapon at index {weaponIndex}");
-            }
-        }
-        else
-        {
-            Debug.Log($"[WM] No weapon found with slot {slotNumber}");
-            Debug.Log($"[WM] Available mappings: {string.Join(", ", slotToIndexMap.Select(kv => $"{kv.Key}->{kv.Value}"))}");
         }
     }
 
     private void SelectWeapon(int weaponIndex)
     {
-        Debug.Log($"[WM] SelectWeapon({weaponIndex}) - Total weapons: {weapons.Count}");
         if (!_isEnabled) return;
         if (weaponIndex >= 0 && weaponIndex < weapons.Count)
         {
@@ -174,7 +120,6 @@ public class WeaponManager : MonoBehaviour
     public void SetEnabled(bool enabled)
     {
         _isEnabled = enabled;
-        Debug.Log($"[WM] SetEnabled({enabled})");
         
         if (!enabled && currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
         {
@@ -184,14 +129,6 @@ public class WeaponManager : MonoBehaviour
 
     private void InitializeWeapons()
     {
-        Debug.Log("[WM] InitializeWeapons - Available weapons: " + (availableWeapons != null ? availableWeapons.Length.ToString() : "null"));
-        
-        if (availableWeapons != null) {
-            for (int i = 0; i < availableWeapons.Length; i++) {
-                Debug.Log($"[WM] Weapon {i} in array: {(availableWeapons[i] != null ? availableWeapons[i].weaponName : "NULL")} with Prefab: {(availableWeapons[i]?.weaponPrefab != null ? availableWeapons[i].weaponPrefab.name : "NULL")}");
-            }
-        }
-        
         slotToIndexMap.Clear();
         weapons.Clear();
         
@@ -206,8 +143,6 @@ public class WeaponManager : MonoBehaviour
             var weaponData = availableWeapons[i];
             if (weaponData != null && weaponData.weaponPrefab != null)
             {
-                Debug.Log($"[WM] Creating weapon {i}: {weaponData.weaponName}, Slot: {weaponData.weaponSlot}");
-                
                 GameObject weaponObj = Instantiate(weaponData.weaponPrefab, weaponHolder);
                 weaponObj.name = $"{weaponData.weaponName}_Weapon";
                 
@@ -233,7 +168,6 @@ public class WeaponManager : MonoBehaviour
                     weaponObj.SetActive(false);
                     
                     int slotNumber = weaponData.weaponSlot > 0 ? weaponData.weaponSlot : (i + 1);
-                    Debug.Log($"[WM] Adding mapping: Slot {slotNumber} -> Index {weaponIndex}");
                     
                     if (slotToIndexMap.ContainsKey(slotNumber))
                     {
@@ -253,8 +187,6 @@ public class WeaponManager : MonoBehaviour
             }
         }
         
-        Debug.Log($"[WM] Initialized {weapons.Count} weapons with mappings: {string.Join(", ", slotToIndexMap.Select(kv => $"Slot {kv.Key} -> Index {kv.Value}"))}");
-        
         if (weapons.Count > 0)
         {
             SwitchWeapon(0);
@@ -271,7 +203,6 @@ public class WeaponManager : MonoBehaviour
         {
             if (child.name.Contains("Rifle"))
             {
-                Debug.Log($"[WM] Fixing child model orientation: {child.name}");
                 child.localPosition = Vector3.zero;
                 child.localRotation = Quaternion.identity;
             }
@@ -282,7 +213,6 @@ public class WeaponManager : MonoBehaviour
 
     private void HandleWeaponSwitch(float scrollValue)
     {
-        Debug.Log($"[WM] HandleWeaponSwitch({scrollValue})");
         if (!_isEnabled) return;
         if (weapons.Count == 0) return;
         
@@ -337,23 +267,16 @@ public class WeaponManager : MonoBehaviour
 
     private void SwitchWeapon(int newIndex)
     {
-        Debug.Log($"[WM] SwitchWeapon({newIndex}) - Current: {currentWeaponIndex}, Total: {weapons.Count}");
-        
         if (currentWeaponIndex == newIndex)
-        {
-            Debug.Log("[WM] Already using this weapon index");
             return;
-        }
         
         if (currentWeaponIndex >= 0)
-        {
             lastWeaponIndex = currentWeaponIndex;
-            Debug.Log($"[WM] Stored lastWeaponIndex = {lastWeaponIndex}");
-        }
         
         if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
         {
-            Debug.Log($"[WM] Disabling weapon at index {currentWeaponIndex}");
+            weapons[currentWeaponIndex].CancelReload();
+            weapons[currentWeaponIndex].OnFire(false);
             weapons[currentWeaponIndex].gameObject.SetActive(false);
         }
         
@@ -362,8 +285,8 @@ public class WeaponManager : MonoBehaviour
         if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
         {
             Weapon newWeapon = weapons[currentWeaponIndex];
-            Debug.Log($"[WM] Enabling weapon: {newWeapon.gameObject.name} at index {currentWeaponIndex}");
             newWeapon.gameObject.SetActive(true);
+            newWeapon.ResetState();
             
             WeaponHolder holder = newWeapon.GetComponentInParent<WeaponHolder>();
             if (holder != null)
@@ -384,7 +307,6 @@ public class WeaponManager : MonoBehaviour
             
             if (weaponData != null)
             {
-                Debug.Log($"[WM] Invoking onWeaponChanged with {weaponData.weaponName}, ammo: {newWeapon.CurrentAmmo}");
                 onWeaponChanged?.Invoke(weaponData, newWeapon.CurrentAmmo);
             }
             else
@@ -405,8 +327,6 @@ public class WeaponManager : MonoBehaviour
         Weapon currentWeapon = weapons[currentWeaponIndex];
         string weaponName = currentWeapon.gameObject.name;
         
-        Debug.Log($"[WM] Finding WeaponData for {weaponName}");
-        
         foreach (var kvp in slotToIndexMap)
         {
             if (kvp.Value == currentWeaponIndex)
@@ -415,10 +335,7 @@ public class WeaponManager : MonoBehaviour
                 foreach (var data in availableWeapons)
                 {
                     if (data.weaponSlot == slot)
-                    {
-                        Debug.Log($"[WM] Found WeaponData by slot: {data.weaponName}");
                         return data;
-                    }
                 }
             }
         }
@@ -427,24 +344,17 @@ public class WeaponManager : MonoBehaviour
         {
             if (weaponName.Contains(data.weaponName) || 
                 (data.weaponPrefab != null && weaponName.Contains(data.weaponPrefab.name)))
-            {
-                Debug.Log($"[WM] Found WeaponData by name: {data.weaponName}");
                 return data;
-            }
         }
         
         if (currentWeaponIndex < availableWeapons.Length)
-        {
-            Debug.Log($"[WM] Using WeaponData by index: {availableWeapons[currentWeaponIndex].weaponName}");
             return availableWeapons[currentWeaponIndex];
-        }
         
         return null;
     }
 
     private void OnDestroy()
     {
-        Debug.Log("[WM] OnDestroy - Unsubscribing from input events");
         if (inputActions != null)
         {
             inputActions.Gameplay.WeaponSwitch.performed -= weaponSwitchAction;

@@ -66,6 +66,10 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController {
     [SerializeField] private float standHeight = 2f;
     [SerializeField] private float standCameraHeight = 0.9f;
     [SerializeField] private float crouchCameraHeight = 0.3f;
+    
+    // Knockback parameters
+    [SerializeField] private float knockbackRecoveryRate = 10f;
+    [SerializeField] private float maxKnockbackTime = 0.5f;
 
     private CharacterState _state;
     private CharacterState _lastState;
@@ -82,11 +86,25 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController {
     private Vector3 _lastVelocity;
     private float _timeSinceLastSlide;
     
+    // Knockback variables
+    private Vector3 _knockbackVelocity = Vector3.zero;
+    private float _knockbackTimeRemaining = 0f;
+    
     public void Initialize() {
         _state.Stance = Stance.Stand;
         motor.CharacterController = this;
         _overlapResults = new Collider[8];
         _timeSinceLastSlide = 0f;
+    }
+    
+    public void ApplyKnockback(Vector3 direction, float force) {
+        _knockbackVelocity = direction.normalized * force;
+        _knockbackTimeRemaining = maxKnockbackTime;
+        
+        // Force unground for air knockback effects
+        if (_state.Grounded && force > 10f) {
+            motor.ForceUnground(0.1f);
+        }
     }
 
     public void UpdateInput(CharacterInput input) {
@@ -125,6 +143,15 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController {
         );
         
         _timeSinceLastSlide += deltaTime;
+        
+        // Update knockback time
+        if (_knockbackTimeRemaining > 0) {
+            _knockbackTimeRemaining -= deltaTime;
+            if (_knockbackTimeRemaining <= 0) {
+                _knockbackTimeRemaining = 0;
+                _knockbackVelocity = Vector3.zero;
+            }
+        }
     }
 
     public void UpdateRotation(ref Quaternion currentRotation, float deltaTime) {
@@ -175,6 +202,19 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController {
         var groundedMovement = isGrounded ? motor.GetDirectionTangentToSurface(_requestedMovement, groundNormal) * _requestedMovement.magnitude : Vector3.zero;
         var slopeAngle = isGrounded ? Vector3.Angle(groundNormal, motor.CharacterUp) : 0f;
         var downhillDirection = isGrounded ? Vector3.ProjectOnPlane(-motor.CharacterUp, groundNormal).normalized : Vector3.zero;
+        
+        // Apply knockback - decrease over time
+        if (_knockbackTimeRemaining > 0) {
+            _knockbackVelocity = Vector3.Lerp(_knockbackVelocity, Vector3.zero, knockbackRecoveryRate * deltaTime);
+            
+            // Add knockback velocity to current velocity
+            currentVelocity += _knockbackVelocity * ((isGrounded) ? 0.5f : 1.0f);
+            
+            // If strong knockback, reduce player control temporarily
+            if (_knockbackVelocity.magnitude > 5f) {
+                groundedMovement *= 0.5f;
+            }
+        }
         
         if (_state.IsGroundPounding && isGrounded) {
             HandleGroundPoundImpact();
@@ -362,13 +402,12 @@ public class PlayerCharacter : MonoBehaviour, ICharacterController {
     public Vector3 GetVelocity() {
         return motor.BaseVelocity;
     }
-    public bool IsSliding()
-    {
+    
+    public bool IsSliding() {
         return _state.Stance == Stance.Slide;
     }
 
-    public Stance GetStance()
-    {
+    public Stance GetStance() {
         return _state.Stance;
     }
 }

@@ -18,6 +18,10 @@ public class WeaponData : ScriptableObject
     public bool isAutomatic = true;
     public float impactForce = 20f;
    
+    [Header("Knockback Settings")]
+    [Tooltip("Force applied to player when firing (0 = no knockback)")]
+    public float knockbackForce = 0f;
+   
     [Header("Visual Settings")]
     public float bulletHoleSize = 0.1f;
     public float bulletHoleLifetime = 10f;
