@@ -27,6 +27,7 @@ public class LevelManager : MonoBehaviour
     private Player _currentPlayer;
     private int _currentLevelIndex = -1;
     private bool _isLoading = false;
+    private AudioListener _mainAudioListener;
 
     public static LevelManager Instance
     {
@@ -56,12 +57,32 @@ public class LevelManager : MonoBehaviour
     {
         if (_instance != null && _instance != this)
         {
+            // Disable any audio components on this duplicate instance
+            AudioSource audioSource = GetComponent<AudioSource>();
+            if (audioSource != null)
+            {
+                audioSource.enabled = false;
+            }
+            
+            AudioListener audioListener = GetComponent<AudioListener>();
+            if (audioListener != null)
+            {
+                audioListener.enabled = false;
+            }
+            
             Destroy(gameObject);
             return;
         }
 
         _instance = this;
         DontDestroyOnLoad(gameObject);
+        
+        // Ensure we don't have an AudioListener on the LevelManager itself
+        AudioListener selfListener = GetComponent<AudioListener>();
+        if (selfListener != null)
+        {
+            Destroy(selfListener);
+        }
         
         if (loadingScreenCanvasGroup != null)
         {
@@ -70,6 +91,70 @@ public class LevelManager : MonoBehaviour
         }
         
         LoadProgress();
+    }
+    
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        StartCoroutine(CleanupAudioComponentsRoutine());
+    }
+    
+    private IEnumerator CleanupAudioComponentsRoutine()
+    {
+        // Wait one frame to ensure all scene objects are properly initialized
+        yield return null;
+        
+        // First, handle AudioListeners - keep only one active
+        Camera mainCamera = Camera.main;
+        AudioListener[] listeners = FindObjectsOfType<AudioListener>(true); // Include inactive objects
+        
+        AudioListener activeListener = null;
+        
+        // If we have a main camera with an AudioListener, prioritize that one
+        if (mainCamera != null)
+        {
+            AudioListener cameraListener = mainCamera.GetComponent<AudioListener>();
+            if (cameraListener != null)
+            {
+                activeListener = cameraListener;
+                _mainAudioListener = cameraListener;
+            }
+        }
+        
+        // If no camera listener found, use the first one we find
+        if (activeListener == null && listeners.Length > 0)
+        {
+            activeListener = listeners[0];
+            _mainAudioListener = activeListener;
+        }
+        
+        // Disable all other listeners
+        foreach (AudioListener listener in listeners)
+        {
+            if (listener != activeListener)
+            {
+                if (listener != null && listener.gameObject != null)
+                {
+                    listener.enabled = false;
+                }
+            }
+            else
+            {
+                listener.enabled = true;
+            }
+        }
+        
+        // Log the audio cleanup
+        Debug.Log($"Audio cleanup complete. Active listener: {(activeListener != null ? activeListener.gameObject.name : "None")}");
     }
     
     public void LoadProgress()
@@ -129,12 +214,20 @@ public class LevelManager : MonoBehaviour
         if (_isLoading) yield break;
         _isLoading = true;
         
-        Debug.Log($"Loading scene: {sceneName}, level index: {levelIndex}");
-
         if (loadingScreenCanvasGroup != null)
         {
             loadingScreenCanvasGroup.gameObject.SetActive(true);
             yield return FadeLoadingScreen(1);
+        }
+
+        // Destroy all existing AudioListeners before loading a new scene
+        foreach (AudioListener listener in FindObjectsOfType<AudioListener>())
+        {
+            if (_mainAudioListener != null && listener == _mainAudioListener)
+            {
+                continue;
+            }
+            listener.enabled = false;
         }
 
         AsyncOperation asyncLoad = null;
@@ -179,7 +272,6 @@ public class LevelManager : MonoBehaviour
         yield return new WaitForSeconds(0.1f);
 
         bool isGameplayLevel = _currentLevelIndex >= 0;
-        Debug.Log($"Is gameplay level: {isGameplayLevel}");
         
         if (isGameplayLevel)
         {
@@ -190,10 +282,6 @@ public class LevelManager : MonoBehaviour
         if (GameManager.Instance != null)
         {
             GameManager.Instance.OnLevelLoaded(isGameplayLevel);
-        }
-        else
-        {
-            Debug.LogWarning("GameManager instance not found");
         }
 
         if (loadingScreenCanvasGroup != null)
@@ -222,8 +310,6 @@ public class LevelManager : MonoBehaviour
 
     private void SpawnPlayer()
     {
-        Debug.Log($"SpawnPlayer called for level index: {_currentLevelIndex}");
-
         if (playerPrefab == null)
         {
             Debug.LogError("Player prefab is not assigned in LevelManager!");
@@ -234,53 +320,39 @@ public class LevelManager : MonoBehaviour
         
         if (spawnPoint == null)
         {
-            Debug.LogWarning("No PlayerSpawnPoint found in scene. Creating default spawn point.");
             GameObject defaultSpawn = new GameObject("DefaultSpawnPoint");
             spawnPoint = defaultSpawn.transform;
             spawnPoint.position = new Vector3(0, 2, 0);
         }
-        
-        Debug.Log($"Using spawn point at position: {spawnPoint.position}");
 
         if (_currentPlayer == null)
         {
-            Debug.Log("Instantiating new player");
             _currentPlayer = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
             
             if (GameManager.Instance != null)
             {
-                Debug.Log("Registering player with GameManager");
                 GameManager.Instance.RegisterPlayer(_currentPlayer);
-            }
-            else
-            {
-                Debug.LogWarning("GameManager instance not found!");
             }
         }
         else
         {
-            Debug.Log("Teleporting existing player");
             _currentPlayer.Teleport(spawnPoint.position);
             _currentPlayer.transform.rotation = spawnPoint.rotation;
         }
         
         _currentPlayer.gameObject.SetActive(true);
         _currentPlayer.EnableGameplayMode(true);
-        Debug.Log("Player gameplay mode enabled");
     }
 
     private Transform FindSpawnPoint()
     {
-        Debug.Log("Looking for PlayerSpawnPoint...");
         PlayerSpawnPoint[] spawnPoints = FindObjectsOfType<PlayerSpawnPoint>();
         
         if (spawnPoints != null && spawnPoints.Length > 0)
         {
-            Debug.Log($"Found {spawnPoints.Length} PlayerSpawnPoint(s) in scene");
             return spawnPoints[0].transform;
         }
         
-        Debug.LogWarning("No PlayerSpawnPoint found in scene");
         return null;
     }
 }

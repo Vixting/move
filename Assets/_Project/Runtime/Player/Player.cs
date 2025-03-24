@@ -10,9 +10,33 @@ public class Player : MonoBehaviour
     public PlayerInputActions _inputActions;
     
     private bool _isInputEnabled = true;
+    private bool _initialized = false;
    
     void Start()
     {
+        Initialize();
+    }
+    
+    private void Initialize()
+    {
+        if (_initialized) return;
+        
+        _inputActions = new PlayerInputActions();
+        _inputActions.Enable();
+        
+        if (playerCharacter != null)
+            playerCharacter.Initialize();
+            
+        if (playerCamera != null && playerCharacter != null)
+            playerCamera.Initialize(playerCharacter.GetCameraTarget(), playerCharacter);
+       
+        if (weaponManager != null && playerCamera != null)
+            weaponManager.Initialize(playerCamera, _inputActions, playerCharacter);
+       
+        _inputActions.Gameplay.Aim.started += OnAimStarted;
+        _inputActions.Gameplay.Aim.canceled += OnAimCanceled;
+        
+        // Set initial input state based on whether we're in a gameplay scene
         if (IsGameplayScene())
         {
             EnableGameplayMode(true);
@@ -21,21 +45,19 @@ public class Player : MonoBehaviour
         {
             EnableGameplayMode(false);
         }
-       
-        _inputActions = new PlayerInputActions();
-        _inputActions.Enable();
-       
-        playerCharacter.Initialize();
-        playerCamera.Initialize(playerCharacter.GetCameraTarget(), playerCharacter);
-       
-        weaponManager.Initialize(playerCamera, _inputActions, playerCharacter);
-       
-        _inputActions.Gameplay.Aim.started += OnAimStarted;
-        _inputActions.Gameplay.Aim.canceled += OnAimCanceled;
+        
+        _initialized = true;
     }
    
     void Update()
     {
+        // Ensure we're initialized
+        if (!_initialized)
+        {
+            Initialize();
+            return;
+        }
+        
         if (!_isInputEnabled)
             return;
             
@@ -50,34 +72,40 @@ public class Player : MonoBehaviour
             Move = input.Move.ReadValue<Vector2>()
         };
        
-        playerCamera.UpdateInput(cameraInput);
-        playerCamera.UpdateRotation();
-        playerCamera.UpdateFOV();
-       
-        CrouchInput crouchState = CrouchInput.None;
-        if (input.Crouch.IsPressed())
+        if (playerCamera != null)
         {
-            crouchState = CrouchInput.Hold;
-        }
-        else if (input.Crouch.WasReleasedThisFrame())
-        {
-            crouchState = CrouchInput.Release;
+            playerCamera.UpdateInput(cameraInput);
+            playerCamera.UpdateRotation();
+            playerCamera.UpdateFOV();
         }
        
-        var CharacterInput = new CharacterInput
+        if (playerCharacter != null)
         {
-            Rotation = playerCamera.transform.rotation,
-            Move = input.Move.ReadValue<Vector2>(),
-            Jump = input.Jump.WasPressedThisFrame(),
-            JumpSustain = input.Jump.IsPressed(),
-            Crouch = crouchState
-        };
-       
-        playerCharacter.UpdateInput(CharacterInput);
-        playerCharacter.UpdateBody(deltaTime);
+            CrouchInput crouchState = CrouchInput.None;
+            if (input.Crouch.IsPressed())
+            {
+                crouchState = CrouchInput.Hold;
+            }
+            else if (input.Crouch.WasReleasedThisFrame())
+            {
+                crouchState = CrouchInput.Release;
+            }
+           
+            var CharacterInput = new CharacterInput
+            {
+                Rotation = playerCamera.transform.rotation,
+                Move = input.Move.ReadValue<Vector2>(),
+                Jump = input.Jump.WasPressedThisFrame(),
+                JumpSustain = input.Jump.IsPressed(),
+                Crouch = crouchState
+            };
+           
+            playerCharacter.UpdateInput(CharacterInput);
+            playerCharacter.UpdateBody(deltaTime);
+        }
        
         #if UNITY_EDITOR
-        if (Keyboard.current.tKey.wasPressedThisFrame)
+        if (Keyboard.current != null && Keyboard.current.tKey.wasPressedThisFrame)
         {
             var ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
             if (Physics.Raycast(ray, out var hit))
@@ -85,17 +113,12 @@ public class Player : MonoBehaviour
                 Teleport(hit.point);
             }
         }
-        
-        if (Keyboard.current.escapeKey.wasPressedThisFrame)
-        {
-            EnableGameplayMode(!_isInputEnabled);
-        }
         #endif
     }
    
     void LateUpdate()
     {
-        if (!_isInputEnabled)
+        if (!_isInputEnabled || playerCamera == null || playerCharacter == null)
             return;
             
         playerCamera.UpdatePosition(playerCharacter.GetCameraTarget());
@@ -116,8 +139,11 @@ public class Player : MonoBehaviour
         if (!_isInputEnabled)
             return;
             
-        weaponManager.SetAiming(true);
-        playerCamera.SetAiming(true);
+        if (weaponManager != null)
+            weaponManager.SetAiming(true);
+            
+        if (playerCamera != null)
+            playerCamera.SetAiming(true);
     }
    
     private void OnAimCanceled(InputAction.CallbackContext context)
@@ -125,13 +151,17 @@ public class Player : MonoBehaviour
         if (!_isInputEnabled)
             return;
             
-        weaponManager.SetAiming(false);
-        playerCamera.SetAiming(false);
+        if (weaponManager != null)
+            weaponManager.SetAiming(false);
+            
+        if (playerCamera != null)
+            playerCamera.SetAiming(false);
     }
    
     public void Teleport(Vector3 position)
     {
-        playerCharacter.SetPosition(position);
+        if (playerCharacter != null)
+            playerCharacter.SetPosition(position);
     }
     
     public void EnableGameplayMode(bool enable)
@@ -150,6 +180,7 @@ public class Player : MonoBehaviour
         }
         else
         {
+            // When disabling gameplay mode, ensure cursor is visible and unlocked
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
@@ -157,12 +188,19 @@ public class Player : MonoBehaviour
     
     private bool IsGameplayScene()
     {
-        return !FindAnyObjectByType<LevelSelectionUI>();
+        // Try to find a menu UI, if it exists then we're not in gameplay mode
+        return FindObjectOfType<MainMenuController>() == null && 
+               FindObjectOfType<LevelSelectionUI>() == null;
     }
     
     // Helper method to retrieve input actions from outside classes
     public PlayerInputActions GetInputActions()
     {
+        if (_inputActions == null)
+        {
+            _inputActions = new PlayerInputActions();
+            _inputActions.Enable();
+        }
         return _inputActions;
     }
 }

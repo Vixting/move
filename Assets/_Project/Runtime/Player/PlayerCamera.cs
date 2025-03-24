@@ -78,9 +78,18 @@ public class PlayerCamera : MonoBehaviour
         if (mainCamera == null)
             mainCamera = Camera.main;
 
-        if (mainCamera != null && mainCamera.gameObject.GetComponent<AudioListener>() == null)
+        // IMPORTANT: Don't automatically add AudioListener - let LevelManager handle this
+        // Instead, check if we should have one based on whether we're the main camera
+        if (mainCamera != null && mainCamera == Camera.main)
         {
-            mainCamera.gameObject.AddComponent<AudioListener>();
+            // Only ensure the main camera has a listener
+            AudioListener existingListener = mainCamera.gameObject.GetComponent<AudioListener>();
+            if (existingListener != null)
+            {
+                // Make sure it's enabled
+                existingListener.enabled = true;
+            }
+            // We no longer automatically add a listener if one doesn't exist
         }
     }
 

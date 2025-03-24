@@ -18,55 +18,64 @@ public class WeaponManager : MonoBehaviour
     private WeaponHolder currentWeaponHolder;
     private bool _isEnabled = true;
     public UnityEvent<WeaponData, int> onWeaponChanged = new UnityEvent<WeaponData, int>();
+    private int lastWeaponIndex = -1;
 
     public void Initialize(PlayerCamera camera, PlayerInputActions sharedInputActions, PlayerCharacter character = null)
     {
+        Debug.Log("[WM] Initialize called");
         playerCamera = camera;
         inputActions = sharedInputActions;
         playerCharacter = character;
         
-        if (playerCharacter == null)
+        if (inputActions == null)
         {
-            Debug.LogError("WeaponManager initialized with null PlayerCharacter! Weapon sway will not work properly.");
+            Debug.LogError("[WM] inputActions is null in Initialize!");
+            return;
         }
-        else
+
+        Debug.Log("[WM] Setting up input callbacks");
+        
+        inputActions.Gameplay.WeaponSwitch.performed += ctx => 
         {
-            Debug.Log($"WeaponManager initialized with character: {playerCharacter.name}");
-        }
-       
-        // Keep scroll wheel as one option for weapon switching
-        inputActions.Gameplay.WeaponSwitch.performed += ctx => HandleWeaponSwitch(ctx.ReadValue<float>());
+            Debug.Log($"[WM] Scroll wheel value: {ctx.ReadValue<float>()}");
+            HandleWeaponSwitch(ctx.ReadValue<float>());
+        };
         
-        // Add number key listeners for direct weapon selection (Half-Life style)
-        inputActions.Gameplay.Weapon1.performed += _ => SelectWeaponBySlot(1);
-        inputActions.Gameplay.Weapon2.performed += _ => SelectWeaponBySlot(2);
-        inputActions.Gameplay.Weapon3.performed += _ => SelectWeaponBySlot(3);
-        inputActions.Gameplay.Weapon4.performed += _ => SelectWeaponBySlot(4);
-        inputActions.Gameplay.Weapon5.performed += _ => SelectWeaponBySlot(5);
-        inputActions.Gameplay.Weapon6.performed += _ => SelectWeaponBySlot(6);
-        inputActions.Gameplay.Weapon7.performed += _ => SelectWeaponBySlot(7);
-        inputActions.Gameplay.Weapon8.performed += _ => SelectWeaponBySlot(8);
-        inputActions.Gameplay.Weapon9.performed += _ => SelectWeaponBySlot(9);
+        inputActions.Gameplay.Weapon1.performed += _ => 
+        {
+            Debug.Log("[WM] Weapon1 key pressed");
+            SelectWeaponBySlot(1);
+        };
         
-        // Other input bindings
+        inputActions.Gameplay.Weapon2.performed += _ => 
+        {
+            Debug.Log("[WM] Weapon2 key pressed");
+            SelectWeaponBySlot(2);
+        };
+        
+        inputActions.Gameplay.Weapon3.performed += _ => 
+        {
+            Debug.Log("[WM] Weapon3 key pressed");
+            SelectWeaponBySlot(3);
+        };
+        
         inputActions.Gameplay.Fire.started += _ => HandleFire(true);
         inputActions.Gameplay.Fire.canceled += _ => HandleFire(false);
         inputActions.Gameplay.Reload.performed += _ => HandleReload();
         inputActions.Gameplay.Aim.started += _ => SetAiming(true);
         inputActions.Gameplay.Aim.canceled += _ => SetAiming(false);
-        
-        // Add quick switch to last weapon (Q key)
-        inputActions.Gameplay.LastWeapon.performed += _ => SwitchToLastWeapon();
+        inputActions.Gameplay.LastWeapon.performed += _ => 
+        {
+            Debug.Log("[WM] LastWeapon key pressed");
+            SwitchToLastWeapon();
+        };
        
         InitializeWeapons();
     }
 
-    // Track last used weapon for quick switching
-    private int lastWeaponIndex = -1;
-
-    // Switch to previous weapon (Q key functionality)
     private void SwitchToLastWeapon()
     {
+        Debug.Log($"[WM] SwitchToLastWeapon - lastIndex: {lastWeaponIndex}, currentIndex: {currentWeaponIndex}");
         if (!_isEnabled) return;
         if (lastWeaponIndex >= 0 && lastWeaponIndex < weapons.Count && lastWeaponIndex != currentWeaponIndex)
         {
@@ -74,36 +83,40 @@ public class WeaponManager : MonoBehaviour
         }
     }
 
-    // Select a weapon by its slot number (1-9)
     private void SelectWeaponBySlot(int slotNumber)
     {
-        if (!_isEnabled) return;
-        
-        // Debug statement to help troubleshoot
-        Debug.Log($"Trying to select weapon with slot {slotNumber}. Available slots: {string.Join(", ", slotToIndexMap.Keys)}");
+        Debug.Log($"[WM] SelectWeaponBySlot({slotNumber}) - Available slots: {string.Join(", ", slotToIndexMap.Keys)}");
+        if (!_isEnabled) 
+        {
+            Debug.Log("[WM] Weapon switching disabled");
+            return;
+        }
         
         if (slotToIndexMap.TryGetValue(slotNumber, out int weaponIndex))
         {
-            // Only switch if it's a different weapon
+            Debug.Log($"[WM] Found weapon at index {weaponIndex} for slot {slotNumber}");
             if (weaponIndex != currentWeaponIndex)
             {
-                Debug.Log($"Switching to weapon at index {weaponIndex} with slot {slotNumber}");
                 SwitchWeapon(weaponIndex);
+            }
+            else
+            {
+                Debug.Log($"[WM] Already using weapon at index {weaponIndex}");
             }
         }
         else
         {
-            Debug.Log($"No weapon found with slot {slotNumber}");
+            Debug.Log($"[WM] No weapon found with slot {slotNumber}");
+            Debug.Log($"[WM] Available mappings: {string.Join(", ", slotToIndexMap.Select(kv => $"{kv.Key}->{kv.Value}"))}");
         }
     }
 
-    // Direct weapon selection with array indices (legacy method, kept for compatibility)
     private void SelectWeapon(int weaponIndex)
     {
+        Debug.Log($"[WM] SelectWeapon({weaponIndex}) - Total weapons: {weapons.Count}");
         if (!_isEnabled) return;
         if (weaponIndex >= 0 && weaponIndex < weapons.Count)
         {
-            // Only switch if it's a different weapon
             if (weaponIndex != currentWeaponIndex)
             {
                 SwitchWeapon(weaponIndex);
@@ -114,8 +127,8 @@ public class WeaponManager : MonoBehaviour
     public void SetEnabled(bool enabled)
     {
         _isEnabled = enabled;
+        Debug.Log($"[WM] SetEnabled({enabled})");
         
-        // Force stop firing if disabled
         if (!enabled && currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
         {
             weapons[currentWeaponIndex].OnFire(false);
@@ -124,27 +137,37 @@ public class WeaponManager : MonoBehaviour
 
     private void InitializeWeapons()
     {
-        // Clear any existing maps and weapons
+        Debug.Log("[WM] InitializeWeapons - Available weapons: " + (availableWeapons != null ? availableWeapons.Length.ToString() : "null"));
+        
         slotToIndexMap.Clear();
         weapons.Clear();
+        
+        if (availableWeapons == null || availableWeapons.Length == 0)
+        {
+            Debug.LogError("[WM] No weapons to initialize!");
+            return;
+        }
         
         for (int i = 0; i < availableWeapons.Length; i++)
         {
             var weaponData = availableWeapons[i];
             if (weaponData != null && weaponData.weaponPrefab != null)
             {
+                Debug.Log($"[WM] Creating weapon {i}: {weaponData.weaponName}, Slot: {weaponData.weaponSlot}");
+                
                 GameObject weaponObj = Instantiate(weaponData.weaponPrefab, weaponHolder);
+                weaponObj.name = $"{weaponData.weaponName}_Weapon";
                 
                 weaponObj.transform.localPosition = Vector3.zero;
                 weaponObj.transform.localRotation = Quaternion.identity;
                 weaponObj.transform.localScale = Vector3.one;
                 
+                // Add this back to fix rifle orientation
                 FixChildModels(weaponObj.transform);
                 
                 Weapon weapon = weaponObj.GetComponent<Weapon>();
                 if (weapon != null)
                 {
-                    Debug.Log($"Initializing weapon: {weaponData.weaponName} with character: {(playerCharacter != null ? playerCharacter.name : "NULL")}");
                     weapon.Initialize(weaponData, playerCamera, shootableLayers, playerCharacter);
                     
                     WeaponHolder holder = weaponObj.GetComponentInParent<WeaponHolder>();
@@ -153,29 +176,32 @@ public class WeaponManager : MonoBehaviour
                         holder.Initialize(playerCamera.transform, playerCharacter);
                     }
                     
-                    // Add the weapon to our list
                     int weaponIndex = weapons.Count;
                     weapons.Add(weapon);
                     weaponObj.SetActive(false);
                     
-                    // Map the weapon slot to its index
                     int slotNumber = weaponData.weaponSlot > 0 ? weaponData.weaponSlot : (i + 1);
-                    Debug.Log($"Mapping weapon {weaponData.weaponName} to slot {slotNumber} at index {weaponIndex}");
+                    Debug.Log($"[WM] Adding mapping: Slot {slotNumber} -> Index {weaponIndex}");
+                    
+                    if (slotToIndexMap.ContainsKey(slotNumber))
+                    {
+                        Debug.LogWarning($"[WM] Multiple weapons using slot {slotNumber}! Overriding previous mapping.");
+                    }
+                    
                     slotToIndexMap[slotNumber] = weaponIndex;
                 }
                 else
                 {
-                    Debug.LogError($"Weapon component not found on prefab: {weaponData.weaponName}");
+                    Debug.LogError($"[WM] Weapon component not found on prefab: {weaponData.weaponName}");
                 }
             }
             else
             {
-                Debug.LogError("Null weapon data or weapon prefab reference found");
+                Debug.LogError("[WM] Null weapon data or weapon prefab reference found at index " + i);
             }
         }
         
-        // Log all mapped slots for debugging
-        Debug.Log($"Weapon slot mappings: {string.Join(", ", slotToIndexMap.Select(kv => $"Slot {kv.Key} -> Index {kv.Value}"))}");
+        Debug.Log($"[WM] Initialized {weapons.Count} weapons with mappings: {string.Join(", ", slotToIndexMap.Select(kv => $"Slot {kv.Key} -> Index {kv.Value}"))}");
         
         if (weapons.Count > 0)
         {
@@ -183,7 +209,7 @@ public class WeaponManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("No weapons were initialized successfully");
+            Debug.LogError("[WM] No weapons were initialized successfully");
         }
     }
     
@@ -193,6 +219,7 @@ public class WeaponManager : MonoBehaviour
         {
             if (child.name.Contains("Rifle"))
             {
+                Debug.Log($"[WM] Fixing child model orientation: {child.name}");
                 child.localPosition = Vector3.zero;
                 child.localRotation = Quaternion.identity;
             }
@@ -203,6 +230,7 @@ public class WeaponManager : MonoBehaviour
 
     private void HandleWeaponSwitch(float scrollValue)
     {
+        Debug.Log($"[WM] HandleWeaponSwitch({scrollValue})");
         if (!_isEnabled) return;
         if (weapons.Count == 0) return;
         
@@ -257,23 +285,32 @@ public class WeaponManager : MonoBehaviour
 
     private void SwitchWeapon(int newIndex)
     {
-        if (currentWeaponIndex == newIndex) return;
+        Debug.Log($"[WM] SwitchWeapon({newIndex}) - Current: {currentWeaponIndex}, Total: {weapons.Count}");
         
-        // Store the previous weapon index before switching
+        if (currentWeaponIndex == newIndex)
+        {
+            Debug.Log("[WM] Already using this weapon index");
+            return;
+        }
+        
         if (currentWeaponIndex >= 0)
         {
             lastWeaponIndex = currentWeaponIndex;
+            Debug.Log($"[WM] Stored lastWeaponIndex = {lastWeaponIndex}");
         }
         
         if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
         {
+            Debug.Log($"[WM] Disabling weapon at index {currentWeaponIndex}");
             weapons[currentWeaponIndex].gameObject.SetActive(false);
         }
         
         currentWeaponIndex = newIndex;
+        
         if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
         {
             Weapon newWeapon = weapons[currentWeaponIndex];
+            Debug.Log($"[WM] Enabling weapon: {newWeapon.gameObject.name} at index {currentWeaponIndex}");
             newWeapon.gameObject.SetActive(true);
             
             WeaponHolder holder = newWeapon.GetComponentInParent<WeaponHolder>();
@@ -291,71 +328,99 @@ public class WeaponManager : MonoBehaviour
                 holder.SetAiming(isCurrentlyAiming);
             }
             
-            // Find the corresponding weapon data
-            WeaponData weaponData = null;
-            for (int i = 0; i < availableWeapons.Length; i++)
-            {
-                if (weapons[currentWeaponIndex].gameObject.name.Contains(availableWeapons[i].weaponPrefab.name))
-                {
-                    weaponData = availableWeapons[i];
-                    break;
-                }
-            }
+            WeaponData weaponData = FindWeaponDataForCurrentWeapon();
             
             if (weaponData != null)
             {
+                Debug.Log($"[WM] Invoking onWeaponChanged with {weaponData.weaponName}, ammo: {newWeapon.CurrentAmmo}");
                 onWeaponChanged?.Invoke(weaponData, newWeapon.CurrentAmmo);
             }
             else
             {
-                Debug.LogError($"Could not find WeaponData for weapon at index {currentWeaponIndex}");
+                Debug.LogError($"[WM] Could not find WeaponData for weapon at index {currentWeaponIndex}");
             }
         }
+        else
+        {
+            Debug.LogError($"[WM] Invalid weapon index: {currentWeaponIndex}");
+        }
+    }
+    
+    private WeaponData FindWeaponDataForCurrentWeapon()
+    {
+        if (currentWeaponIndex < 0 || currentWeaponIndex >= weapons.Count) return null;
+        
+        Weapon currentWeapon = weapons[currentWeaponIndex];
+        string weaponName = currentWeapon.gameObject.name;
+        
+        Debug.Log($"[WM] Finding WeaponData for {weaponName}");
+        
+        // First try to find using the slot mapping (more reliable)
+        foreach (var kvp in slotToIndexMap)
+        {
+            if (kvp.Value == currentWeaponIndex)
+            {
+                int slot = kvp.Key;
+                foreach (var data in availableWeapons)
+                {
+                    if (data.weaponSlot == slot)
+                    {
+                        Debug.Log($"[WM] Found WeaponData by slot: {data.weaponName}");
+                        return data;
+                    }
+                }
+            }
+        }
+        
+        // Fallback to name-based matching
+        foreach (var data in availableWeapons)
+        {
+            if (weaponName.Contains(data.weaponName) || 
+                (data.weaponPrefab != null && weaponName.Contains(data.weaponPrefab.name)))
+            {
+                Debug.Log($"[WM] Found WeaponData by name: {data.weaponName}");
+                return data;
+            }
+        }
+        
+        // Final attempt: just use the array index
+        if (currentWeaponIndex < availableWeapons.Length)
+        {
+            Debug.Log($"[WM] Using WeaponData by index: {availableWeapons[currentWeaponIndex].weaponName}");
+            return availableWeapons[currentWeaponIndex];
+        }
+        
+        return null;
     }
 
     private void OnDestroy()
     {
+        Debug.Log("[WM] OnDestroy - Unsubscribing from input events");
         if (inputActions != null)
         {
-            // Unsubscribe from scroll wheel weapon switching
             inputActions.Gameplay.WeaponSwitch.performed -= ctx => HandleWeaponSwitch(ctx.ReadValue<float>());
-            
-            // Unsubscribe from number key weapon selection
             inputActions.Gameplay.Weapon1.performed -= _ => SelectWeaponBySlot(1);
             inputActions.Gameplay.Weapon2.performed -= _ => SelectWeaponBySlot(2);
             inputActions.Gameplay.Weapon3.performed -= _ => SelectWeaponBySlot(3);
-            inputActions.Gameplay.Weapon4.performed -= _ => SelectWeaponBySlot(4);
-            inputActions.Gameplay.Weapon5.performed -= _ => SelectWeaponBySlot(5);
-            inputActions.Gameplay.Weapon6.performed -= _ => SelectWeaponBySlot(6);
-            inputActions.Gameplay.Weapon7.performed -= _ => SelectWeaponBySlot(7);
-            inputActions.Gameplay.Weapon8.performed -= _ => SelectWeaponBySlot(8);
-            inputActions.Gameplay.Weapon9.performed -= _ => SelectWeaponBySlot(9);
-            
-            // Unsubscribe from quick switch
-            inputActions.Gameplay.LastWeapon.performed -= _ => SwitchToLastWeapon();
-            
-            // Unsubscribe from other actions
             inputActions.Gameplay.Fire.started -= _ => HandleFire(true);
             inputActions.Gameplay.Fire.canceled -= _ => HandleFire(false);
             inputActions.Gameplay.Reload.performed -= _ => HandleReload();
             inputActions.Gameplay.Aim.started -= _ => SetAiming(true);
             inputActions.Gameplay.Aim.canceled -= _ => SetAiming(false);
+            inputActions.Gameplay.LastWeapon.performed -= _ => SwitchToLastWeapon();
         }
     }
     
-    // Return the total number of weapons
     public int GetWeaponCount()
     {
         return weapons.Count;
     }
     
-    // Get the current weapon index
     public int GetCurrentWeaponIndex()
     {
         return currentWeaponIndex;
     }
     
-    // Get current weapon slot
     public int GetCurrentWeaponSlot()
     {
         foreach (var kvp in slotToIndexMap)

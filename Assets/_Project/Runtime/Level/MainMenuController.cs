@@ -20,6 +20,12 @@ public class MainMenuController : MonoBehaviour
     private Button level3Button;
     private Button closeButton;
     private Button minimizeButton;
+    
+    private void Awake()
+    {
+        // Force cursor to be visible and unlocked as soon as menu loads
+        UnlockCursor();
+    }
    
     public void SetupMenu(UIDocument document, LevelManager manager)
     {
@@ -29,12 +35,44 @@ public class MainMenuController : MonoBehaviour
         if (gameObject.activeInHierarchy)
         {
             InitializeUI();
+            UnlockCursor();
         }
     }
     
     private void OnEnable()
     {
         InitializeUI();
+        UnlockCursor();
+        
+        // Ensure player input is disabled
+        DisablePlayerInput();
+    }
+    
+    // Add this to catch cases where the menu is active but cursor is still locked
+    private void Update()
+    {
+        // If cursor is locked but we're in the menu, unlock it
+        if (UnityEngine.Cursor.lockState != CursorLockMode.None)
+        {
+            UnlockCursor();
+        }
+    }
+    
+    private void UnlockCursor()
+    {
+        // Force cursor to be visible and unlocked
+        UnityEngine.Cursor.lockState = CursorLockMode.None;
+        UnityEngine.Cursor.visible = true;
+    }
+    
+    private void DisablePlayerInput()
+    {
+        // Find and disable player input
+        Player player = FindObjectOfType<Player>();
+        if (player != null)
+        {
+            player.EnableGameplayMode(false);
+        }
     }
     
     private void InitializeUI()
@@ -94,15 +132,6 @@ public class MainMenuController : MonoBehaviour
         ShowPanel(playPanel);
         SetStatusText("Ready");
        
-        UnityEngine.Cursor.lockState = CursorLockMode.None;
-        UnityEngine.Cursor.visible = true;
-        
-        Player player = FindObjectOfType<Player>();
-        if (player != null)
-        {
-            player.EnableGameplayMode(false);
-        }
-        
         UpdateLevelButtonsState();
     }
     

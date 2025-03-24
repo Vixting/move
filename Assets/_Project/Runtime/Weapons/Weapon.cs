@@ -71,7 +71,18 @@ public class Weapon : MonoBehaviour
             bulletOrigin.localRotation = Quaternion.identity;
         }
 
-        audioSource = gameObject.AddComponent<AudioSource>();
+        // IMPORTANT: Check if audio source already exists instead of always adding a new one
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            // Configure audio source for 3D sound
+            audioSource.spatialBlend = 1.0f; // Make it fully 3D
+            audioSource.rolloffMode = AudioRolloffMode.Linear;
+            audioSource.minDistance = 1f;
+            audioSource.maxDistance = 20f;
+            audioSource.dopplerLevel = 0f; // Disable doppler effect
+        }
 
         Transform muzzlePoint = transform.Find("MuzzleFlash");
         if (muzzlePoint == null)
@@ -86,7 +97,10 @@ public class Weapon : MonoBehaviour
 
         if (weaponData.muzzleFlashPrefab != null)
         {
-            muzzleFlash = Instantiate(weaponData.muzzleFlashPrefab, muzzlePoint.position, muzzlePoint.rotation, transform);
+            if (muzzleFlash == null) // Check if it already exists
+            {
+                muzzleFlash = Instantiate(weaponData.muzzleFlashPrefab, muzzlePoint.position, muzzlePoint.rotation, transform);
+            }
         }
 
         InitializeBulletHoleMesh();
@@ -222,6 +236,9 @@ public class Weapon : MonoBehaviour
 
     private void InitializeBulletHoleMesh()
     {
+        // Check if mesh already exists
+        if (bulletHoleMesh != null) return;
+        
         bulletHoleMesh = new Mesh();
         float size = 0.5f;
         
@@ -257,6 +274,9 @@ public class Weapon : MonoBehaviour
 
     private void InitializeObjectPool()
     {
+        // Check if pool already exists to avoid duplication
+        if (bulletHolePool != null) return;
+        
         bulletHolePool = new ObjectPool<GameObject>(
             createFunc: CreateBulletHoleObject,
             actionOnGet: obj => obj.SetActive(true),
@@ -307,7 +327,23 @@ public class Weapon : MonoBehaviour
     {
         if (audioSource != null && clip != null)
         {
-            audioSource.PlayOneShot(clip);
+            // Check if the clip is ambisonic and handle properly
+            if (clip.ambisonic)
+            {
+                // Create a temporary audio source for non-ambisonic playback
+                AudioSource tempSource = gameObject.AddComponent<AudioSource>();
+                tempSource.clip = clip;
+                tempSource.spatialBlend = 1.0f;
+                tempSource.Play();
+                
+                // Destroy the temporary source after the clip finishes
+                Destroy(tempSource, clip.length + 0.1f);
+            }
+            else
+            {
+                // Normal clips can use PlayOneShot
+                audioSource.PlayOneShot(clip);
+            }
         }
     }
 
