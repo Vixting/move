@@ -18,17 +18,16 @@ public class Weapon : MonoBehaviour
     private static readonly Vector3 BulletHoleOffset = new Vector3(0, 0, 0.001f);
     private Mesh bulletHoleMesh;
     private AudioSource audioSource;
+    private AudioSource tempAudioSource;
     private ParticleSystem muzzleFlash;
     private Transform bulletOrigin;
     private WeaponHolder weaponHolder;
     
-    // Rotation settings
     [Header("Rotation Settings")]
     [SerializeField] private bool enableCustomRotation = true;
     [SerializeField] private float rotationSpeed = 100f;
     [SerializeField] private float rotationSmoothing = 10f;
     
-    // Rotation state
     private Vector3 currentRotation;
     private Vector3 targetRotation;
     private Quaternion initialLocalRotation;
@@ -43,10 +42,8 @@ public class Weapon : MonoBehaviour
         playerCamera = camera;
         shootableLayers = layers;
         
-        // Store initial rotation
         initialLocalRotation = transform.localRotation;
         
-        // Apply initial weapon-specific rotation if available in weapon data
         if (data.hipRotation != Vector3.zero)
         {
             targetRotation = data.hipRotation;
@@ -71,18 +68,7 @@ public class Weapon : MonoBehaviour
             bulletOrigin.localRotation = Quaternion.identity;
         }
 
-        // IMPORTANT: Check if audio source already exists instead of always adding a new one
-        audioSource = GetComponent<AudioSource>();
-        if (audioSource == null)
-        {
-            audioSource = gameObject.AddComponent<AudioSource>();
-            // Configure audio source for 3D sound
-            audioSource.spatialBlend = 1.0f; // Make it fully 3D
-            audioSource.rolloffMode = AudioRolloffMode.Linear;
-            audioSource.minDistance = 1f;
-            audioSource.maxDistance = 20f;
-            audioSource.dopplerLevel = 0f; // Disable doppler effect
-        }
+        SetupAudioSource();
 
         Transform muzzlePoint = transform.Find("MuzzleFlash");
         if (muzzlePoint == null)
@@ -95,12 +81,9 @@ public class Weapon : MonoBehaviour
             muzzlePoint.localRotation = Quaternion.identity;
         }
 
-        if (weaponData.muzzleFlashPrefab != null)
+        if (weaponData.muzzleFlashPrefab != null && muzzleFlash == null)
         {
-            if (muzzleFlash == null) // Check if it already exists
-            {
-                muzzleFlash = Instantiate(weaponData.muzzleFlashPrefab, muzzlePoint.position, muzzlePoint.rotation, transform);
-            }
+            muzzleFlash = Instantiate(weaponData.muzzleFlashPrefab, muzzlePoint.position, muzzlePoint.rotation, transform);
         }
 
         InitializeBulletHoleMesh();
@@ -110,32 +93,52 @@ public class Weapon : MonoBehaviour
         onAmmoChanged?.Invoke(currentAmmo);
     }
     
+    private void SetupAudioSource()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.spatialBlend = 1.0f;
+            audioSource.rolloffMode = AudioRolloffMode.Linear;
+            audioSource.minDistance = 1f;
+            audioSource.maxDistance = 20f;
+            audioSource.dopplerLevel = 0f;
+            audioSource.priority = 128;
+            audioSource.playOnAwake = false;
+        }
+    }
+    
+    private void OnDisable()
+    {
+        if (tempAudioSource != null)
+        {
+            Destroy(tempAudioSource);
+            tempAudioSource = null;
+        }
+    }
+    
     private void Update()
     {
-        // Handle automatic firing
         if (isShooting && weaponData != null && weaponData.isAutomatic && !isReloading && Time.time >= nextTimeToFire)
         {
             PerformShot();
         }
         
-        // Update weapon rotation
         if (enableCustomRotation && currentRotation != targetRotation)
         {
-            // Smoothly interpolate current rotation towards target
             currentRotation = Vector3.Lerp(
                 currentRotation,
                 targetRotation,
                 Time.deltaTime * rotationSmoothing
             );
             
-            // Apply the rotation
             transform.localRotation = initialLocalRotation * Quaternion.Euler(currentRotation);
         }
     }
     
     public void OnAim(bool isAiming)
     {
-        // Change rotation based on aim state
         if (enableCustomRotation)
         {
             targetRotation = isAiming ? weaponData.adsRotation : weaponData.hipRotation;
@@ -175,10 +178,8 @@ public class Weapon : MonoBehaviour
 
         PlaySound(weaponData.shootSound);
         
-        // Apply recoil through the weapon holder if available
         if (weaponHolder != null)
         {
-            // Use the recoil amount from weapon data if available
             float recoilAmount = weaponData.recoilAmount > 0 ? weaponData.recoilAmount : 0.1f;
             weaponHolder.AddRecoil(recoilAmount);
         }
@@ -236,7 +237,6 @@ public class Weapon : MonoBehaviour
 
     private void InitializeBulletHoleMesh()
     {
-        // Check if mesh already exists
         if (bulletHoleMesh != null) return;
         
         bulletHoleMesh = new Mesh();
@@ -274,7 +274,6 @@ public class Weapon : MonoBehaviour
 
     private void InitializeObjectPool()
     {
-        // Check if pool already exists to avoid duplication
         if (bulletHolePool != null) return;
         
         bulletHolePool = new ObjectPool<GameObject>(
@@ -325,25 +324,37 @@ public class Weapon : MonoBehaviour
 
     private void PlaySound(AudioClip clip)
     {
-        if (audioSource != null && clip != null)
+        if (audioSource == null || clip == null) return;
+        
+        if (clip.ambisonic)
         {
-            // Check if the clip is ambisonic and handle properly
-            if (clip.ambisonic)
+            if (tempAudioSource == null)
             {
-                // Create a temporary audio source for non-ambisonic playback
-                AudioSource tempSource = gameObject.AddComponent<AudioSource>();
-                tempSource.clip = clip;
-                tempSource.spatialBlend = 1.0f;
-                tempSource.Play();
-                
-                // Destroy the temporary source after the clip finishes
-                Destroy(tempSource, clip.length + 0.1f);
+                tempAudioSource = gameObject.AddComponent<AudioSource>();
+                tempAudioSource.spatialBlend = 1.0f;
+                tempAudioSource.priority = 128;
+                tempAudioSource.playOnAwake = false;
+                tempAudioSource.outputAudioMixerGroup = audioSource.outputAudioMixerGroup;
             }
-            else
-            {
-                // Normal clips can use PlayOneShot
-                audioSource.PlayOneShot(clip);
-            }
+            
+            AudioClip nonAmbisonicClip = AudioClip.Create(
+                clip.name + "_nonAmbisonic",
+                clip.samples,
+                clip.channels,
+                clip.frequency,
+                false
+            );
+            
+            float[] samples = new float[clip.samples * clip.channels];
+            clip.GetData(samples, 0);
+            nonAmbisonicClip.SetData(samples, 0);
+            
+            tempAudioSource.clip = nonAmbisonicClip;
+            tempAudioSource.Play();
+        }
+        else
+        {
+            audioSource.PlayOneShot(clip);
         }
     }
 
@@ -353,16 +364,17 @@ public class Weapon : MonoBehaviour
         {
             Destroy(bulletHoleMesh);
         }
+        
+        if (tempAudioSource != null)
+        {
+            Destroy(tempAudioSource);
+        }
     }
     
-    // -- Weapon Rotation Methods --
-    
-    // Rotate the weapon incrementally
     public void RotateWeapon(Vector3 rotationDelta)
     {
         if (!enableCustomRotation) return;
         
-        // Apply rotation based on speed
         Vector3 scaledDelta = rotationDelta * rotationSpeed * Time.deltaTime;
         targetRotation += scaledDelta;
     }

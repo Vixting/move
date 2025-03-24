@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+
 public class Player : MonoBehaviour
 {
     [SerializeField] private PlayerCharacter playerCharacter;
     [SerializeField] private PlayerCamera playerCamera;
     [SerializeField] private WeaponManager weaponManager;
     
-    // Changed from private to public to allow access from WeaponSelectionUI
     public PlayerInputActions _inputActions;
     
     private bool _isInputEnabled = true;
@@ -30,13 +30,21 @@ public class Player : MonoBehaviour
         if (playerCamera != null && playerCharacter != null)
             playerCamera.Initialize(playerCharacter.GetCameraTarget(), playerCharacter);
        
+        WeaponData[] existingWeapons = GameManager.Instance?.GetSavedWeapons();
+        
         if (weaponManager != null && playerCamera != null)
-            weaponManager.Initialize(playerCamera, _inputActions, playerCharacter);
+        {
+            weaponManager.Initialize(playerCamera, _inputActions, playerCharacter, existingWeapons);
+            
+            if (GameManager.Instance != null && existingWeapons == null)
+            {
+                GameManager.Instance.RegisterWeapons(weaponManager.GetAvailableWeapons());
+            }
+        }
        
         _inputActions.Gameplay.Aim.started += OnAimStarted;
         _inputActions.Gameplay.Aim.canceled += OnAimCanceled;
         
-        // Set initial input state based on whether we're in a gameplay scene
         if (IsGameplayScene())
         {
             EnableGameplayMode(true);
@@ -51,7 +59,6 @@ public class Player : MonoBehaviour
    
     void Update()
     {
-        // Ensure we're initialized
         if (!_initialized)
         {
             Initialize();
@@ -180,7 +187,6 @@ public class Player : MonoBehaviour
         }
         else
         {
-            // When disabling gameplay mode, ensure cursor is visible and unlocked
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
@@ -188,12 +194,10 @@ public class Player : MonoBehaviour
     
     private bool IsGameplayScene()
     {
-        // Try to find a menu UI, if it exists then we're not in gameplay mode
         return FindObjectOfType<MainMenuController>() == null && 
                FindObjectOfType<LevelSelectionUI>() == null;
     }
     
-    // Helper method to retrieve input actions from outside classes
     public PlayerInputActions GetInputActions()
     {
         if (_inputActions == null)

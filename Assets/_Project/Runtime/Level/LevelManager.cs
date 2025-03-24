@@ -57,19 +57,6 @@ public class LevelManager : MonoBehaviour
     {
         if (_instance != null && _instance != this)
         {
-            // Disable any audio components on this duplicate instance
-            AudioSource audioSource = GetComponent<AudioSource>();
-            if (audioSource != null)
-            {
-                audioSource.enabled = false;
-            }
-            
-            AudioListener audioListener = GetComponent<AudioListener>();
-            if (audioListener != null)
-            {
-                audioListener.enabled = false;
-            }
-            
             Destroy(gameObject);
             return;
         }
@@ -77,7 +64,6 @@ public class LevelManager : MonoBehaviour
         _instance = this;
         DontDestroyOnLoad(gameObject);
         
-        // Ensure we don't have an AudioListener on the LevelManager itself
         AudioListener selfListener = GetComponent<AudioListener>();
         if (selfListener != null)
         {
@@ -105,56 +91,37 @@ public class LevelManager : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        StartCoroutine(CleanupAudioComponentsRoutine());
+        StartCoroutine(CleanupAudioRoutine());
     }
     
-    private IEnumerator CleanupAudioComponentsRoutine()
+    private IEnumerator CleanupAudioRoutine()
     {
-        // Wait one frame to ensure all scene objects are properly initialized
         yield return null;
         
-        // First, handle AudioListeners - keep only one active
         Camera mainCamera = Camera.main;
-        AudioListener[] listeners = FindObjectsOfType<AudioListener>(true); // Include inactive objects
-        
-        AudioListener activeListener = null;
-        
-        // If we have a main camera with an AudioListener, prioritize that one
         if (mainCamera != null)
         {
-            AudioListener cameraListener = mainCamera.GetComponent<AudioListener>();
-            if (cameraListener != null)
+            AudioListener[] listeners = FindObjectsOfType<AudioListener>();
+            if (listeners.Length > 1)
             {
-                activeListener = cameraListener;
-                _mainAudioListener = cameraListener;
-            }
-        }
-        
-        // If no camera listener found, use the first one we find
-        if (activeListener == null && listeners.Length > 0)
-        {
-            activeListener = listeners[0];
-            _mainAudioListener = activeListener;
-        }
-        
-        // Disable all other listeners
-        foreach (AudioListener listener in listeners)
-        {
-            if (listener != activeListener)
-            {
-                if (listener != null && listener.gameObject != null)
+                AudioListener mainListener = mainCamera.GetComponent<AudioListener>();
+                
+                foreach (AudioListener listener in listeners)
                 {
-                    listener.enabled = false;
+                    if (listener != mainListener)
+                    {
+                        listener.enabled = false;
+                    }
                 }
             }
-            else
+            else if (listeners.Length == 0)
             {
-                listener.enabled = true;
+                if (mainCamera.GetComponent<AudioListener>() == null)
+                {
+                    mainCamera.gameObject.AddComponent<AudioListener>();
+                }
             }
         }
-        
-        // Log the audio cleanup
-        Debug.Log($"Audio cleanup complete. Active listener: {(activeListener != null ? activeListener.gameObject.name : "None")}");
     }
     
     public void LoadProgress()

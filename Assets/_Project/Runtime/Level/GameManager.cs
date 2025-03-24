@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     private static GameManager _instance;
     private MainMenuController _menuController;
     private Player _playerInstance;
+    private WeaponData[] _savedWeapons;
    
     public static GameManager Instance
     {
@@ -52,21 +53,19 @@ public class GameManager : MonoBehaviour
         }
         else if (mainMenuDocument != null)
         {
-            // If no menu object is provided, try to find or create one
             GameObject menuObj = mainMenuDocument.gameObject;
             _menuController = menuObj.GetComponent<MainMenuController>();
             if (_menuController == null)
             {
                 _menuController = menuObj.AddComponent<MainMenuController>();
             }
-            
+           
             _menuController.SetupMenu(mainMenuDocument, levelManager);
         }
     }
    
     private void Start()
     {
-        // Initialize the menu after all components are set up
         if (_menuController != null && mainMenuDocument != null)
         {
             _menuController.SetupMenu(mainMenuDocument, levelManager);
@@ -76,6 +75,19 @@ public class GameManager : MonoBehaviour
     public void RegisterPlayer(Player player)
     {
         _playerInstance = player;
+    }
+    
+    public void RegisterWeapons(WeaponData[] weapons)
+    {
+        if (weapons != null && weapons.Length > 0)
+        {
+            _savedWeapons = weapons;
+        }
+    }
+
+    public WeaponData[] GetSavedWeapons()
+    {
+        return _savedWeapons;
     }
    
     public void OnLevelLoaded(bool isGameplayLevel)

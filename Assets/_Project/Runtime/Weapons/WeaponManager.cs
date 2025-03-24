@@ -19,13 +19,45 @@ public class WeaponManager : MonoBehaviour
     private bool _isEnabled = true;
     public UnityEvent<WeaponData, int> onWeaponChanged = new UnityEvent<WeaponData, int>();
     private int lastWeaponIndex = -1;
+    private bool _isInitialized = false;
+    
+    private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> weaponSwitchAction;
+    private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> weapon1Action;
+    private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> weapon2Action;
+    private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> weapon3Action;
+    private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> fireStartAction;
+    private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> fireEndAction;
+    private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> reloadAction;
+    private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> aimStartAction;
+    private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> aimEndAction;
+    private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> lastWeaponAction;
 
-    public void Initialize(PlayerCamera camera, PlayerInputActions sharedInputActions, PlayerCharacter character = null)
+    public WeaponData[] GetAvailableWeapons()
     {
-        Debug.Log("[WM] Initialize called");
+        return availableWeapons;
+    }
+
+    public void Initialize(PlayerCamera camera, PlayerInputActions sharedInputActions, PlayerCharacter character = null, WeaponData[] existingWeapons = null)
+    {
+        Debug.Log($"[WM] Initialize called from: {new System.Diagnostics.StackTrace().ToString()}");
+        
+        if (_isInitialized) 
+        {
+            Debug.Log("[WM] Already initialized, ignoring duplicate call");
+            return;
+        }
+        
+        _isInitialized = true;
+        
         playerCamera = camera;
         inputActions = sharedInputActions;
         playerCharacter = character;
+        
+        if (existingWeapons != null && existingWeapons.Length > 0)
+        {
+            availableWeapons = existingWeapons;
+            Debug.Log($"[WM] Using existing weapon setup with {existingWeapons.Length} weapons");
+        }
         
         if (inputActions == null)
         {
@@ -35,40 +67,54 @@ public class WeaponManager : MonoBehaviour
 
         Debug.Log("[WM] Setting up input callbacks");
         
-        inputActions.Gameplay.WeaponSwitch.performed += ctx => 
+        weaponSwitchAction = ctx => 
         {
             Debug.Log($"[WM] Scroll wheel value: {ctx.ReadValue<float>()}");
             HandleWeaponSwitch(ctx.ReadValue<float>());
         };
         
-        inputActions.Gameplay.Weapon1.performed += _ => 
+        weapon1Action = ctx => 
         {
-            Debug.Log("[WM] Weapon1 key pressed");
+            Debug.Log("[WM] Weapon1 key pressed - Device: " + ctx.control.device.name);
+            Debug.Log("[WM] Weapon switching enabled: " + _isEnabled);
             SelectWeaponBySlot(1);
         };
         
-        inputActions.Gameplay.Weapon2.performed += _ => 
+        weapon2Action = ctx => 
         {
-            Debug.Log("[WM] Weapon2 key pressed");
+            Debug.Log("[WM] Weapon2 key pressed - Device: " + ctx.control.device.name);
+            Debug.Log("[WM] Weapon switching enabled: " + _isEnabled);
             SelectWeaponBySlot(2);
         };
         
-        inputActions.Gameplay.Weapon3.performed += _ => 
+        weapon3Action = ctx => 
         {
-            Debug.Log("[WM] Weapon3 key pressed");
+            Debug.Log("[WM] Weapon3 key pressed - Device: " + ctx.control.device.name);
+            Debug.Log("[WM] Weapon switching enabled: " + _isEnabled);
             SelectWeaponBySlot(3);
         };
         
-        inputActions.Gameplay.Fire.started += _ => HandleFire(true);
-        inputActions.Gameplay.Fire.canceled += _ => HandleFire(false);
-        inputActions.Gameplay.Reload.performed += _ => HandleReload();
-        inputActions.Gameplay.Aim.started += _ => SetAiming(true);
-        inputActions.Gameplay.Aim.canceled += _ => SetAiming(false);
-        inputActions.Gameplay.LastWeapon.performed += _ => 
+        fireStartAction = _ => HandleFire(true);
+        fireEndAction = _ => HandleFire(false);
+        reloadAction = _ => HandleReload();
+        aimStartAction = _ => SetAiming(true);
+        aimEndAction = _ => SetAiming(false);
+        lastWeaponAction = _ => 
         {
             Debug.Log("[WM] LastWeapon key pressed");
             SwitchToLastWeapon();
         };
+        
+        inputActions.Gameplay.WeaponSwitch.performed += weaponSwitchAction;
+        inputActions.Gameplay.Weapon1.performed += weapon1Action;
+        inputActions.Gameplay.Weapon2.performed += weapon2Action;
+        inputActions.Gameplay.Weapon3.performed += weapon3Action;
+        inputActions.Gameplay.Fire.started += fireStartAction;
+        inputActions.Gameplay.Fire.canceled += fireEndAction;
+        inputActions.Gameplay.Reload.performed += reloadAction;
+        inputActions.Gameplay.Aim.started += aimStartAction;
+        inputActions.Gameplay.Aim.canceled += aimEndAction;
+        inputActions.Gameplay.LastWeapon.performed += lastWeaponAction;
        
         InitializeWeapons();
     }
@@ -97,6 +143,7 @@ public class WeaponManager : MonoBehaviour
             Debug.Log($"[WM] Found weapon at index {weaponIndex} for slot {slotNumber}");
             if (weaponIndex != currentWeaponIndex)
             {
+                Debug.Log($"[WM] Switching to weapon at index {weaponIndex} from {currentWeaponIndex}");
                 SwitchWeapon(weaponIndex);
             }
             else
@@ -139,6 +186,12 @@ public class WeaponManager : MonoBehaviour
     {
         Debug.Log("[WM] InitializeWeapons - Available weapons: " + (availableWeapons != null ? availableWeapons.Length.ToString() : "null"));
         
+        if (availableWeapons != null) {
+            for (int i = 0; i < availableWeapons.Length; i++) {
+                Debug.Log($"[WM] Weapon {i} in array: {(availableWeapons[i] != null ? availableWeapons[i].weaponName : "NULL")} with Prefab: {(availableWeapons[i]?.weaponPrefab != null ? availableWeapons[i].weaponPrefab.name : "NULL")}");
+            }
+        }
+        
         slotToIndexMap.Clear();
         weapons.Clear();
         
@@ -162,7 +215,6 @@ public class WeaponManager : MonoBehaviour
                 weaponObj.transform.localRotation = Quaternion.identity;
                 weaponObj.transform.localScale = Vector3.one;
                 
-                // Add this back to fix rifle orientation
                 FixChildModels(weaponObj.transform);
                 
                 Weapon weapon = weaponObj.GetComponent<Weapon>();
@@ -355,7 +407,6 @@ public class WeaponManager : MonoBehaviour
         
         Debug.Log($"[WM] Finding WeaponData for {weaponName}");
         
-        // First try to find using the slot mapping (more reliable)
         foreach (var kvp in slotToIndexMap)
         {
             if (kvp.Value == currentWeaponIndex)
@@ -372,7 +423,6 @@ public class WeaponManager : MonoBehaviour
             }
         }
         
-        // Fallback to name-based matching
         foreach (var data in availableWeapons)
         {
             if (weaponName.Contains(data.weaponName) || 
@@ -383,7 +433,6 @@ public class WeaponManager : MonoBehaviour
             }
         }
         
-        // Final attempt: just use the array index
         if (currentWeaponIndex < availableWeapons.Length)
         {
             Debug.Log($"[WM] Using WeaponData by index: {availableWeapons[currentWeaponIndex].weaponName}");
@@ -398,16 +447,16 @@ public class WeaponManager : MonoBehaviour
         Debug.Log("[WM] OnDestroy - Unsubscribing from input events");
         if (inputActions != null)
         {
-            inputActions.Gameplay.WeaponSwitch.performed -= ctx => HandleWeaponSwitch(ctx.ReadValue<float>());
-            inputActions.Gameplay.Weapon1.performed -= _ => SelectWeaponBySlot(1);
-            inputActions.Gameplay.Weapon2.performed -= _ => SelectWeaponBySlot(2);
-            inputActions.Gameplay.Weapon3.performed -= _ => SelectWeaponBySlot(3);
-            inputActions.Gameplay.Fire.started -= _ => HandleFire(true);
-            inputActions.Gameplay.Fire.canceled -= _ => HandleFire(false);
-            inputActions.Gameplay.Reload.performed -= _ => HandleReload();
-            inputActions.Gameplay.Aim.started -= _ => SetAiming(true);
-            inputActions.Gameplay.Aim.canceled -= _ => SetAiming(false);
-            inputActions.Gameplay.LastWeapon.performed -= _ => SwitchToLastWeapon();
+            inputActions.Gameplay.WeaponSwitch.performed -= weaponSwitchAction;
+            inputActions.Gameplay.Weapon1.performed -= weapon1Action;
+            inputActions.Gameplay.Weapon2.performed -= weapon2Action;
+            inputActions.Gameplay.Weapon3.performed -= weapon3Action;
+            inputActions.Gameplay.Fire.started -= fireStartAction;
+            inputActions.Gameplay.Fire.canceled -= fireEndAction;
+            inputActions.Gameplay.Reload.performed -= reloadAction;
+            inputActions.Gameplay.Aim.started -= aimStartAction;
+            inputActions.Gameplay.Aim.canceled -= aimEndAction;
+            inputActions.Gameplay.LastWeapon.performed -= lastWeaponAction;
         }
     }
     
