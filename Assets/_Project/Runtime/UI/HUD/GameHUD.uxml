@@ -1,0 +1,62 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+<Style src="GameHUD.uss" />
+    <ui:VisualElement name="root" style="flex-grow: 1; width: 100%; height: 100%;">
+        
+        <!-- Crosshair -->
+        <ui:VisualElement name="crosshair-container" style="position: absolute; width: 100%; height: 100%; justify-content: center; align-items: center;">
+            <ui:VisualElement name="crosshair" class="crosshair">
+                <ui:VisualElement name="crosshair-top" class="crosshair-line vertical" />
+                <ui:VisualElement name="crosshair-right" class="crosshair-line horizontal" />
+                <ui:VisualElement name="crosshair-bottom" class="crosshair-line vertical" />
+                <ui:VisualElement name="crosshair-left" class="crosshair-line horizontal" />
+                <ui:VisualElement name="crosshair-dot" class="crosshair-dot" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Weapon info panel -->
+        <ui:VisualElement name="weapon-info-container" style="position: absolute; bottom: 20px; right: 20px; flex-direction: row; align-items: flex-end;">
+            <ui:VisualElement name="weapon-details" style="margin-right: 10px;">
+                <ui:Label text="Assault Rifle" name="weapon-name" class="weapon-text" />
+                <ui:VisualElement name="ammo-container" style="flex-direction: row; align-items: center;">
+                    <ui:Label text="30" name="current-ammo" class="ammo-text" />
+                    <ui:Label text="/" class="ammo-text" style="margin: 0 5px;" />
+                    <ui:Label text="30" name="max-ammo" class="ammo-text" style="opacity: 0.8;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="weapon-icon" class="weapon-icon" />
+        </ui:VisualElement>
+        
+        <!-- Health indicator -->
+        <ui:VisualElement name="player-status-container" style="position: absolute; top: 20px; left: 20px;">
+            <ui:VisualElement name="health-container" style="flex-direction: row; align-items: center; margin-bottom: 10px;">
+                <ui:VisualElement name="health-icon" class="status-icon health-icon" />
+                <ui:VisualElement name="health-bar-container" class="progress-bar-container">
+                    <ui:VisualElement name="health-bar" class="progress-bar health-bar" style="width: 100%;" />
+                </ui:VisualElement>
+                <ui:Label text="100" name="health-value" class="status-text" />
+            </ui:VisualElement>
+            
+            <ui:VisualElement name="stance-indicator" style="flex-direction: row; align-items: center;">
+                <ui:VisualElement name="stance-icon" class="status-icon" />
+                <ui:Label text="STANDING" name="stance-text" class="status-text" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+        <!-- Weapon selector -->
+        <ui:VisualElement name="weapon-selector-container" style="position: absolute; bottom: 20px; left: 20px; flex-direction: row;">
+            <ui:VisualElement name="weapon-slot-1" class="weapon-slot weapon-slot-active">
+                <ui:Label text="1" name="slot-number" class="slot-number" />
+                <ui:Label text="Rifle" name="slot-name" class="slot-name" />
+            </ui:VisualElement>
+            <ui:VisualElement name="weapon-slot-2" class="weapon-slot">
+                <ui:Label text="2" name="slot-number" class="slot-number" />
+                <ui:Label text="Pistol" name="slot-name" class="slot-name" />
+            </ui:VisualElement>
+            <ui:VisualElement name="weapon-slot-3" class="weapon-slot">
+                <ui:Label text="3" name="slot-number" class="slot-number" />
+                <ui:Label text="Shotgun" name="slot-name" class="slot-name" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        
+    </ui:VisualElement>
+</ui:UXML>
