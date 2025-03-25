@@ -207,11 +207,18 @@ public class Weapon : MonoBehaviour
             weaponHolder.AddRecoil(recoilAmount);
         }
         
-        // Apply knockback to player if this weapon has knockback force
-        if (playerCharacter != null && weaponData.knockbackForce > 0)
+        // Apply directional knockback to player
+        if (playerCharacter != null && (weaponData.horizontalKnockbackForce > 0 || weaponData.verticalKnockbackForce != 0))
         {
+            // Horizontal knockback uses the firing direction
             Vector3 knockbackDirection = -playerCamera.transform.forward;
-            playerCharacter.ApplyKnockback(knockbackDirection, weaponData.knockbackForce);
+            
+            // Create a combined knockback vector from horizontal and vertical components
+            Vector3 horizontalKnockback = knockbackDirection * weaponData.horizontalKnockbackForce;
+            Vector3 verticalKnockback = Vector3.up * weaponData.verticalKnockbackForce;
+            
+            // Apply the directional knockback
+            playerCharacter.ApplyDirectionalKnockback(horizontalKnockback, verticalKnockback);
         }
         
         if (muzzleFlash != null)
@@ -347,7 +354,7 @@ public class Weapon : MonoBehaviour
     {
         yield return new WaitForSeconds(weaponData.reloadTime);
         
-        if (isReloading) // Check if still reloading (wasn't canceled)
+        if (isReloading)
         {
             currentAmmo = weaponData.maxAmmo;
             isReloading = false;

@@ -154,6 +154,53 @@ Transform:
   - {fileID: 1420504311}
   m_Father: {fileID: 566411890}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &59668406
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 59668408}
+  - component: {fileID: 59668407}
+  m_Layer: 0
+  m_Name: GameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &59668407
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59668406}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 14e9b3070d04ae04ea688c8345164863, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  levelManager: {fileID: 0}
+  mainMenuDocument: {fileID: 0}
+  mainMenuObject: {fileID: 0}
+--- !u!4 &59668408
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 59668406}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -145.33163, y: -89.479385, z: -247.99753}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &166669123
 GameObject:
   m_ObjectHideFlags: 0
@@ -1396,6 +1443,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 1207496523917671976, guid: 52214ee53fa440443871c3058e5e6b41, type: 3}
+      propertyPath: availableWeapons.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1207496523917671976, guid: 52214ee53fa440443871c3058e5e6b41, type: 3}
+      propertyPath: 'availableWeapons.Array.data[1]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 1a5d175bfe54df049a880a56f2b27985, type: 2}
     - target: {fileID: 4829244861815111090, guid: 52214ee53fa440443871c3058e5e6b41, type: 3}
       propertyPath: m_Enabled
       value: 1
@@ -1456,3 +1511,4 @@ SceneRoots:
   - {fileID: 566411890}
   - {fileID: 1251236452}
   - {fileID: 1938952485}
+  - {fileID: 59668408}

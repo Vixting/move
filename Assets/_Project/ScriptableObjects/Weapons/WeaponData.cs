@@ -19,8 +19,10 @@ public class WeaponData : ScriptableObject
     public float impactForce = 20f;
    
     [Header("Knockback Settings")]
-    [Tooltip("Force applied to player when firing (0 = no knockback)")]
-    public float knockbackForce = 0f;
+    [Tooltip("Horizontal force applied to player when firing (0 = no knockback)")]
+    public float horizontalKnockbackForce = 0f;
+    [Tooltip("Vertical force applied to player when firing (0 = no vertical knockback, positive = upward)")]
+    public float verticalKnockbackForce = 0f;
    
     [Header("Visual Settings")]
     public float bulletHoleSize = 0.1f;

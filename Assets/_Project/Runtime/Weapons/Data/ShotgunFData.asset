@@ -12,14 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8de15e308f3be414da596ebebeb4ec08, type: 3}
   m_Name: ShotgunFData
   m_EditorClassIdentifier: 
-  weaponName: 
-  weaponPrefab: {fileID: 0}
+  weaponName: Spas12
+  weaponPrefab: {fileID: 718911615745656656, guid: 7b892ce7ed2582e4f85e2d388c5e1ae7, type: 3}
+  weaponIcon: {fileID: 0}
+  weaponSlot: 2
   bulletRange: 100
   fireRate: 0.1
   maxAmmo: 30
   reloadTime: 2
   isAutomatic: 1
   impactForce: 20
+  horizontalKnockbackForce: 0
+  verticalKnockbackForce: 0
   bulletHoleSize: 0.1
   bulletHoleLifetime: 10
   bulletHoleMaterial: {fileID: 0}
