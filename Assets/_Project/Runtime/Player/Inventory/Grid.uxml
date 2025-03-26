@@ -1,0 +1,5 @@
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <VisualElement class="grid-cell">
+        <!-- Empty cell that will be part of the grid -->
+    </VisualElement>
+</UXML>

@@ -187,7 +187,6 @@ public class LevelManager : MonoBehaviour
             yield return FadeLoadingScreen(1);
         }
 
-        // Destroy all existing AudioListeners before loading a new scene
         foreach (AudioListener listener in FindObjectsOfType<AudioListener>())
         {
             if (_mainAudioListener != null && listener == _mainAudioListener)
@@ -309,8 +308,14 @@ public class LevelManager : MonoBehaviour
         
         _currentPlayer.gameObject.SetActive(true);
         _currentPlayer.EnableGameplayMode(true);
+        
+        if (InventoryUIDocumentLoader.Instance != null)
+        {
+            InventoryUIDocumentLoader.Instance.SetupInventoryUI();
+            InventoryUIDocumentLoader.Instance.ConnectPlayerInput();
+        }
     }
-
+    
     private Transform FindSpawnPoint()
     {
         PlayerSpawnPoint[] spawnPoints = FindObjectsOfType<PlayerSpawnPoint>();

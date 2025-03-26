@@ -188,6 +188,15 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Inventory"",
+                    ""type"": ""Button"",
+                    ""id"": ""98d3557c-a4cf-49c7-97c4-163234b3473a"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -443,6 +452,17 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""LastWeapon"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""71f873b9-9648-4333-8cdb-7982a27fac22"",
+                    ""path"": ""<Keyboard>/i"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Inventory"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -469,6 +489,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         m_Gameplay_Weapon8 = m_Gameplay.FindAction("Weapon8", throwIfNotFound: true);
         m_Gameplay_Weapon9 = m_Gameplay.FindAction("Weapon9", throwIfNotFound: true);
         m_Gameplay_LastWeapon = m_Gameplay.FindAction("LastWeapon", throwIfNotFound: true);
+        m_Gameplay_Inventory = m_Gameplay.FindAction("Inventory", throwIfNotFound: true);
     }
 
     ~@PlayerInputActions()
@@ -553,6 +574,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Weapon8;
     private readonly InputAction m_Gameplay_Weapon9;
     private readonly InputAction m_Gameplay_LastWeapon;
+    private readonly InputAction m_Gameplay_Inventory;
     public struct GameplayActions
     {
         private @PlayerInputActions m_Wrapper;
@@ -575,6 +597,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         public InputAction @Weapon8 => m_Wrapper.m_Gameplay_Weapon8;
         public InputAction @Weapon9 => m_Wrapper.m_Gameplay_Weapon9;
         public InputAction @LastWeapon => m_Wrapper.m_Gameplay_LastWeapon;
+        public InputAction @Inventory => m_Wrapper.m_Gameplay_Inventory;
         public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -638,6 +661,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @LastWeapon.started += instance.OnLastWeapon;
             @LastWeapon.performed += instance.OnLastWeapon;
             @LastWeapon.canceled += instance.OnLastWeapon;
+            @Inventory.started += instance.OnInventory;
+            @Inventory.performed += instance.OnInventory;
+            @Inventory.canceled += instance.OnInventory;
         }
 
         private void UnregisterCallbacks(IGameplayActions instance)
@@ -696,6 +722,9 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
             @LastWeapon.started -= instance.OnLastWeapon;
             @LastWeapon.performed -= instance.OnLastWeapon;
             @LastWeapon.canceled -= instance.OnLastWeapon;
+            @Inventory.started -= instance.OnInventory;
+            @Inventory.performed -= instance.OnInventory;
+            @Inventory.canceled -= instance.OnInventory;
         }
 
         public void RemoveCallbacks(IGameplayActions instance)
@@ -733,5 +762,6 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
         void OnWeapon8(InputAction.CallbackContext context);
         void OnWeapon9(InputAction.CallbackContext context);
         void OnLastWeapon(InputAction.CallbackContext context);
+        void OnInventory(InputAction.CallbackContext context);
     }
 }

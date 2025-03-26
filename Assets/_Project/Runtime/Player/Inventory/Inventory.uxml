@@ -1,0 +1,142 @@
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <Style src="InventoryStyles.uss" />
+    
+    <VisualElement name="inventory-root" class="inventory-screen">
+        <!-- Top bar with character name and close button -->
+        <VisualElement name="top-bar" class="top-bar">
+            <Label name="character-name" text="PMC Character" class="character-name" />
+            <Button name="close-button" text="Close" class="close-button" />
+        </VisualElement>
+        
+        <VisualElement name="inventory-content" class="inventory-content">
+            <!-- Left panel: Character equipment -->
+            <VisualElement name="equipment-panel" class="panel equipment-panel">
+                <Label text="Equipment" class="panel-header" />
+                
+                <VisualElement name="character-view" class="character-view">
+                    <!-- Character silhouette image would be set as background in CSS -->
+                </VisualElement>
+                
+                <VisualElement name="equipment-slots" class="equipment-slots">
+                    <VisualElement name="slot-head" class="equipment-slot" tooltip="Helmet">
+                        <Label text="Helmet" class="slot-label" />
+                    </VisualElement>
+                    
+                    <VisualElement name="slot-eyes" class="equipment-slot" tooltip="Eyewear">
+                        <Label text="Eyes" class="slot-label" />
+                    </VisualElement>
+                    
+                    <VisualElement name="slot-ears" class="equipment-slot" tooltip="Headset">
+                        <Label text="Ears" class="slot-label" />
+                    </VisualElement>
+                    
+                    <VisualElement name="slot-facecover" class="equipment-slot" tooltip="Face Cover">
+                        <Label text="Face" class="slot-label" />
+                    </VisualElement>
+                    
+                    <VisualElement name="slot-bodyarmor" class="equipment-slot" tooltip="Body Armor">
+                        <Label text="Armor" class="slot-label" />
+                    </VisualElement>
+                    
+                    <VisualElement name="slot-tacticalrig" class="equipment-slot" tooltip="Tactical Rig">
+                        <Label text="Rig" class="slot-label" />
+                    </VisualElement>
+                    
+                    <VisualElement name="slot-primary" class="equipment-slot weapon-slot" tooltip="Primary Weapon">
+                        <Label text="Primary" class="slot-label" />
+                    </VisualElement>
+                    
+                    <VisualElement name="slot-secondary" class="equipment-slot weapon-slot" tooltip="Secondary Weapon">
+                        <Label text="Secondary" class="slot-label" />
+                    </VisualElement>
+                    
+                    <VisualElement name="slot-holster" class="equipment-slot" tooltip="Sidearm">
+                        <Label text="Pistol" class="slot-label" />
+                    </VisualElement>
+                    
+                    <VisualElement name="slot-backpack" class="equipment-slot" tooltip="Backpack">
+                        <Label text="Backpack" class="slot-label" />
+                    </VisualElement>
+                    
+                    <VisualElement name="slot-pouch" class="equipment-slot" tooltip="Secure Container">
+                        <Label text="Pouch" class="slot-label" />
+                    </VisualElement>
+                    
+                    <VisualElement name="slot-armband" class="equipment-slot" tooltip="Armband">
+                        <Label text="Armband" class="slot-label" />
+                    </VisualElement>
+                </VisualElement>
+            </VisualElement>
+            
+            <!-- Middle panel: Player inventory -->
+            <VisualElement name="player-inventory-panel" class="panel inventory-panel">
+                <Label text="Player Inventory" class="panel-header" />
+                
+                <VisualElement name="inventory-containers" class="inventory-containers">
+                    <!-- Backpack container -->
+                    <VisualElement name="backpack-container" class="container-section">
+                        <Label text="Backpack" class="container-label" />
+                        <VisualElement name="backpack-grid" class="container-grid">
+                            <!-- Grid cells will be added dynamically -->
+                        </VisualElement>
+                    </VisualElement>
+                    
+                    <!-- Tactical Rig container -->
+                    <VisualElement name="vest-container" class="container-section">
+                        <Label text="Tactical Rig" class="container-label" />
+                        <VisualElement name="vest-grid" class="container-grid">
+                            <!-- Grid cells will be added dynamically -->
+                        </VisualElement>
+                    </VisualElement>
+                    
+                    <!-- Pockets container -->
+                    <VisualElement name="pockets-container" class="container-section">
+                        <Label text="Pockets" class="container-label" />
+                        <VisualElement name="pockets-grid" class="container-grid">
+                            <!-- Grid cells will be added dynamically -->
+                        </VisualElement>
+                    </VisualElement>
+                </VisualElement>
+            </VisualElement>
+            
+            <!-- Right panel: Stash or loot -->
+            <VisualElement name="stash-panel" class="panel stash-panel">
+                <Label text="Stash" class="panel-header" />
+                <VisualElement name="stash-grid" class="container-grid large-grid">
+                    <!-- Grid cells will be added dynamically -->
+                </VisualElement>
+            </VisualElement>
+            
+            <!-- Item information panel -->
+            <VisualElement name="item-info-panel" class="panel item-info-panel">
+                <!-- Item info will be added dynamically -->
+            </VisualElement>
+        </VisualElement>
+        
+        <!-- Bottom HUD panel -->
+        <VisualElement name="bottom-hud" class="bottom-hud">
+            <VisualElement name="character-stats" class="character-stats">
+                <VisualElement class="stat-container">
+                    <Label text="Health" class="stat-label" />
+                    <ProgressBar name="health-bar" class="stat-bar health-bar" value="100" />
+                </VisualElement>
+                
+                <VisualElement class="stat-container">
+                    <Label text="Energy" class="stat-label" />
+                    <ProgressBar name="energy-bar" class="stat-bar energy-bar" value="100" />
+                </VisualElement>
+                
+                <VisualElement class="stat-container">
+                    <Label text="Hydration" class="stat-label" />
+                    <ProgressBar name="hydration-bar" class="stat-bar hydration-bar" value="100" />
+                </VisualElement>
+                
+                <VisualElement class="stat-container">
+                    <Label text="Weight" class="stat-label" />
+                    <Label name="weight-value" class="stat-value" text="12.5/70 kg" />
+                    <ProgressBar name="weight-bar" class="stat-bar weight-bar" value="20" />
+                </VisualElement>
+            </VisualElement>
+        </VisualElement>
+    </VisualElement>
+</UXML>

@@ -2,6 +2,23 @@
 <Style src="GameHUD.uss" />
     <ui:VisualElement name="root" style="flex-grow: 1; width: 100%; height: 100%;">
         
+        <!-- Vignette effect -->
+        <ui:VisualElement name="vignette" class="vignette" />
+        
+        <!-- Decorative frame corners -->
+        <ui:VisualElement name="frame-top-left" class="frame-corner frame-top-left" />
+        <ui:VisualElement name="frame-top-right" class="frame-corner frame-top-right" />
+        <ui:VisualElement name="frame-bottom-left" class="frame-corner frame-bottom-left" />
+        <ui:VisualElement name="frame-bottom-right" class="frame-corner frame-bottom-right" />
+        
+        <!-- Blood splatters -->
+        <ui:VisualElement name="blood-splatter-1" class="blood-splatter splatter-1" />
+        <ui:VisualElement name="blood-splatter-2" class="blood-splatter splatter-2" />
+        <ui:VisualElement name="blood-splatter-3" class="blood-splatter splatter-3" />
+        
+        <!-- Damage Indicator Overlay -->
+        <ui:VisualElement name="damage-indicator" class="damage-indicator" />
+        
         <!-- Crosshair -->
         <ui:VisualElement name="crosshair-container" style="position: absolute; width: 100%; height: 100%; justify-content: center; align-items: center;">
             <ui:VisualElement name="crosshair" class="crosshair">
@@ -12,51 +29,66 @@
                 <ui:VisualElement name="crosshair-dot" class="crosshair-dot" />
             </ui:VisualElement>
         </ui:VisualElement>
-        
+       
         <!-- Weapon info panel -->
         <ui:VisualElement name="weapon-info-container" style="position: absolute; bottom: 20px; right: 20px; flex-direction: row; align-items: flex-end;">
             <ui:VisualElement name="weapon-details" style="margin-right: 10px;">
-                <ui:Label text="Assault Rifle" name="weapon-name" class="weapon-text" />
-                <ui:VisualElement name="ammo-container" style="flex-direction: row; align-items: center;">
+                <ui:Label text="RUSTED BLADE" name="weapon-name" class="weapon-text" />
+                <ui:VisualElement name="ammo-container" style="flex-direction: row; align-items: center; margin-top: 3px;">
+                    <ui:Label text="DURABILITY" name="ammo-label" class="status-text" style="margin-right: 10px; font-size: 12px;" />
                     <ui:Label text="30" name="current-ammo" class="ammo-text" />
-                    <ui:Label text="/" class="ammo-text" style="margin: 0 5px;" />
-                    <ui:Label text="30" name="max-ammo" class="ammo-text" style="opacity: 0.8;" />
+                    <ui:Label text="/" class="ammo-text" style="margin: 0 3px; opacity: 0.6;" />
+                    <ui:Label text="30" name="max-ammo" class="ammo-text" style="opacity: 0.4;" />
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="weapon-icon" class="weapon-icon" />
         </ui:VisualElement>
-        
-        <!-- Health indicator -->
+       
+        <!-- Health and Sanity indicators -->
         <ui:VisualElement name="player-status-container" style="position: absolute; top: 20px; left: 20px;">
-            <ui:VisualElement name="health-container" style="flex-direction: row; align-items: center; margin-bottom: 10px;">
+            <ui:Label text="VITALITY" class="status-text" style="margin-bottom: 5px;" />
+            <ui:VisualElement name="health-container" style="flex-direction: row; align-items: center; margin-bottom: 15px;">
                 <ui:VisualElement name="health-icon" class="status-icon health-icon" />
                 <ui:VisualElement name="health-bar-container" class="progress-bar-container">
-                    <ui:VisualElement name="health-bar" class="progress-bar health-bar" style="width: 100%;" />
+                    <ui:VisualElement name="health-bar" class="progress-bar health-bar" style="width: 75%;" />
                 </ui:VisualElement>
-                <ui:Label text="100" name="health-value" class="status-text" />
             </ui:VisualElement>
             
-            <ui:VisualElement name="stance-indicator" style="flex-direction: row; align-items: center;">
-                <ui:VisualElement name="stance-icon" class="status-icon" />
-                <ui:Label text="STANDING" name="stance-text" class="status-text" />
+            <ui:Label text="AFFLICTIONS" class="status-text" style="margin-bottom: 5px; margin-top: 15px;" />
+            <ui:VisualElement name="status-effects" class="status-effects">
+                <ui:VisualElement name="bleeding-effect" class="status-effect-icon" />
+                <ui:VisualElement name="poison-effect" class="status-effect-icon" />
+                <ui:VisualElement name="curse-effect" class="status-effect-icon" />
             </ui:VisualElement>
         </ui:VisualElement>
         
+        <!-- Sanity meter -->
+        <ui:VisualElement name="sanity-container" class="sanity-container">
+            <ui:VisualElement name="sanity-meter" class="sanity-meter">
+                <ui:VisualElement name="sanity-fill" class="sanity-fill" />
+            </ui:VisualElement>
+            <ui:Label text="SANITY" name="sanity-text" class="sanity-text" />
+        </ui:VisualElement>
+       
         <!-- Weapon selector -->
         <ui:VisualElement name="weapon-selector-container" style="position: absolute; bottom: 20px; left: 20px; flex-direction: row;">
             <ui:VisualElement name="weapon-slot-1" class="weapon-slot weapon-slot-active">
-                <ui:Label text="1" name="slot-number" class="slot-number" />
-                <ui:Label text="Rifle" name="slot-name" class="slot-name" />
+                <ui:Label text="I" name="slot-number" class="slot-number" />
+                <ui:Label text="BLADE" name="slot-name" class="slot-name" />
             </ui:VisualElement>
             <ui:VisualElement name="weapon-slot-2" class="weapon-slot">
-                <ui:Label text="2" name="slot-number" class="slot-number" />
-                <ui:Label text="Pistol" name="slot-name" class="slot-name" />
+                <ui:Label text="II" name="slot-number" class="slot-number" />
+                <ui:Label text="RITUAL" name="slot-name" class="slot-name" />
             </ui:VisualElement>
             <ui:VisualElement name="weapon-slot-3" class="weapon-slot">
-                <ui:Label text="3" name="slot-number" class="slot-number" />
-                <ui:Label text="Shotgun" name="slot-name" class="slot-name" />
+                <ui:Label text="III" name="slot-number" class="slot-number" />
+                <ui:Label text="RELIC" name="slot-name" class="slot-name" />
             </ui:VisualElement>
         </ui:VisualElement>
         
+        <!-- Message display area for narrative text -->
+        <ui:VisualElement name="message-container" style="position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%); max-width: 600px; text-align: center;">
+            <ui:Label text="" name="narrative-text" class="status-text" style="white-space: normal; font-style: italic; opacity: 0;" />
+        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

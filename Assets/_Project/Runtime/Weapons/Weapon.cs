@@ -444,4 +444,8 @@ public class Weapon : MonoBehaviour
     {
         enableCustomRotation = enabled;
     }
+    public WeaponData GetWeaponData()
+    {
+        return weaponData;
+    }
 }

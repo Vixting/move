@@ -44,6 +44,7 @@ public class Player : MonoBehaviour
        
         _inputActions.Gameplay.Aim.started += OnAimStarted;
         _inputActions.Gameplay.Aim.canceled += OnAimCanceled;
+        _inputActions.Gameplay.Inventory.performed += OnInventoryToggle;
         
         if (IsGameplayScene())
         {
@@ -55,6 +56,21 @@ public class Player : MonoBehaviour
         }
         
         _initialized = true;
+    }
+    
+    private void OnInventoryToggle(InputAction.CallbackContext context)
+    {
+        Debug.Log("Player received inventory toggle input");
+        
+        var inventoryManager = FindObjectOfType<InventoryUIManager>();
+        if (inventoryManager != null)
+        {
+            inventoryManager.ToggleInventory(context);
+        }
+        else
+        {
+            Debug.LogWarning("No InventoryUIManager found in scene");
+        }
     }
    
     void Update()
@@ -137,6 +153,7 @@ public class Player : MonoBehaviour
         {
             _inputActions.Gameplay.Aim.started -= OnAimStarted;
             _inputActions.Gameplay.Aim.canceled -= OnAimCanceled;
+            _inputActions.Gameplay.Inventory.performed -= OnInventoryToggle;
             _inputActions.Dispose();
         }
     }

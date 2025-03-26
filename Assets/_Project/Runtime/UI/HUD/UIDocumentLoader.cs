@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -7,11 +8,11 @@ public class UIDocumentLoader : MonoBehaviour
     [SerializeField] private VisualTreeAsset visualTreeAsset;
     [SerializeField] private StyleSheet styleSheet;
     [SerializeField] private PanelSettings panelSettings;
-    
+   
     [SerializeField] private bool loadAtRuntime = true;
     [SerializeField] private string uxmlAssetPath = "UI/HUD/GameHUD";
     [SerializeField] private string ussAssetPath = "UI/HUD/GameHUD";
-    
+   
     private void Awake()
     {
         if (uiDocument == null)
@@ -23,15 +24,13 @@ public class UIDocumentLoader : MonoBehaviour
                 Debug.Log("Added UIDocument component");
             }
         }
-        
-        // Set Visual Tree Asset if provided
+       
         if (visualTreeAsset != null)
         {
             uiDocument.visualTreeAsset = visualTreeAsset;
         }
         else if (loadAtRuntime && !string.IsNullOrEmpty(uxmlAssetPath))
         {
-            // Try to load from Resources
             VisualTreeAsset loadedAsset = Resources.Load<VisualTreeAsset>(uxmlAssetPath);
             if (loadedAsset != null)
             {
@@ -43,31 +42,27 @@ public class UIDocumentLoader : MonoBehaviour
                 Debug.LogWarning($"Failed to load UXML from Resources: {uxmlAssetPath}");
             }
         }
-        
-        // Set Panel Settings if provided
+       
         if (panelSettings != null)
         {
             uiDocument.panelSettings = panelSettings;
         }
     }
-    
+   
     private void OnEnable()
     {
-        // Ensure we have a root element
         if (uiDocument == null || uiDocument.rootVisualElement == null)
         {
             Debug.LogWarning("UIDocument or root element is null");
             return;
         }
-        
-        // Try to apply style sheet
+       
         if (styleSheet != null)
         {
             AddStyleSheet(styleSheet);
         }
         else if (loadAtRuntime && !string.IsNullOrEmpty(ussAssetPath))
         {
-            // Try to load StyleSheet from Resources
             StyleSheet loadedStyleSheet = Resources.Load<StyleSheet>(ussAssetPath);
             if (loadedStyleSheet != null)
             {
@@ -80,14 +75,13 @@ public class UIDocumentLoader : MonoBehaviour
             }
         }
     }
-    
+   
     private void AddStyleSheet(StyleSheet sheet)
     {
         try
         {
             VisualElement root = uiDocument.rootVisualElement;
-            
-            // Check if already added
+           
             bool alreadyAdded = false;
             for (int i = 0; i < root.styleSheets.count; i++)
             {
@@ -97,7 +91,7 @@ public class UIDocumentLoader : MonoBehaviour
                     break;
                 }
             }
-            
+           
             if (!alreadyAdded)
             {
                 root.styleSheets.Add(sheet);

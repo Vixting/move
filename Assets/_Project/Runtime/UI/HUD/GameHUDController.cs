@@ -6,13 +6,8 @@ using UnityEngine.SceneManagement;
 public class GameHUDController : MonoBehaviour
 {
     [SerializeField] private UIDocument uiDocument;
-    [SerializeField] private Player player;
-    [SerializeField] private WeaponManager weaponManager;
-    [SerializeField] private PlayerHealth playerHealth;
-    [SerializeField] private float crosshairSpreadMultiplier = 2f;
-    [SerializeField] private float crosshairDefaultSize = 10f;
-    [SerializeField] private float maxCrosshairSpread = 30f;
     [SerializeField] private float hitMarkerDuration = 0.2f;
+    [SerializeField] private float checkPlayerInterval = 0.5f;
     
     private VisualElement root;
     private Label weaponNameLabel;
@@ -22,220 +17,137 @@ public class GameHUDController : MonoBehaviour
     private VisualElement healthBar;
     private Label healthValueLabel;
     private Label stanceTextLabel;
-    private VisualElement stanceIcon;
-    private VisualElement hitMarker;
+    private VisualElement crosshair;
     private VisualElement[] crosshairLines = new VisualElement[4];
     private VisualElement[] weaponSlots = new VisualElement[3];
+    private VisualElement hitMarker;
+    private VisualElement reloadIndicator;
+    private VisualElement reloadProgressFill;
+    
+    private Player player;
+    private WeaponManager weaponManager;
+    private PlayerHealth playerHealth;
+    private PlayerCharacter playerCharacter;
     
     private int currentHealth = 100;
     private int maxHealth = 100;
-    private int currentWeaponSlot = 1;
-    private float currentCrosshairSpread = 0f;
+    private float currentCrosshairSpread = 10f;
     private bool isReloading = false;
     private Coroutine reloadCoroutine;
     private bool isInitialized = false;
-    private Coroutine findPlayerCoroutine;
+    private string lastStanceText = "";
     
-    private void Awake()
-    {
-        DontDestroyOnLoad(gameObject);
-    }
+    private void Awake() => DontDestroyOnLoad(gameObject);
     
     private void OnEnable()
     {
         SceneManager.sceneLoaded += OnSceneLoaded;
-        
-        if (uiDocument == null)
-            uiDocument = GetComponent<UIDocument>();
-        
-        StartCoroutine(InitializeWithDelay());
+        if (uiDocument == null) uiDocument = GetComponent<UIDocument>();
+        StartCoroutine(InitializeUIWithDelay());
     }
     
     private void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
-        
-        if (reloadCoroutine != null)
-        {
-            StopCoroutine(reloadCoroutine);
-            reloadCoroutine = null;
-        }
-        
-        if (findPlayerCoroutine != null)
-        {
-            StopCoroutine(findPlayerCoroutine);
-            findPlayerCoroutine = null;
-        }
+        if (reloadCoroutine != null) { StopCoroutine(reloadCoroutine); reloadCoroutine = null; }
+        UnsubscribeFromEvents();
     }
     
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        StartCoroutine(CheckGameplayStateAfterLoad());
-    }
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => StartCoroutine(HandleSceneChange());
     
-    private IEnumerator CheckGameplayStateAfterLoad()
+    private IEnumerator HandleSceneChange()
     {
-        // Wait for the scene to stabilize
         yield return new WaitForSeconds(0.5f);
-        
         bool isGameplayScene = IsGameplayScene();
-        SetHUDActive(isGameplayScene);
+        ToggleHUD(isGameplayScene);
         
-        // Reset references since player might be re-instantiated
-        if (isGameplayScene)
-        {
-            player = null;
-            weaponManager = null;
-            playerHealth = null;
-            
-            // Start the reference finding coroutine
-            if (findPlayerCoroutine != null)
-                StopCoroutine(findPlayerCoroutine);
-                
-            findPlayerCoroutine = StartCoroutine(FindPlayerWithRetry());
-        }
+        if (isGameplayScene) StartCoroutine(FindPlayerAndComponents());
+        else { UnsubscribeFromEvents(); player = null; weaponManager = null; playerHealth = null; playerCharacter = null; }
     }
     
-    private IEnumerator FindPlayerWithRetry()
-    {
-        // Keep trying to find the player and required components for up to 5 seconds
-        float timeoutLimit = 5f;
-        float elapsed = 0f;
-        
-        while (elapsed < timeoutLimit)
-        {
-            if (player == null)
-                player = FindObjectOfType<Player>();
-                
-            if (player != null)
-            {
-                // Found player, now get components
-                if (weaponManager == null)
-                    weaponManager = player.GetComponentInChildren<WeaponManager>();
-                    
-                if (playerHealth == null)
-                    playerHealth = player.GetComponent<PlayerHealth>();
-                
-                // If we have all required components, stop searching
-                if (weaponManager != null && playerHealth != null)
-                {
-                    // We found all components, refresh HUD
-                    SetupEventListeners();
-                    
-                    if (!isInitialized)
-                        StartCoroutine(InitializeWithDelay());
-                    else
-                        RefreshHUDData();
-                        
-                    // Log what we found for debugging
-                    Debug.Log($"[HUD] Found player and components. Player: {player != null}, WeaponManager: {weaponManager != null}, PlayerHealth: {playerHealth != null}");
-                    
-                    yield break;
-                }
-            }
-            
-            // Wait a bit before trying again
-            yield return new WaitForSeconds(0.2f);
-            elapsed += 0.2f;
-        }
-        
-        Debug.LogWarning("[HUD] Timed out waiting for player references.");
-    }
-    
-    private IEnumerator InitializeWithDelay()
+    private IEnumerator InitializeUIWithDelay()
     {
         yield return new WaitForSeconds(0.2f);
         
         if (uiDocument != null && uiDocument.rootVisualElement != null)
         {
             InitializeUIReferences();
-            SetupEventListeners();
             isInitialized = true;
+            ToggleHUD(IsGameplayScene());
+            if (IsGameplayScene()) StartCoroutine(FindPlayerAndComponents());
+        }
+    }
+    
+    private IEnumerator FindPlayerAndComponents()
+    {
+        float startTime = Time.time;
+        float timeout = 10f;
+        
+        while (Time.time - startTime < timeout)
+        {
+            player = FindObjectOfType<Player>();
             
-            // Check if we should be active right now
-            SetHUDActive(IsGameplayScene());
+            if (player != null)
+            {
+                yield return new WaitForSeconds(0.2f);
+                
+                weaponManager = player.GetComponentInChildren<WeaponManager>();
+                playerHealth = player.GetComponent<PlayerHealth>();
+                playerCharacter = player.GetComponentInChildren<PlayerCharacter>();
+                
+                if (weaponManager != null && playerCharacter != null)
+                {
+                    SubscribeToEvents();
+                    RefreshHUDData();
+                    yield break;
+                }
+            }
+            
+            yield return new WaitForSeconds(checkPlayerInterval);
         }
     }
     
     private void Update()
     {
-        // Continuously look for player if we don't have one but should be in gameplay
-        if (IsGameplayScene())
+        if (!IsGameplayScene() || !isInitialized) return;
+        
+        if (player == null || weaponManager == null || playerCharacter == null)
         {
-            if (player == null || weaponManager == null || playerHealth == null)
-            {
-                RefreshReferences();
-            }
-            else if (isInitialized && crosshairLines[0] != null)
-            {
-                UpdateCrosshair();
-            }
+            if (!IsSearchingForPlayer()) StartCoroutine(FindPlayerAndComponents());
+            return;
         }
+        
+        UpdateCrosshair();
+        UpdateStanceUI();
+    }
+    
+    private bool IsSearchingForPlayer()
+    {
+        return System.Array.Exists(StartCoroutine("").ToString().Split('_'), x => x.Contains("FindPlayerAndComponents"));
     }
     
     private bool IsGameplayScene()
     {
-        // First check LevelManager for a definitive answer
-        if (LevelManager.Instance != null && LevelManager.Instance.CurrentLevelIndex >= 0)
-        {
-            return true;
-        }
-        
-        // Use GameManager's state if available
-        if (GameManager.Instance != null)
-        {
-            // If the GameManager thinks we're in a gameplay level, trust it
-            bool noMenusPresent = FindObjectOfType<MainMenuController>() == null && 
-                                  FindObjectOfType<LevelSelectionUI>() == null;
-            return noMenusPresent;
-        }
-        
-        return false;
+        if (LevelManager.Instance != null && LevelManager.Instance.CurrentLevelIndex >= 0) return true;
+        return !IsMenuActive();
     }
     
-    private void SetHUDActive(bool active)
+    private bool IsMenuActive()
     {
-        if (uiDocument != null)
-        {
-            uiDocument.enabled = active;
-            
-            if (active && uiDocument.rootVisualElement != null)
-            {
-                VisualElement rootElement = uiDocument.rootVisualElement.Q<VisualElement>("root");
-                if (rootElement != null)
-                    rootElement.style.display = DisplayStyle.Flex;
-            }
-        }
+        return FindObjectOfType<MainMenuController>() != null || FindObjectOfType<LevelSelectionUI>() != null;
     }
     
-    private void RefreshReferences()
+    private void ToggleHUD(bool visible)
     {
-        if (player == null)
-            player = FindObjectOfType<Player>();
-            
-        if (player != null)
-        {
-            if (weaponManager == null)
-                weaponManager = player.GetComponentInChildren<WeaponManager>();
-                
-            if (playerHealth == null)
-                playerHealth = player.GetComponent<PlayerHealth>();
-                
-            if (weaponManager != null && playerHealth != null)
-                SetupEventListeners();
-        }
-    }
-    
-    private void RefreshHUDData()
-    {
-        UpdateWeaponInfo();
-        UpdateHealthUI();
-        UpdateStanceUI();
+        if (uiDocument == null) return;
+        uiDocument.enabled = visible;
+        if (root != null) root.style.display = visible ? DisplayStyle.Flex : DisplayStyle.None;
     }
     
     private void InitializeUIReferences()
     {
-        root = uiDocument.rootVisualElement;
+        root = uiDocument.rootVisualElement.Q<VisualElement>("root");
+        if (root == null) return;
         
         weaponNameLabel = root.Q<Label>("weapon-name");
         currentAmmoLabel = root.Q<Label>("current-ammo");
@@ -245,11 +157,12 @@ public class GameHUDController : MonoBehaviour
         healthBar = root.Q<VisualElement>("health-bar");
         healthValueLabel = root.Q<Label>("health-value");
         stanceTextLabel = root.Q<Label>("stance-text");
-        stanceIcon = root.Q<VisualElement>("stance-icon");
         
         hitMarker = root.Q<VisualElement>("hit-marker");
+        reloadIndicator = root.Q<VisualElement>("reload-indicator");
+        if (reloadIndicator != null) reloadProgressFill = reloadIndicator.Q<VisualElement>("reload-progress-fill");
         
-        var crosshair = root.Q<VisualElement>("crosshair");
+        crosshair = root.Q<VisualElement>("crosshair");
         if (crosshair != null)
         {
             crosshairLines[0] = root.Q<VisualElement>("crosshair-top");
@@ -263,21 +176,47 @@ public class GameHUDController : MonoBehaviour
         weaponSlots[2] = root.Q<VisualElement>("weapon-slot-3");
     }
     
-    private void SetupEventListeners()
+    private void SubscribeToEvents()
     {
+        UnsubscribeFromEvents();
+        
         if (weaponManager != null && weaponManager.onWeaponChanged != null)
-        {
-            weaponManager.onWeaponChanged.RemoveListener(OnWeaponChanged);
             weaponManager.onWeaponChanged.AddListener(OnWeaponChanged);
-        }
         
         if (playerHealth != null && playerHealth.onHealthChanged != null)
-        {
-            playerHealth.onHealthChanged.RemoveListener(OnHealthChanged);
             playerHealth.onHealthChanged.AddListener(OnHealthChanged);
-        }
         
         SetupWeaponListeners();
+    }
+    
+    private void UnsubscribeFromEvents()
+    {
+        if (weaponManager != null && weaponManager.onWeaponChanged != null)
+            weaponManager.onWeaponChanged.RemoveListener(OnWeaponChanged);
+            
+        if (playerHealth != null && playerHealth.onHealthChanged != null)
+            playerHealth.onHealthChanged.RemoveListener(OnHealthChanged);
+            
+        if (weaponManager != null)
+        {
+            try
+            {
+                int weaponCount = weaponManager.GetWeaponCount();
+                for (int i = 0; i < weaponCount; i++)
+                {
+                    var weapon = weaponManager.transform.GetChild(i).GetComponent<Weapon>();
+                    if (weapon != null)
+                    {
+                        if (weapon.onAmmoChanged != null)
+                            weapon.onAmmoChanged.RemoveListener(OnAmmoChanged);
+                            
+                        if (weapon.onReloadStateChanged != null)
+                            weapon.onReloadStateChanged.RemoveListener(OnReloadStateChanged);
+                    }
+                }
+            }
+            catch { }
+        }
     }
     
     private void SetupWeaponListeners()
@@ -289,9 +228,7 @@ public class GameHUDController : MonoBehaviour
             int weaponCount = weaponManager.GetWeaponCount();
             for (int i = 0; i < weaponCount; i++)
             {
-                Transform weaponTransform = weaponManager.transform.GetChild(i);
-                if (weaponTransform == null) continue;
-                
+                var weaponTransform = weaponManager.transform.GetChild(i);
                 var weapon = weaponTransform.GetComponent<Weapon>();
                 if (weapon != null)
                 {
@@ -309,16 +246,19 @@ public class GameHUDController : MonoBehaviour
                 }
             }
         }
-        catch (System.Exception e)
-        {
-            Debug.LogWarning($"[HUD] Error setting up weapon listeners: {e.Message}");
-        }
+        catch { }
+    }
+    
+    private void RefreshHUDData()
+    {
+        UpdateWeaponInfo();
+        UpdateWeaponSlots();
+        UpdateHealthUI();
+        UpdateStanceUI();
     }
     
     public void OnWeaponChanged(WeaponData weaponData, int currentAmmo)
     {
-        if (!IsGameplayScene()) return;
-        
         SetupWeaponListeners();
         UpdateWeaponInfo();
         UpdateWeaponSlots();
@@ -326,42 +266,29 @@ public class GameHUDController : MonoBehaviour
     
     public void OnAmmoChanged(int currentAmmo)
     {
-        if (!IsGameplayScene() || currentAmmoLabel == null) return;
-        
-        currentAmmoLabel.text = currentAmmo.ToString();
+        if (currentAmmoLabel != null) currentAmmoLabel.text = currentAmmo.ToString();
     }
     
     public void OnReloadStateChanged(bool isReloading)
     {
-        if (!IsGameplayScene()) return;
-        
         this.isReloading = isReloading;
-        
-        VisualElement reloadIndicator = root.Q<VisualElement>("reload-indicator");
         if (reloadIndicator != null)
             reloadIndicator.style.display = isReloading ? DisplayStyle.Flex : DisplayStyle.None;
         
         if (isReloading)
         {
-            if (reloadCoroutine != null)
-                StopCoroutine(reloadCoroutine);
-                
+            if (reloadCoroutine != null) StopCoroutine(reloadCoroutine);
             reloadCoroutine = StartCoroutine(UpdateReloadProgress());
         }
-        else
+        else if (reloadCoroutine != null)
         {
-            if (reloadCoroutine != null)
-            {
-                StopCoroutine(reloadCoroutine);
-                reloadCoroutine = null;
-            }
+            StopCoroutine(reloadCoroutine);
+            reloadCoroutine = null;
         }
     }
     
     public void OnHealthChanged(int newHealth, int maxHealth)
     {
-        if (!IsGameplayScene()) return;
-        
         currentHealth = newHealth;
         this.maxHealth = maxHealth;
         UpdateHealthUI();
@@ -369,8 +296,7 @@ public class GameHUDController : MonoBehaviour
     
     public void ShowHitMarker()
     {
-        if (!IsGameplayScene() || hitMarker == null) return;
-        
+        if (hitMarker == null) return;
         hitMarker.style.display = DisplayStyle.Flex;
         StartCoroutine(HideHitMarker());
     }
@@ -378,14 +304,12 @@ public class GameHUDController : MonoBehaviour
     private IEnumerator HideHitMarker()
     {
         yield return new WaitForSeconds(hitMarkerDuration);
-        
-        if (hitMarker != null)
-            hitMarker.style.display = DisplayStyle.None;
+        if (hitMarker != null) hitMarker.style.display = DisplayStyle.None;
     }
     
     private IEnumerator UpdateReloadProgress()
     {
-        if (weaponManager == null) yield break;
+        if (weaponManager == null || reloadProgressFill == null) yield break;
         
         float reloadTime = 2.0f;
         try
@@ -403,10 +327,7 @@ public class GameHUDController : MonoBehaviour
                 }
             }
         }
-        catch {}
-        
-        VisualElement reloadProgressFill = root.Q<VisualElement>("reload-progress-fill");
-        if (reloadProgressFill == null) yield break;
+        catch { }
         
         float elapsed = 0f;
         while (elapsed < reloadTime && isReloading)
@@ -422,8 +343,7 @@ public class GameHUDController : MonoBehaviour
     
     private void UpdateWeaponInfo()
     {
-        if (!IsGameplayScene() || weaponManager == null || weaponNameLabel == null || 
-            currentAmmoLabel == null || maxAmmoLabel == null) return;
+        if (weaponManager == null || weaponNameLabel == null || currentAmmoLabel == null || maxAmmoLabel == null) return;
         
         try
         {
@@ -447,43 +367,32 @@ public class GameHUDController : MonoBehaviour
             
             weaponNameLabel.text = weaponData.weaponName;
             
-            Transform weaponTransform = weaponManager.transform.GetChild(currentWeaponIndex);
-            if (weaponTransform == null) return;
-            
-            var weapon = weaponTransform.GetComponent<Weapon>();
+            var weapon = weaponManager.transform.GetChild(currentWeaponIndex).GetComponent<Weapon>();
             if (weapon != null)
             {
                 currentAmmoLabel.text = weapon.CurrentAmmo.ToString();
                 maxAmmoLabel.text = weaponData.maxAmmo.ToString();
             }
         }
-        catch (System.Exception e)
-        {
-            Debug.LogWarning($"[HUD] Error updating weapon info: {e.Message}");
-        }
+        catch { }
     }
     
     private void UpdateWeaponSlots()
     {
-        if (!IsGameplayScene() || weaponManager == null) return;
+        if (weaponManager == null) return;
         
         try
         {
             int currentSlot = weaponManager.GetCurrentWeaponSlot();
             if (currentSlot <= 0) return;
             
-            currentWeaponSlot = currentSlot;
-            
             for (int i = 0; i < weaponSlots.Length; i++)
             {
                 if (weaponSlots[i] == null) continue;
                 
                 bool isActive = (i + 1) == currentSlot;
-                
                 weaponSlots[i].RemoveFromClassList("weapon-slot-active");
-                
-                if (isActive)
-                    weaponSlots[i].AddToClassList("weapon-slot-active");
+                if (isActive) weaponSlots[i].AddToClassList("weapon-slot-active");
                 
                 Label slotNameLabel = weaponSlots[i].Q<Label>("slot-name");
                 if (slotNameLabel != null)
@@ -499,15 +408,12 @@ public class GameHUDController : MonoBehaviour
                 }
             }
         }
-        catch (System.Exception e)
-        {
-            Debug.LogWarning($"[HUD] Error updating weapon slots: {e.Message}");
-        }
+        catch { }
     }
     
     private void UpdateHealthUI()
     {
-        if (!IsGameplayScene() || healthBar == null || healthValueLabel == null) return;
+        if (healthBar == null || healthValueLabel == null) return;
         
         try
         {
@@ -523,77 +429,63 @@ public class GameHUDController : MonoBehaviour
             
             healthValueLabel.text = currentHealth.ToString();
         }
-        catch (System.Exception e)
-        {
-            Debug.LogWarning($"[HUD] Error updating health UI: {e.Message}");
-        }
+        catch { }
     }
     
     private void UpdateStanceUI()
     {
-        if (!IsGameplayScene() || player == null || stanceTextLabel == null) return;
+        if (playerCharacter == null || stanceTextLabel == null) return;
         
         try
         {
-            PlayerCharacter character = player.GetComponentInChildren<PlayerCharacter>();
-            if (character == null) return;
-            
-            Stance currentStance = Stance.Stand;
-            // Try to get actual stance if method available
-            // if (character.GetStance != null) currentStance = character.GetStance();
-            
             string stanceText = "STANDING";
             
-            switch (currentStance)
-            {
-                case Stance.Crouch: stanceText = "CROUCHING"; break;
-                case Stance.Slide: stanceText = "SLIDING"; break;
-            }
+            if (playerCharacter.IsSliding())
+                stanceText = "SLIDING";
+            else if (playerCharacter.GetStance() == Stance.Crouch)
+                stanceText = "CROUCHING";
             
-            stanceTextLabel.text = stanceText;
+            if (stanceText != lastStanceText)
+            {
+                stanceTextLabel.text = stanceText;
+                lastStanceText = stanceText;
+            }
         }
-        catch (System.Exception e)
-        {
-            Debug.LogWarning($"[HUD] Error updating stance UI: {e.Message}");
-        }
+        catch { }
     }
     
     private void UpdateCrosshair()
     {
-        if (!IsGameplayScene() || player == null || crosshairLines == null) return;
-        if (crosshairLines[0] == null || crosshairLines[1] == null || 
-            crosshairLines[2] == null || crosshairLines[3] == null) return;
+        if (player == null || crosshair == null || crosshairLines[0] == null) return;
         
         try
         {
-            PlayerCharacter character = player.GetComponentInChildren<PlayerCharacter>();
-            if (character == null) return;
-            
             bool isAiming = player._inputActions != null && player._inputActions.Gameplay.Aim.IsPressed();
-            Vector3 velocity = Vector3.zero;
+            Vector3 velocity = playerCharacter != null ? playerCharacter.GetVelocity() : Vector3.zero;
             float velocityMagnitude = velocity.magnitude;
             
-            float targetSpread = crosshairDefaultSize;
+            float targetSpread = 10f;
             
             if (!isAiming)
             {
-                targetSpread += Mathf.Min(velocityMagnitude * crosshairSpreadMultiplier, maxCrosshairSpread);
-                
-                bool isGrounded = true;
-                if (!isGrounded) targetSpread += 10f;
+                targetSpread += Mathf.Min(velocityMagnitude * 2f, 30f);
                 
                 if (player._inputActions != null && player._inputActions.Gameplay.Fire.IsPressed())
                     targetSpread += 15f;
+                
+                bool isGrounded = playerCharacter != null && playerCharacter.IsGrounded();
+                if (!isGrounded)
+                    targetSpread += 10f;
             }
             else
-            {
-                targetSpread = crosshairDefaultSize * 0.6f;
-            }
+                targetSpread = 6f;
             
             currentCrosshairSpread = Mathf.Lerp(currentCrosshairSpread, targetSpread, Time.deltaTime * 10f);
             
             for (int i = 0; i < crosshairLines.Length; i++)
             {
+                if (crosshairLines[i] == null) continue;
+                
                 float positionOffset = currentCrosshairSpread * 0.5f;
                 
                 if (i % 2 == 0)
@@ -612,9 +504,6 @@ public class GameHUDController : MonoBehaviour
                 }
             }
         }
-        catch (System.Exception e)
-        {
-            Debug.LogWarning($"[HUD] Error updating crosshair: {e.Message}");
-        }
+        catch { }
     }
 }
