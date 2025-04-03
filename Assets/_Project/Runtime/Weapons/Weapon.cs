@@ -23,6 +23,7 @@ public class Weapon : MonoBehaviour
     private WeaponHolder weaponHolder;
     private Coroutine reloadCoroutine;
     private PlayerCharacter playerCharacter;
+    private WeaponInventoryIntegration _inventoryIntegration;
     
     [Header("Rotation Settings")]
     [SerializeField] private bool enableCustomRotation = true;
@@ -32,6 +33,9 @@ public class Weapon : MonoBehaviour
     private Vector3 currentRotation;
     private Vector3 targetRotation;
     private Quaternion initialLocalRotation;
+    
+    private bool isMalfunctioning = false;
+    private float lastSyncTime = 0f;
     
     public int CurrentAmmo => currentAmmo;
     public UnityEvent<int> onAmmoChanged = new UnityEvent<int>();
@@ -43,6 +47,13 @@ public class Weapon : MonoBehaviour
         playerCamera = camera;
         shootableLayers = layers;
         playerCharacter = character;
+        
+        // Get or add WeaponInventoryIntegration
+        _inventoryIntegration = GetComponent<WeaponInventoryIntegration>();
+        if (_inventoryIntegration == null)
+        {
+            _inventoryIntegration = gameObject.AddComponent<WeaponInventoryIntegration>();
+        }
         
         initialLocalRotation = transform.localRotation;
         
@@ -93,6 +104,16 @@ public class Weapon : MonoBehaviour
 
         currentAmmo = weaponData.maxAmmo;
         onAmmoChanged?.Invoke(currentAmmo);
+        
+        if (_inventoryIntegration != null)
+        {
+            int loadedAmmo = _inventoryIntegration.GetAmmoForWeapon(weaponData);
+            if (loadedAmmo > 0)
+            {
+                currentAmmo = loadedAmmo;
+                onAmmoChanged?.Invoke(currentAmmo);
+            }
+        }
     }
     
     private void SetupAudioSource()
@@ -113,6 +134,11 @@ public class Weapon : MonoBehaviour
     
     private void OnDisable()
     {
+        if (_inventoryIntegration != null)
+        {
+            _inventoryIntegration.SyncWeaponToInventory(this);
+        }
+        
         if (tempAudioSource != null)
         {
             Destroy(tempAudioSource);
@@ -124,7 +150,7 @@ public class Weapon : MonoBehaviour
     
     private void Update()
     {
-        if (isShooting && weaponData != null && weaponData.isAutomatic && !isReloading && Time.time >= nextTimeToFire)
+        if (isShooting && weaponData != null && weaponData.isAutomatic && !isReloading && !isMalfunctioning && Time.time >= nextTimeToFire)
         {
             PerformShot();
         }
@@ -138,6 +164,12 @@ public class Weapon : MonoBehaviour
             );
             
             transform.localRotation = initialLocalRotation * Quaternion.Euler(currentRotation);
+        }
+        
+        if (_inventoryIntegration != null && Time.time - lastSyncTime > 5f)
+        {
+            _inventoryIntegration.SyncWeaponToInventory(this);
+            lastSyncTime = Time.time;
         }
     }
     
@@ -171,9 +203,18 @@ public class Weapon : MonoBehaviour
     public void OnFire(bool started)
     {
         isShooting = started;
-        if (started && weaponData != null && !weaponData.isAutomatic)
+        if (started && weaponData != null)
         {
-            PerformShot();
+            if (isMalfunctioning)
+            {
+                PlaySound(weaponData.emptySound);
+                return;
+            }
+            
+            if (!weaponData.isAutomatic)
+            {
+                PerformShot();
+            }
         }
         if (!started)
         {
@@ -183,11 +224,24 @@ public class Weapon : MonoBehaviour
 
     public void OnReload()
     {
-        TryReload();
+        if (isMalfunctioning)
+        {
+            StartCoroutine(ClearMalfunctionCoroutine());
+        }
+        else
+        {
+            TryReload();
+        }
     }
 
     private void PerformShot()
     {
+        if (isMalfunctioning)
+        {
+            PlaySound(weaponData.emptySound);
+            return;
+        }
+        
         if (currentAmmo <= 0 || isReloading || playerCamera == null)
         {
             PlaySound(weaponData.emptySound);
@@ -199,6 +253,12 @@ public class Weapon : MonoBehaviour
         currentAmmo--;
         onAmmoChanged?.Invoke(currentAmmo);
 
+        if (_inventoryIntegration != null)
+        {
+            _inventoryIntegration.SyncWeaponToInventory(this);
+            _inventoryIntegration.DecreaseDurability(this, 0.2f);
+        }
+        
         PlaySound(weaponData.shootSound);
         
         if (weaponHolder != null)
@@ -207,17 +267,13 @@ public class Weapon : MonoBehaviour
             weaponHolder.AddRecoil(recoilAmount);
         }
         
-        // Apply directional knockback to player
         if (playerCharacter != null && (weaponData.horizontalKnockbackForce > 0 || weaponData.verticalKnockbackForce != 0))
         {
-            // Horizontal knockback uses the firing direction
             Vector3 knockbackDirection = -playerCamera.transform.forward;
             
-            // Create a combined knockback vector from horizontal and vertical components
             Vector3 horizontalKnockback = knockbackDirection * weaponData.horizontalKnockbackForce;
             Vector3 verticalKnockback = Vector3.up * weaponData.verticalKnockbackForce;
             
-            // Apply the directional knockback
             playerCharacter.ApplyDirectionalKnockback(horizontalKnockback, verticalKnockback);
         }
         
@@ -269,7 +325,7 @@ public class Weapon : MonoBehaviour
         float randomScale = Random.Range(0.8f, 1.2f) * weaponData.bulletHoleSize;
         bulletHole.transform.localScale = new Vector3(randomScale, randomScale, 1f);
 
-        bulletHole.GetComponent<BulletHole>()?.Initialize(weaponData.bulletHoleMaterial, weaponData.bulletHoleLifetime);
+        bulletHole.GetComponent<BulletHole>()?.Initialize(weaponData.bulletHoleMaterial, weaponData.bulletHoleLifetime, bulletHolePool);
     }
 
     private void InitializeBulletHoleMesh()
@@ -356,13 +412,44 @@ public class Weapon : MonoBehaviour
         
         if (isReloading)
         {
-            currentAmmo = weaponData.maxAmmo;
+            if (_inventoryIntegration != null &&
+                _inventoryIntegration.TryReloadFromInventory(this, out int ammoLoaded))
+            {
+                currentAmmo = ammoLoaded;
+            }
+            else
+            {
+                currentAmmo = weaponData.maxAmmo;
+            }
+            
             isReloading = false;
             onAmmoChanged?.Invoke(currentAmmo);
             onReloadStateChanged?.Invoke(false);
+            
+            if (_inventoryIntegration != null)
+            {
+                _inventoryIntegration.DecreaseDurability(this, 0.05f);
+            }
         }
         
         reloadCoroutine = null;
+    }
+    
+    private IEnumerator ClearMalfunctionCoroutine()
+    {
+        isReloading = true;
+        onReloadStateChanged?.Invoke(true);
+        
+        if (weaponData.reloadSound != null)
+        {
+            PlaySound(weaponData.reloadSound);
+        }
+        
+        yield return new WaitForSeconds(weaponData.reloadTime * 1.5f);
+        
+        isMalfunctioning = false;
+        isReloading = false;
+        onReloadStateChanged?.Invoke(false);
     }
 
     private void PlaySound(AudioClip clip)
@@ -444,8 +531,25 @@ public class Weapon : MonoBehaviour
     {
         enableCustomRotation = enabled;
     }
+    
     public WeaponData GetWeaponData()
     {
         return weaponData;
+    }
+    
+    public void SetAmmo(int ammoCount)
+    {
+        currentAmmo = Mathf.Clamp(ammoCount, 0, weaponData?.maxAmmo ?? 30);
+        onAmmoChanged?.Invoke(currentAmmo);
+    }
+
+    public void SetMalfunctioning(bool state)
+    {
+        isMalfunctioning = state;
+    }
+
+    public bool IsMalfunctioning()
+    {
+        return isMalfunctioning;
     }
 }

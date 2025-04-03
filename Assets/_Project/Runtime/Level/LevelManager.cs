@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using InventorySystem; 
 
 public class LevelManager : MonoBehaviour
 {
@@ -187,6 +188,12 @@ public class LevelManager : MonoBehaviour
             yield return FadeLoadingScreen(1);
         }
 
+        // Save current state before loading
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.SaveGame();
+        }
+
         foreach (AudioListener listener in FindObjectsOfType<AudioListener>())
         {
             if (_mainAudioListener != null && listener == _mainAudioListener)
@@ -235,7 +242,8 @@ public class LevelManager : MonoBehaviour
 
         _currentLevelIndex = levelIndex;
 
-        yield return new WaitForSeconds(0.1f);
+        // Wait a bit longer to ensure everything is loaded
+        yield return new WaitForSeconds(0.2f);
 
         bool isGameplayLevel = _currentLevelIndex >= 0;
         
@@ -243,11 +251,24 @@ public class LevelManager : MonoBehaviour
         {
             SpawnPlayer();
             SaveProgress();
+            
+            // Wait an additional frame to ensure player is fully initialized
+            yield return null;
+            
+            // Explicitly re-establish inventory connections
+            ReconnectInventorySystems();
         }
         
         if (GameManager.Instance != null)
         {
+            // Trigger level loaded event
             GameManager.Instance.OnLevelLoaded(isGameplayLevel);
+            
+            // Load game state if in gameplay level
+            if (isGameplayLevel)
+            {
+                GameManager.Instance.LoadGame();
+            }
         }
 
         if (loadingScreenCanvasGroup != null)
@@ -308,11 +329,45 @@ public class LevelManager : MonoBehaviour
         
         _currentPlayer.gameObject.SetActive(true);
         _currentPlayer.EnableGameplayMode(true);
-        
-        if (InventoryUIDocumentLoader.Instance != null)
+    }
+    
+    private void ReconnectInventorySystems()
+    {
+        // Find the inventory manager
+        var inventoryManager = FindObjectOfType<InventoryManager>();
+        if (inventoryManager == null)
         {
-            InventoryUIDocumentLoader.Instance.SetupInventoryUI();
-            InventoryUIDocumentLoader.Instance.ConnectPlayerInput();
+            Debug.LogError("Inventory Manager not found in the scene");
+            return;
+        }
+        
+        // Ensure inventory weapon bridge exists and works
+        InventoryWeaponBridge bridge = FindObjectOfType<InventoryWeaponBridge>();
+        if (bridge == null && _currentPlayer != null)
+        {
+            bridge = _currentPlayer.gameObject.AddComponent<InventoryWeaponBridge>();
+        }
+        
+        // Wait a frame to ensure components are ready
+        StartCoroutine(DelayedInventorySync(bridge));
+    }
+
+    private IEnumerator DelayedInventorySync(InventoryWeaponBridge bridge)
+    {
+        // Wait two frames to ensure everything is initialized
+        yield return null;
+        yield return null;
+        
+        if (bridge != null)
+        {
+            // Force syncing weapons with inventory
+            bridge.MapAvailableWeapons();
+            bridge.SyncWeaponsWithInventory();
+            Debug.Log("Inventory systems reconnected successfully");
+        }
+        else
+        {
+            Debug.LogError("Failed to find or create InventoryWeaponBridge");
         }
     }
     

@@ -12,14 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8de15e308f3be414da596ebebeb4ec08, type: 3}
   m_Name: RifleData
   m_EditorClassIdentifier: 
+  weaponId: 4e32981f-6ae5-4f80-b599-ea2db0a97702
   weaponName: Rifle
   weaponPrefab: {fileID: 5835875615246309398, guid: 072b7a0409312354aa816465a6384700, type: 3}
+  weaponIcon: {fileID: 21300000, guid: 8abd8cb1dae66cd47b2b4c646cd39bf2, type: 3}
+  weaponSlot: 1
   bulletRange: 100
   fireRate: 0.1
   maxAmmo: 30
   reloadTime: 2
   isAutomatic: 1
   impactForce: 20
+  compatibleAmmoType: 2
+  horizontalKnockbackForce: 0
+  verticalKnockbackForce: 0
   bulletHoleSize: 0.1
   bulletHoleLifetime: 10
   bulletHoleMaterial: {fileID: 2100000, guid: b2a6a53178fc17641ba8f97c719776b4, type: 2}
@@ -36,3 +42,5 @@ MonoBehaviour:
   recoilAmount: 0.5
   horizontalRecoilVariance: 0.3
   recoilRecoverySpeed: 200
+  attachmentPoints: []
+  inventoryItemId: 0

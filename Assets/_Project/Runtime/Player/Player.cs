@@ -1,11 +1,16 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
+using InventorySystem;
 
 public class Player : MonoBehaviour
 {
     [SerializeField] private PlayerCharacter playerCharacter;
     [SerializeField] private PlayerCamera playerCamera;
     [SerializeField] private WeaponManager weaponManager;
+    [SerializeField] private InventoryManager inventoryManager;
+    [SerializeField] private Character characterData;
+    
+    private InventoryWeaponBridge _weaponBridge;
     
     public PlayerInputActions _inputActions;
     
@@ -41,6 +46,15 @@ public class Player : MonoBehaviour
                 GameManager.Instance.RegisterWeapons(weaponManager.GetAvailableWeapons());
             }
         }
+        
+        if (inventoryManager != null && characterData != null)
+        {
+            if (weaponManager != null)
+            {
+                inventoryManager.SetWeaponManager(weaponManager);
+                EnsureWeaponBridge();
+            }
+        }
        
         _inputActions.Gameplay.Aim.started += OnAimStarted;
         _inputActions.Gameplay.Aim.canceled += OnAimCanceled;
@@ -58,18 +72,44 @@ public class Player : MonoBehaviour
         _initialized = true;
     }
     
+    private void EnsureWeaponBridge()
+    {
+        _weaponBridge = GetComponent<InventoryWeaponBridge>();
+        
+        if (_weaponBridge == null)
+        {
+            _weaponBridge = gameObject.AddComponent<InventoryWeaponBridge>();
+        }
+        
+        if (_weaponBridge != null)
+        {
+            var weaponManagerField = typeof(InventoryWeaponBridge).GetField("weaponManager", 
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                
+            var inventoryManagerField = typeof(InventoryWeaponBridge).GetField("inventoryManager", 
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                
+            if (weaponManagerField != null)
+                weaponManagerField.SetValue(_weaponBridge, weaponManager);
+                
+            if (inventoryManagerField != null)
+                inventoryManagerField.SetValue(_weaponBridge, inventoryManager);
+                
+            _weaponBridge.MapAvailableWeapons();
+            _weaponBridge.SyncWeaponsWithInventory();
+        }
+    }
+    
+    public InventoryWeaponBridge GetWeaponBridge()
+    {
+        return _weaponBridge;
+    }
+    
     private void OnInventoryToggle(InputAction.CallbackContext context)
     {
-        Debug.Log("Player received inventory toggle input");
-        
-        var inventoryManager = FindObjectOfType<InventoryUIManager>();
         if (inventoryManager != null)
         {
-            inventoryManager.ToggleInventory(context);
-        }
-        else
-        {
-            Debug.LogWarning("No InventoryUIManager found in scene");
+            inventoryManager.ToggleInventory();
         }
     }
    
@@ -197,6 +237,14 @@ public class Player : MonoBehaviour
             weaponManager.SetEnabled(enable);
         }
         
+        if (inventoryManager != null)
+        {
+            if (!enable)
+            {
+                inventoryManager.HideInventory();
+            }
+        }
+        
         if (enable)
         {
             Cursor.lockState = CursorLockMode.Locked;
@@ -223,5 +271,10 @@ public class Player : MonoBehaviour
             _inputActions.Enable();
         }
         return _inputActions;
+    }
+    
+    public Character GetCharacter()
+    {
+        return characterData;
     }
 }

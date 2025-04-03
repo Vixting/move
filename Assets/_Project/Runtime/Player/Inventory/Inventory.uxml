@@ -1,5 +1,5 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <Style src="InventoryStyles.uss" />
+    <Style src="InventoryStyle.uss" />
     
     <VisualElement name="inventory-root" class="inventory-screen">
         <!-- Top bar with character name and close button -->

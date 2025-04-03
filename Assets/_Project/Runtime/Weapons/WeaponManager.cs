@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
 using System.Linq;
+using InventorySystem;
 
 public class WeaponManager : MonoBehaviour
 {
@@ -17,7 +18,9 @@ public class WeaponManager : MonoBehaviour
     private PlayerInputActions inputActions;
     private WeaponHolder currentWeaponHolder;
     private bool _isEnabled = true;
+    private Dictionary<int, bool> weaponMalfunctions = new Dictionary<int, bool>();
     public UnityEvent<WeaponData, int> onWeaponChanged = new UnityEvent<WeaponData, int>();
+    public event System.Action<WeaponData, int> onWeaponAmmoChanged;
     private int lastWeaponIndex = -1;
     private bool _isInitialized = false;
     
@@ -78,7 +81,7 @@ public class WeaponManager : MonoBehaviour
         inputActions.Gameplay.Aim.started += aimStartAction;
         inputActions.Gameplay.Aim.canceled += aimEndAction;
         inputActions.Gameplay.LastWeapon.performed += lastWeaponAction;
-       
+        
         InitializeWeapons();
     }
 
@@ -234,17 +237,43 @@ public class WeaponManager : MonoBehaviour
         
         if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
         {
-            weapons[currentWeaponIndex].OnFire(started);
+            Weapon weapon = weapons[currentWeaponIndex];
+            int oldAmmo = weapon.CurrentAmmo;
+            
+            weapon.OnFire(started);
+            
+            if (oldAmmo != weapon.CurrentAmmo)
+            {
+                WeaponData weaponData = FindWeaponDataForCurrentWeapon();
+                if (weaponData != null)
+                {
+                    weaponData.currentAmmo = weapon.CurrentAmmo;
+                    onWeaponAmmoChanged?.Invoke(weaponData, weapon.CurrentAmmo);
+                }
+            }
         }
     }
 
-    private void HandleReload()
+    public void HandleReload()
     {
         if (!_isEnabled) return;
         
         if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
         {
-            weapons[currentWeaponIndex].OnReload();
+            Weapon weapon = weapons[currentWeaponIndex];
+            int oldAmmo = weapon.CurrentAmmo;
+            
+            weapon.OnReload();
+            
+            if (oldAmmo != weapon.CurrentAmmo)
+            {
+                WeaponData weaponData = FindWeaponDataForCurrentWeapon();
+                if (weaponData != null)
+                {
+                    weaponData.currentAmmo = weapon.CurrentAmmo;
+                    onWeaponAmmoChanged?.Invoke(weaponData, weapon.CurrentAmmo);
+                }
+            }
         }
     }
     
@@ -390,5 +419,194 @@ public class WeaponManager : MonoBehaviour
             }
         }
         return -1;
+    }
+    
+    public void SetWeaponMalfunction(int slotNumber, bool malfunctioning)
+    {
+        weaponMalfunctions[slotNumber] = malfunctioning;
+        
+        if (malfunctioning && GetCurrentWeaponSlot() == slotNumber)
+        {
+            Weapon activeWeapon = GetActiveWeapon();
+            if (activeWeapon != null)
+            {
+                activeWeapon.SetMalfunctioning(true);
+            }
+        }
+    }
+
+    public bool IsWeaponMalfunctioning(int slotNumber)
+    {
+        return weaponMalfunctions.TryGetValue(slotNumber, out bool state) && state;
+    }
+
+    public Weapon GetActiveWeapon()
+    {
+        if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
+        {
+            return weapons[currentWeaponIndex];
+        }
+        return null;
+    }
+
+    public void UpdateWeaponsFromInventory(WeaponData[] weaponDatas, Dictionary<int, int> slotAmmoCount)
+    {
+        if (weaponDatas == null || weaponDatas.Length == 0) return;
+        
+        SetAvailableWeapons(weaponDatas);
+        
+        foreach (var pair in slotAmmoCount)
+        {
+            foreach (var weapon in weapons)
+            {
+                WeaponData weaponData = weapon.GetWeaponData();
+                if (weaponData != null && weaponData.weaponSlot == pair.Key)
+                {
+                    weapon.SetAmmo(pair.Value);
+                    break;
+                }
+            }
+        }
+    }
+    
+    public void SetAvailableWeapons(WeaponData[] newWeapons)
+    {
+        if (newWeapons == null || newWeapons.Length == 0) return;
+        
+        if (availableWeapons != null && availableWeapons.Length == newWeapons.Length)
+        {
+            bool allMatch = true;
+            for (int i = 0; i < availableWeapons.Length; i++)
+            {
+                if (availableWeapons[i].inventoryItemId != newWeapons[i].inventoryItemId)
+                {
+                    allMatch = false;
+                    break;
+                }
+            }
+            
+            if (allMatch) return;
+        }
+        
+        int currentSlot = -1;
+        if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
+        {
+            foreach (var pair in slotToIndexMap)
+            {
+                if (pair.Value == currentWeaponIndex)
+                {
+                    currentSlot = pair.Key;
+                    break;
+                }
+            }
+        }
+        
+        Dictionary<string, int> ammoStates = new Dictionary<string, int>();
+        foreach (var weapon in weapons)
+        {
+            WeaponData data = weapon.GetWeaponData();
+            if (data != null)
+            {
+                ammoStates[data.inventoryItemId] = weapon.CurrentAmmo;
+            }
+        }
+        
+        availableWeapons = newWeapons;
+        ClearWeapons();
+        InitializeWeapons();
+        
+        foreach (var weapon in weapons)
+        {
+            WeaponData data = weapon.GetWeaponData();
+            if (data != null && ammoStates.TryGetValue(data.inventoryItemId, out int ammo))
+            {
+                weapon.SetAmmo(ammo);
+            }
+        }
+        
+        if (currentSlot >= 0 && slotToIndexMap.ContainsKey(currentSlot))
+        {
+            SwitchWeapon(slotToIndexMap[currentSlot]);
+        }
+        else if (weapons.Count > 0)
+        {
+            SwitchWeapon(0);
+        }
+    }
+    
+    public void ClearWeapons()
+    {
+        if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
+        {
+            weapons[currentWeaponIndex].gameObject.SetActive(false);
+        }
+        
+        foreach (var weapon in weapons)
+        {
+            Destroy(weapon.gameObject);
+        }
+        
+        weapons.Clear();
+        slotToIndexMap.Clear();
+        weaponMalfunctions.Clear();
+        currentWeaponIndex = -1;
+        lastWeaponIndex = -1;
+    }
+    
+    public Dictionary<int, int> GetAmmoStates()
+    {
+        Dictionary<int, int> ammoStates = new Dictionary<int, int>();
+        
+        for (int i = 0; i < weapons.Count; i++)
+        {
+            Weapon weapon = weapons[i];
+            int slotNumber = -1;
+            
+            foreach (var kvp in slotToIndexMap)
+            {
+                if (kvp.Value == i)
+                {
+                    slotNumber = kvp.Key;
+                    break;
+                }
+            }
+            
+            if (slotNumber != -1)
+            {
+                ammoStates[slotNumber] = weapon.CurrentAmmo;
+            }
+        }
+        
+        return ammoStates;
+    }
+    
+    public void UpdateAmmoCount(int newAmmo)
+    {
+        if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
+        {
+            Weapon currentWeapon = weapons[currentWeaponIndex];
+            currentWeapon.SetAmmo(newAmmo);
+            
+            WeaponData weaponData = FindWeaponDataForCurrentWeapon();
+            if (weaponData != null)
+            {
+                weaponData.currentAmmo = newAmmo;
+                onWeaponAmmoChanged?.Invoke(weaponData, newAmmo);
+            }
+        }
+    }
+    
+    public string GetCurrentWeaponId()
+    {
+        if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
+        {
+            WeaponData weaponData = FindWeaponDataForCurrentWeapon();
+            if (weaponData != null)
+            {
+                return weaponData.inventoryItemId;
+            }
+        }
+        
+        return string.Empty;
     }
 }

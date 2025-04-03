@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 9194186139239215216}
   - component: {fileID: 6053579846953004392}
   - component: {fileID: 1207496523917671976}
+  - component: {fileID: 7370913237902405981}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -50,6 +51,8 @@ MonoBehaviour:
   playerCharacter: {fileID: 510802003761623306}
   playerCamera: {fileID: 5665704862513233454}
   weaponManager: {fileID: 1207496523917671976}
+  inventoryManager: {fileID: 0}
+  characterData: {fileID: 0}
 --- !u!114 &1207496523917671976
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -71,6 +74,19 @@ MonoBehaviour:
   onWeaponChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7370913237902405981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 170944546875848194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19c28b98461bf5d48ab0d5b69b563ead, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inventoryManager: {fileID: 0}
 --- !u!1 &2230535063188913865
 GameObject:
   m_ObjectHideFlags: 0
@@ -213,18 +229,39 @@ MonoBehaviour:
   slideBoostMultiplier: 0.5
   slideMomentumRetention: 1.2
   maxSlideSpeed: 45
-  groundPoundForce: -50
-  groundPoundRadius: 3
-  groundPoundUpwardForce: 15
-  groundPoundHorizontalForce: 10
-  groundPoundLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
   crouchHeight: 1
   crouchHeightResponse: 15
   standHeight: 2
   standCameraHeight: 0
   crouchCameraHeight: 0.2
+  knockbackRecoveryRate: 10
+  maxKnockbackTime: 0.5
+  knockbackMomentumRetention: 0.8
+  enableBunnyHopping: 1
+  bhopMomentumRetention: 0.98
+  bhopBoostMultiplier: 1.08
+  bhopWindowTime: 0.15
+  airFriction: 0.05
+  groundFriction: 0.7
+  surfSlipperiness: 0.2
+  airControlMultiplier: 0.5
+  speedAccumulationFactor: 1.2
+  maxAirSpeed: 14
+  enableAirDash: 1
+  airDashForce: 20
+  airDashCooldown: 0.8
+  enableWallJump: 1
+  wallJumpForce: 12
+  wallJumpUpwardsForce: 8
+  wallSlidingSpeed: 3
+  wallStickiness: 0.4
+  wallRunSpeed: 8
+  wallCheckDistance: 1.2
+  wallRunVerticalLimit: 0.3
+  enableRampSliding: 1
+  rampSlidingBoost: 1.3
+  enableCrouchJump: 1
+  crouchJumpBoost: 1.25
 --- !u!1 &2642888141074535426
 GameObject:
   m_ObjectHideFlags: 0

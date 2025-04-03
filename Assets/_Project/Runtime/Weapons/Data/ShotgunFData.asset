@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8de15e308f3be414da596ebebeb4ec08, type: 3}
   m_Name: ShotgunFData
   m_EditorClassIdentifier: 
+  weaponId: 1a5c194f-fc34-40d8-94ed-a541452c6e14
   weaponName: Spas12
   weaponPrefab: {fileID: 718911615745656656, guid: 7b892ce7ed2582e4f85e2d388c5e1ae7, type: 3}
-  weaponIcon: {fileID: 0}
+  weaponIcon: {fileID: -357089265500988452, guid: 28711b3c5809f9849992b7b1da8c6115, type: 3}
   weaponSlot: 2
   bulletRange: 100
   fireRate: 0.1
@@ -22,8 +23,9 @@ MonoBehaviour:
   reloadTime: 2
   isAutomatic: 1
   impactForce: 20
-  horizontalKnockbackForce: 0
-  verticalKnockbackForce: 0
+  compatibleAmmoType: 0
+  horizontalKnockbackForce: 5
+  verticalKnockbackForce: 5
   bulletHoleSize: 0.1
   bulletHoleLifetime: 10
   bulletHoleMaterial: {fileID: 0}
@@ -40,3 +42,5 @@ MonoBehaviour:
   recoilAmount: 0.1
   horizontalRecoilVariance: 0.3
   recoilRecoverySpeed: 5
+  attachmentPoints: []
+  inventoryItemId: 1
