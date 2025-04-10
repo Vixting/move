@@ -2,9 +2,10 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Collections.Generic;
 using System.Linq;
+using SharedTypes;
 using InventorySystem;
 
-public class WeaponManager : MonoBehaviour
+public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
 {
     [SerializeField] private Transform weaponHolder;
     [SerializeField] private LayerMask shootableLayers;
@@ -94,7 +95,7 @@ public class WeaponManager : MonoBehaviour
         }
     }
 
-    private void SelectWeaponBySlot(int slotNumber)
+    public void SelectWeaponBySlot(int slotNumber)
     {
         if (!_isEnabled) 
             return;

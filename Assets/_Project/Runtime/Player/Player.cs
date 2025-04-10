@@ -59,6 +59,7 @@ public class Player : MonoBehaviour
         _inputActions.Gameplay.Aim.started += OnAimStarted;
         _inputActions.Gameplay.Aim.canceled += OnAimCanceled;
         _inputActions.Gameplay.Inventory.performed += OnInventoryToggle;
+        _inputActions.UI.InventoryClose.performed += OnInventoryToggle;
         
         if (IsGameplayScene())
         {
@@ -107,9 +108,22 @@ public class Player : MonoBehaviour
     
     private void OnInventoryToggle(InputAction.CallbackContext context)
     {
+        Debug.Log("OnInventoryToggle method called");
         if (inventoryManager != null)
         {
-            inventoryManager.ToggleInventory();
+            Debug.Log("Inventory toggle triggered");
+            
+            if (_inputActions.Gameplay.enabled)
+            {
+                // Coming from gameplay mode - open inventory
+                inventoryManager.ShowInventory();
+            }
+            else if (_inputActions.UI.enabled)
+            {
+                // Coming from UI mode - close inventory
+                inventoryManager.HideInventory();
+                EnableGameplayMode(true);
+            }
         }
     }
    
@@ -166,17 +180,6 @@ public class Player : MonoBehaviour
             playerCharacter.UpdateInput(CharacterInput);
             playerCharacter.UpdateBody(deltaTime);
         }
-       
-        #if UNITY_EDITOR
-        if (Keyboard.current != null && Keyboard.current.tKey.wasPressedThisFrame)
-        {
-            var ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-            if (Physics.Raycast(ray, out var hit))
-            {
-                Teleport(hit.point);
-            }
-        }
-        #endif
     }
    
     void LateUpdate()
@@ -228,6 +231,7 @@ public class Player : MonoBehaviour
             playerCharacter.SetPosition(position);
     }
     
+    // Modify this method in Player.cs
     public void EnableGameplayMode(bool enable)
     {
         _isInputEnabled = enable;
@@ -237,11 +241,18 @@ public class Player : MonoBehaviour
             weaponManager.SetEnabled(enable);
         }
         
-        if (inventoryManager != null)
+        // Add this block to properly toggle input action maps
+        if (_inputActions != null)
         {
-            if (!enable)
+            if (enable)
             {
-                inventoryManager.HideInventory();
+                _inputActions.Gameplay.Enable();
+                _inputActions.UI.Disable();
+            }
+            else
+            {
+                _inputActions.Gameplay.Disable();
+                _inputActions.UI.Enable();
             }
         }
         

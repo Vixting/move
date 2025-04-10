@@ -1,63 +1,140 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Events;
 
 namespace InventorySystem
 {
+    [Serializable]
+    public class SavedItemData
+    {
+        public ItemData ItemData;
+        public string ContainerId;
+        public int X;
+        public int Y;
+        public bool IsRotated;
+        public int StackCount = 1;
+        public float CurrentDurability = 100f;
+        public int CurrentAmmoCount;
+        public Dictionary<string, object> CustomData = new Dictionary<string, object>();
+    }
+    
+    [Serializable]
+    public class CharacterInventoryData
+    {
+        public List<SavedItemData> Items = new List<SavedItemData>();
+        public Dictionary<EquipmentSlot, SavedItemData> EquippedItems = new Dictionary<EquipmentSlot, SavedItemData>();
+    }
+    
     public class Character : MonoBehaviour
     {
         [SerializeField] private string characterName = "PMC Character";
         [SerializeField] private float maxHealth = 100f;
+        [SerializeField] private float currentHealth = 100f;
         [SerializeField] private float maxEnergy = 100f;
+        [SerializeField] private float currentEnergy = 100f;
         [SerializeField] private float maxHydration = 100f;
+        [SerializeField] private float currentHydration = 100f;
         [SerializeField] private float maxWeight = 70f;
         
-        public string CharacterName => characterName;
-        
-        private float _currentHealth;
-        private float _currentEnergy;
-        private float _currentHydration;
-        private float _currentWeight;
-        
-        public float CurrentHealth => _currentHealth;
-        public float CurrentEnergy => _currentEnergy;
-        public float CurrentHydration => _currentHydration;
-        public float CurrentWeight => _currentWeight;
-        public float MaxHealth => maxHealth;
-        public float MaxEnergy => maxEnergy;
-        public float MaxHydration => maxHydration;
-        public float MaxWeight => maxWeight;
-        
-        public event Action<float, float> OnHealthChanged;
-        public event Action<float, float> OnEnergyChanged;
-        public event Action<float, float> OnHydrationChanged;
-        public event Action<float, float> OnWeightChanged;
-        
         private Dictionary<EquipmentSlot, ItemInstance> _equippedItems = new Dictionary<EquipmentSlot, ItemInstance>();
+        private float _currentWeight = 0f;
+        
         public CharacterInventoryData InventoryData { get; private set; }
+        
+        public string CharacterName => characterName;
+        public float MaxHealth => maxHealth;
+        public float CurrentHealth => currentHealth;
+        public float MaxEnergy => maxEnergy;
+        public float Energy => currentEnergy;
+        public float MaxHydration => maxHydration;
+        public float Hydration => currentHydration;
+        public float MaxWeight => maxWeight;
+        public float CurrentWeight => _currentWeight;
+        
+        public event Action<float, float> OnWeightChanged;
+
+        public void LoadInventory()
+{
+        // If you have saved inventory data, load it here
+        
+        // Example implementation:
+        if (InventoryData == null || InventoryData.Items.Count == 0)
+        {
+            // Initialize with default items if needed
+            InventoryData = new CharacterInventoryData();
+            
+            // You can add default starting items here if desired
+        }
+        
+        // Notify inventory manager to refresh
+        if (InventoryManager.Instance != null)
+        {
+            InventoryManager.Instance.onInventoryChanged?.Invoke();
+        }
+    }
         
         private void Awake()
         {
-            _currentHealth = maxHealth;
-            _currentEnergy = maxEnergy;
-            _currentHydration = maxHydration;
-            _currentWeight = 0f;
-            
             InventoryData = new CharacterInventoryData();
+            RecalculateWeight();
+        }
+        
+        public void Heal(float amount)
+        {
+            currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+        }
+        
+        public void ConsumeEnergy(float amount)
+        {
+            currentEnergy = Mathf.Max(0, currentEnergy - amount);
+        }
+        
+        public void RestoreEnergy(float amount)
+        {
+            currentEnergy = Mathf.Min(currentEnergy + amount, maxEnergy);
+        }
+        
+        public void ConsumeHydration(float amount)
+        {
+            currentHydration = Mathf.Max(0, currentHydration - amount);
+        }
+        
+        public void RestoreHydration(float amount)
+        {
+            currentHydration = Mathf.Min(currentHydration + amount, maxHydration);
+        }
+        
+        public ItemInstance GetEquippedItem(EquipmentSlot slot)
+        {
+            if (_equippedItems.TryGetValue(slot, out ItemInstance item))
+            {
+                return item;
+            }
+            return null;
         }
         
         public bool EquipItem(ItemInstance item, EquipmentSlot slot)
         {
-            if (_equippedItems.ContainsKey(slot))
+            if (item == null || !item.CanEquipInSlot(slot))
             {
                 return false;
             }
             
-            _equippedItems[slot] = item;
-            _currentWeight += item.itemData.weight;
-            OnWeightChanged?.Invoke(_currentWeight, maxWeight);
+            ItemInstance currentItem = GetEquippedItem(slot);
+            if (currentItem != null)
+            {
+                UnequipItem(slot);
+            }
             
+            _equippedItems[slot] = item;
+            
+            if (item.container != null)
+            {
+                item.container.RemoveItem(item);
+                item.container = null;
+            }
+            
+            RecalculateWeight();
             return true;
         }
         
@@ -69,190 +146,106 @@ namespace InventorySystem
             }
             
             _equippedItems.Remove(slot);
-            _currentWeight -= item.itemData.weight;
-            OnWeightChanged?.Invoke(_currentWeight, maxWeight);
+            RecalculateWeight();
             
             return item;
         }
         
-        public ItemInstance GetEquippedItem(EquipmentSlot slot)
+        private void RecalculateWeight()
         {
-            _equippedItems.TryGetValue(slot, out ItemInstance item);
-            return item;
-        }
-        
-        public void AddItemWeight(float weight)
-        {
-            _currentWeight += weight;
+            float weight = 0f;
+            
+            foreach (var item in _equippedItems.Values)
+            {
+                weight += item.itemData.weight;
+            }
+            
+            InventoryManager inventoryManager = InventoryManager.Instance;
+            if (inventoryManager != null)
+            {
+                foreach (var container in new[] { "backpack", "tactical-rig", "pockets" })
+                {
+                    Dictionary<string, ContainerInstance> containers = inventoryManager.GetContainers();
+                    if (containers.TryGetValue(container, out ContainerInstance containerInstance))
+                    {
+                        foreach (var item in containerInstance.GetAllItems())
+                        {
+                            weight += item.itemData.weight * item.stackCount;
+                        }
+                    }
+                }
+            }
+            
+            _currentWeight = weight;
             OnWeightChanged?.Invoke(_currentWeight, maxWeight);
-        }
-        
-        public void RemoveItemWeight(float weight)
-        {
-            _currentWeight -= weight;
-            _currentWeight = Mathf.Max(0, _currentWeight);
-            OnWeightChanged?.Invoke(_currentWeight, maxWeight);
-        }
-        
-        public void UpdateHealth(float amount)
-        {
-            _currentHealth += amount;
-            _currentHealth = Mathf.Clamp(_currentHealth, 0, maxHealth);
-            OnHealthChanged?.Invoke(_currentHealth, maxHealth);
-        }
-        
-        public void UpdateEnergy(float amount)
-        {
-            _currentEnergy += amount;
-            _currentEnergy = Mathf.Clamp(_currentEnergy, 0, maxEnergy);
-            OnEnergyChanged?.Invoke(_currentEnergy, maxEnergy);
-        }
-        
-        public void UpdateHydration(float amount)
-        {
-            _currentHydration += amount;
-            _currentHydration = Mathf.Clamp(_currentHydration, 0, maxHydration);
-            OnHydrationChanged?.Invoke(_currentHydration, maxHydration);
         }
         
         public void SaveInventory()
         {
-            InventoryData.SaveEquipment(_equippedItems);
-        }
-        
-        public void LoadInventory()
-        {
-        }
-        
-        public bool HasSpaceForItem(ItemData itemData, string containerId)
-        {
-            InventoryManager inventoryManager = FindObjectOfType<InventoryManager>();
-            if (inventoryManager == null)
-                return false;
-                
-            return inventoryManager.HasSpaceForItem(itemData, containerId);
-        }
-        
-        public List<ItemInstance> FindItemsByCategory(ItemCategory category)
-        {
-            List<ItemInstance> result = new List<ItemInstance>();
-            InventoryManager inventoryManager = FindObjectOfType<InventoryManager>();
+            InventoryData = new CharacterInventoryData();
             
-            if (inventoryManager == null)
-                return result;
-                
-            return inventoryManager.FindItemsByCategory(category);
-        }
-        
-        public bool ConsumeItem(ItemInstance item)
-        {
-            if (item == null)
-                return false;
-                
-            if (item.itemData.category == ItemCategory.Medicine)
+            foreach (var pair in _equippedItems)
             {
-                float healAmount = 20f;
-                
-                if (item.customData.TryGetValue("healAmount", out object healObj) && healObj is float healValue)
+                SavedItemData savedItem = new SavedItemData
                 {
-                    healAmount = healValue;
+                    ItemData = pair.Value.itemData,
+                    ContainerId = "equipped",
+                    X = 0,
+                    Y = 0,
+                    IsRotated = pair.Value.isRotated,
+                    StackCount = pair.Value.stackCount,
+                    CurrentDurability = pair.Value.currentDurability,
+                    CustomData = pair.Value.customData
+                };
+                
+                if (pair.Value.itemData is WeaponItemData)
+                {
+                    savedItem.CurrentAmmoCount = pair.Value.currentAmmoCount;
                 }
                 
-                UpdateHealth(healAmount);
-                return true;
+                InventoryData.EquippedItems[pair.Key] = savedItem;
             }
             
-            if (item.itemData.category == ItemCategory.Food)
+            InventoryManager inventoryManager = InventoryManager.Instance;
+            if (inventoryManager != null)
             {
-                float energyAmount = 15f;
-                
-                if (item.customData.TryGetValue("energyAmount", out object energyObj) && energyObj is float energyValue)
+                Dictionary<string, ContainerInstance> containers = inventoryManager.GetContainers();
+                foreach (var containerPair in containers)
                 {
-                    energyAmount = energyValue;
-                }
-                
-                UpdateEnergy(energyAmount);
-                return true;
-            }
-            
-            if (item.itemData.category == ItemCategory.Drink)
-            {
-                float hydrationAmount = 15f;
-                
-                if (item.customData.TryGetValue("hydrationAmount", out object hydrationObj) && hydrationObj is float hydrationValue)
-                {
-                    hydrationAmount = hydrationValue;
-                }
-                
-                UpdateHydration(hydrationAmount);
-                return true;
-            }
-            
-            return false;
-        }
-        
-        public bool CanEquipItemInSlot(ItemData item, EquipmentSlot slot)
-        {
-            if (item == null)
-                return false;
-                
-            switch (slot)
-            {
-                case EquipmentSlot.Head:
-                    return item.category == ItemCategory.Helmet;
-                    
-                case EquipmentSlot.BodyArmor:
-                    return item.category == ItemCategory.Armor;
-                    
-                case EquipmentSlot.Primary:
-                case EquipmentSlot.Secondary:
-                case EquipmentSlot.Holster:
-                    if (!(item is WeaponItemData weaponItem))
-                        return false;
+                    ContainerInstance container = containerPair.Value;
+                    foreach (var item in container.GetAllItems())
+                    {
+                        SavedItemData savedItem = new SavedItemData
+                        {
+                            ItemData = item.itemData,
+                            ContainerId = containerPair.Key,
+                            X = item.position.x,
+                            Y = item.position.y,
+                            IsRotated = item.isRotated,
+                            StackCount = item.stackCount,
+                            CurrentDurability = item.currentDurability,
+                            CustomData = item.customData
+                        };
                         
-                    if (slot == EquipmentSlot.Primary)
-                        return weaponItem.weaponType == WeaponType.AssaultRifle || 
-                               weaponItem.weaponType == WeaponType.SniperRifle;
-                               
-                    if (slot == EquipmentSlot.Secondary)
-                        return weaponItem.weaponType == WeaponType.SMG || 
-                               weaponItem.weaponType == WeaponType.Shotgun;
-                               
-                    if (slot == EquipmentSlot.Holster)
-                        return weaponItem.weaponType == WeaponType.Pistol;
+                        if (item.itemData is WeaponItemData)
+                        {
+                            savedItem.CurrentAmmoCount = item.currentAmmoCount;
+                        }
                         
-                    return false;
-                    
-                default:
-                    return false;
+                        InventoryData.Items.Add(savedItem);
+                    }
+                }
             }
         }
-    }
-
-    [Serializable]
-    public class CharacterInventoryData
-    {
-        [Serializable]
-        public class SavedItemData
-        {
-            public ItemData ItemData;
-            public string ContainerId;
-            public int X;
-            public int Y;
-            public bool IsRotated;
-        }
         
-        public List<SavedItemData> Items = new List<SavedItemData>();
-        public Dictionary<EquipmentSlot, string> EquippedItemIds = new Dictionary<EquipmentSlot, string>();
-        
-        public void SaveEquipment(Dictionary<EquipmentSlot, ItemInstance> equippedItems)
+        public Dictionary<string, ContainerInstance> GetContainers()
         {
-            EquippedItemIds.Clear();
-            
-            foreach (var pair in equippedItems)
+            InventoryManager inventoryManager = InventoryManager.Instance;
+            if (inventoryManager != null)
             {
-                EquippedItemIds[pair.Key] = pair.Value.instanceId;
+                return inventoryManager.GetContainers();
             }
+            return null;
         }
     }
 }

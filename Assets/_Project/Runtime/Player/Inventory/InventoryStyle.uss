@@ -1,4 +1,29 @@
+.inventory-item {
+    position: absolute;
+    pointer-events: auto !important;
+    transition-duration: 0.15s;
+    z-index: 10;
+}
+
+.item-border {
+    width: 100%;
+    height: 100%;
+    border-width: 1px;
+    border-color: rgb(180, 180, 180);
+    background-color: rgba(32, 32, 32, 0.9);
+    flex-direction: column;
+    border-radius: 2px;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+    transition-duration: 0.2s;
+    pointer-events: auto !important;
+}
+
 .inventory-screen {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
     flex-grow: 1;
     width: 100%;
     height: 100%;
@@ -197,6 +222,8 @@ Button:active {
     border-color: rgba(48, 48, 48, 0.8);
     background-color: rgba(40, 40, 40, 0.3);
     transition-duration: 0.15s;
+    z-index: 5;
+    pointer-events: auto;
 }
 
 .grid-cell:hover {
@@ -204,36 +231,37 @@ Button:active {
     border-color: rgba(100, 100, 100, 0.8);
 }
 
+.valid-placement {
+    background-color: rgba(60, 120, 60, 0.5) !important;
+    border-color: rgba(80, 180, 80, 0.8) !important;
+}
+
+.invalid-placement {
+    background-color: rgba(120, 60, 60, 0.5) !important;
+    border-color: rgba(180, 80, 80, 0.8) !important;
+}
+
 .stash-panel {
     width: 40%;
     min-width: 500px;
 }
 
-.inventory-item {
-    position: absolute;
-}
-
-.item-border {
-    width: 100%;
-    height: 100%;
-    border-width: 1px;
-    border-color: rgb(180, 180, 180);
-    background-color: rgba(32, 32, 32, 0.9);
-    flex-direction: column;
-    border-radius: 2px;
-    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-    transition-duration: 0.2s;
-}
-
 .item-border:hover {
     border-width: 2px;
-    scale: 1.01;
+    border-color: rgb(240, 240, 240);
+}
+
+.unexamined-item {
+    background-color: rgba(24, 24, 36, 0.9);
+    border-color: rgb(100, 100, 140);
+    opacity: 0.9;
 }
 
 .item-icon {
     flex-grow: 1;
     -unity-background-scale-mode: scale-to-fit;
     margin: 3px;
+    pointer-events: auto;
 }
 
 .item-name {
@@ -261,11 +289,39 @@ Button:active {
     border-color: rgba(255, 255, 255, 0.3);
 }
 
+.ammo-counter {
+    position: absolute;
+    bottom: 20px;
+    right: 2px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 1px 5px;
+    border-radius: 2px;
+    border-width: 1px;
+    border-color: rgba(160, 160, 160, 0.4);
+}
+
+.ammo-text {
+    font-size: 11px;
+    -unity-font-style: bold;
+    color: rgb(200, 200, 100);
+}
+
+.rotation-indicator {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    background-image: resource('UI/rotate_icon');
+    -unity-background-scale-mode: scale-to-fit;
+}
+
 .dragged-item {
     position: absolute;
     pointer-events: none;
     opacity: 0.8;
     scale: 1.05;
+    z-index: 1000;
 }
 
 .item-info-panel {
@@ -383,6 +439,14 @@ Button:active {
     scale: 1.05;
 }
 
+.discard-button {
+    background-color: rgba(120, 40, 40, 0.8);
+}
+
+.discard-button:hover {
+    background-color: rgba(160, 60, 60, 0.9);
+}
+
 .bottom-hud {
     height: 60px;
     background-color: rgba(16, 16, 16, 0.9);
@@ -472,4 +536,73 @@ Button:active {
 .legendary-item .item-border {
     border-color: rgb(255, 204, 0);
     box-shadow: 0px 0px 8px rgba(255, 204, 0, 0.4);
+}
+
+.context-menu {
+    position: absolute;
+    background-color: rgba(24, 24, 24, 0.95);
+    border-width: 1px;
+    border-color: rgb(80, 80, 80);
+    border-radius: 3px;
+    padding: 5px;
+    min-width: 150px;
+    z-index: 1000;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+}
+
+.context-menu-header {
+    font-size: 14px;
+    -unity-font-style: bold;
+    padding: 5px;
+    border-bottom-width: 1px;
+    border-color: rgba(100, 100, 100, 0.5);
+    margin-bottom: 5px;
+    color: rgb(220, 160, 60);
+}
+
+.context-menu-button {
+    margin: 2px 0;
+    padding: 5px;
+    font-size: 12px;
+    background-color: transparent;
+    border-width: 0;
+    border-radius: 0;
+    -unity-text-align: middle-left;
+    transition-duration: 0.1s;
+}
+
+.context-menu-button:hover {
+    background-color: rgba(80, 80, 80, 0.8);
+}
+
+.split-stack-dialog {
+    position: absolute;
+    background-color: rgba(24, 24, 24, 0.95);
+    border-width: 1px;
+    border-color: rgb(80, 80, 80);
+    border-radius: 3px;
+    padding: 10px;
+    width: 250px;
+    z-index: 1001;
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+}
+
+.split-stack-title {
+    font-size: 14px;
+    -unity-font-style: bold;
+    margin-bottom: 10px;
+    -unity-text-align: middle-center;
+}
+
+.split-stack-slider {
+    margin: 10px 0;
+}
+
+.split-stack-buttons {
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 10px;
 }

@@ -6,6 +6,7 @@ public enum WeaponType
     Pistol = 1,
     SMG = 2,
     AssaultRifle = 3,
+
     Shotgun = 4,
     SniperRifle = 5,
     Melee = 6

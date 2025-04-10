@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5313074153434607591}
   - component: {fileID: 2687287836522528666}
   - component: {fileID: 1523650349258121530}
+  - component: {fileID: 7281054959588766594}
   m_Layer: 5
   m_Name: Inventory
   m_TagString: Untagged
@@ -101,3 +102,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inventoryManager: {fileID: 5313074153434607591}
+--- !u!114 &7281054959588766594
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3197700919123679644}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d08f35cb3ea25f94c872151ef6d59844, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  medkitSprite: {fileID: 0}
+  bandageSprite: {fileID: 0}
+  painkillerSprite: {fileID: 0}
+  showDebugLogs: 1

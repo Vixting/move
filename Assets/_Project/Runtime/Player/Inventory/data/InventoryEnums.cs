@@ -1,4 +1,3 @@
-// InventoryEnums.cs
 using System;
 
 namespace InventorySystem
@@ -34,6 +33,7 @@ namespace InventorySystem
         Valuable,
         Barter,
         Quest,
+        Special,
         Misc
     }
 
@@ -82,5 +82,33 @@ namespace InventorySystem
         Foregrip = 128,
         Tactical = 256,
         Mount = 512
+    }
+
+    public enum ExaminationState
+    {
+        Unknown,
+        Examining,
+        Examined
+    }
+
+    public enum ArmorClass
+    {
+        Class1 = 1,
+        Class2 = 2,
+        Class3 = 3,
+        Class4 = 4,
+        Class5 = 5,
+        Class6 = 6
+    }
+
+    public enum ArmorMaterial
+    {
+        Cloth,
+        Kevlar,
+        Ceramic,
+        Steel,
+        Titanium,
+        UHMWPE,
+        Combined
     }
 }

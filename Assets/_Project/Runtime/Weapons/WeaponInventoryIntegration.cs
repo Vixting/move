@@ -79,8 +79,7 @@ public class WeaponInventoryIntegration : MonoBehaviour
         InventorySystem.Character character = inventoryManager.GetCharacter();
         if (character == null) return false;
         
-        List<ItemInstance> ammoItems = character.FindItemsByCategory(ItemCategory.Ammunition);
-        bool foundCompatibleAmmo = false;
+        List<ItemInstance> ammoItems = inventoryManager.FindItemsByCategory(ItemCategory.Ammunition);        bool foundCompatibleAmmo = false;
         
         foreach (var ammoItem in ammoItems)
         {

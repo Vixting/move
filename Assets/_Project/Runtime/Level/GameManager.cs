@@ -129,6 +129,7 @@ public class GameManager : MonoBehaviour
         }
     }
     
+    
     public void LoadGame()
     {
         if (_inventoryManager != null)

@@ -1,6 +1,6 @@
-// AmmoItemData.cs
+using System.Collections.Generic;
+using SharedTypes;
 using UnityEngine;
-using InventorySystem;
 
 namespace InventorySystem
 {
@@ -12,73 +12,153 @@ namespace InventorySystem
         public float baseDamage = 50f;
         public float armorPenetration = 20f;
         public float fragmentationChance = 0.1f;
+        public float accuracy;
+        public float recoil;
+       
         public bool subsonic = false;
         public bool tracer = false;
         public Color tracerColor = Color.red;
+        public string caliber;
        
-        public void OnValidate()
+        public override void OnValidate()
         {
             category = ItemCategory.Ammunition;
-            stackable = true;
+            canStack = true;
             maxStackSize = 60;
+           
+            width = 1;
+            height = 1;
            
             properties.Clear();
            
-            properties.Add(new ItemProperty {
-                name = "Damage",
-                value = baseDamage.ToString(),
-                unit = "",
-                color = baseDamage > 60 ? Color.red : Color.white
-            });
+            AddOrUpdateProperty(
+                "Damage",
+                baseDamage.ToString(),
+                "",
+                baseDamage > 60 ? Color.red : Color.white
+            );
            
-            properties.Add(new ItemProperty {
-                name = "Penetration",
-                value = armorPenetration.ToString(),
-                unit = "",
-                color = armorPenetration > 30 ? Color.green : Color.white
-            });
+            AddOrUpdateProperty(
+                "Penetration",
+                armorPenetration.ToString(),
+                "",
+                armorPenetration > 30 ? Color.green : Color.white
+            );
            
-            properties.Add(new ItemProperty {
-                name = "Fragmentation",
-                value = (fragmentationChance * 100).ToString(),
-                unit = "%",
-                color = fragmentationChance > 0.15f ? Color.green : Color.white
-            });
+            AddOrUpdateProperty(
+                "Fragmentation",
+                (fragmentationChance * 100).ToString(),
+                "%",
+                fragmentationChance > 0.15f ? Color.green : Color.white
+            );
            
-            string ammoTypeName = "";
-            switch (ammoType)
+            if (string.IsNullOrEmpty(caliber))
             {
-                case AmmoType.Pistol_9x19: ammoTypeName = "9x19mm"; break;
-                case AmmoType.Pistol_45ACP: ammoTypeName = ".45 ACP"; break;
-                case AmmoType.Rifle_556x45: ammoTypeName = "5.56x45mm"; break;
-                case AmmoType.Rifle_762x39: ammoTypeName = "7.62x39mm"; break;
-                case AmmoType.Rifle_762x51: ammoTypeName = "7.62x51mm"; break;
-                case AmmoType.Rifle_762x54R: ammoTypeName = "7.62x54R"; break;
-                case AmmoType.Shotgun_12Gauge: ammoTypeName = "12 Gauge"; break;
-                case AmmoType.Shotgun_20Gauge: ammoTypeName = "20 Gauge"; break;
+                caliber = GetCaliberFromAmmoType();
             }
            
-            displayName = $"{ammoTypeName} {(tracer ? "Tracer " : "")}{(subsonic ? "Subsonic " : "")}Ammo";
+            if (string.IsNullOrEmpty(displayName) || displayName == "New Ammo Item")
+            {
+                string ammoTypeName = GetCaliberFromAmmoType();
+                displayName = $"{ammoTypeName} {(tracer ? "Tracer " : "")}{(subsonic ? "Subsonic " : "")}Ammo";
+            }
            
             if (tracer)
             {
-                properties.Add(new ItemProperty {
-                    name = "Tracer",
-                    value = "Yes",
-                    unit = "",
-                    color = tracerColor
-                });
+                AddOrUpdateProperty("Tracer", "Yes", "", tracerColor);
             }
            
             if (subsonic)
             {
-                properties.Add(new ItemProperty {
-                    name = "Subsonic",
-                    value = "Yes",
-                    unit = "",
-                    color = Color.cyan
-                });
+                AddOrUpdateProperty("Subsonic", "Yes", "", Color.cyan);
             }
+        }
+       
+        private string GetCaliberFromAmmoType()
+        {
+            switch (ammoType)
+            {
+                case AmmoType.Pistol_9x19: return "9x19mm";
+                case AmmoType.Pistol_45ACP: return ".45 ACP";
+                case AmmoType.Rifle_556x45: return "5.56x45mm";
+                case AmmoType.Rifle_762x39: return "7.62x39mm";
+                case AmmoType.Rifle_762x51: return "7.62x51mm";
+                case AmmoType.Rifle_762x54R: return "7.62x54R";
+                case AmmoType.Shotgun_12Gauge: return "12 Gauge";
+                case AmmoType.Shotgun_20Gauge: return "20 Gauge";
+                default: return "Unknown";
+            }
+        }
+       
+        public override string GetItemType()
+        {
+            return $"Ammo - {caliber}";
+        }
+       
+        public Color GetAmmoColor()
+        {
+            if (tracer)
+            {
+                return tracerColor;
+            }
+           
+            switch (ammoType)
+            {
+                case AmmoType.Rifle_556x45:
+                    return new Color(0.8f, 0.4f, 0.0f);
+                case AmmoType.Rifle_762x39:
+                case AmmoType.Rifle_762x51:
+                case AmmoType.Rifle_762x54R:
+                    return new Color(0.8f, 0.0f, 0.0f);
+                case AmmoType.Pistol_9x19:
+                case AmmoType.Pistol_45ACP:
+                    return new Color(0.9f, 0.9f, 0.0f);
+                case AmmoType.Shotgun_12Gauge:
+                case AmmoType.Shotgun_20Gauge:
+                    return new Color(0.5f, 0.0f, 0.5f);
+                default:
+                    return Color.gray;
+            }
+        }
+        
+        public override ItemData Clone()
+        {
+            AmmoItemData clone = CreateInstance<AmmoItemData>();
+            
+            clone.id = id;
+            clone.displayName = displayName;
+            clone.description = description;
+            clone.icon = icon;
+            clone.prefab = prefab;
+            clone.category = category;
+            clone.rarity = rarity;
+            clone.width = width;
+            clone.height = height;
+            clone.weight = weight;
+            clone.canRotate = canRotate;
+            clone.canStack = canStack;
+            clone.maxStackSize = maxStackSize;
+            clone.properties = new List<ItemProperty>(properties);
+            clone.needsExamination = needsExamination;
+            clone.isExamined = isExamined;
+            clone.tags = new List<string>(tags);
+            clone.baseValue = baseValue;
+            clone.canEquip = canEquip;
+            clone.canUse = canUse;
+            clone.compatibleSlots = new List<EquipmentSlot>(compatibleSlots);
+            
+            clone.ammoType = ammoType;
+            clone.baseDamage = baseDamage;
+            clone.armorPenetration = armorPenetration;
+            clone.fragmentationChance = fragmentationChance;
+            clone.accuracy = accuracy;
+            clone.recoil = recoil;
+            clone.subsonic = subsonic;
+            clone.tracer = tracer;
+            clone.tracerColor = tracerColor;
+            clone.caliber = caliber;
+            
+            return clone;
         }
     }
 }
