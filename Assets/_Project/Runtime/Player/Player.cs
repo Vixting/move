@@ -273,7 +273,18 @@ public class Player : MonoBehaviour
         return FindObjectOfType<MainMenuController>() == null && 
                FindObjectOfType<LevelSelectionUI>() == null;
     }
-    
+
+    public void SetInventoryManager(InventoryManager manager)
+    {
+        inventoryManager = manager;
+        
+        if (weaponManager != null && inventoryManager != null)
+        {
+            inventoryManager.SetWeaponManager(weaponManager);
+            EnsureWeaponBridge();
+        }
+    }
+        
     public PlayerInputActions GetInputActions()
     {
         if (_inputActions == null)

@@ -1,7 +1,9 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <VisualElement class="inventory-item">
         <VisualElement name="item-border" class="item-border">
-            <VisualElement name="item-icon" class="item-icon" />
+            <VisualElement name="item-icon" class="item-icon">
+                <!-- Sprite will be added here programmatically -->
+            </VisualElement>
             <Label name="item-name" class="item-name" text="Item Name" />
             <Label name="stack-count" class="stack-count" text="1" />
         </VisualElement>

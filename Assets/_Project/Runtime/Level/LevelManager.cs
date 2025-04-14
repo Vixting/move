@@ -333,23 +333,78 @@ public class LevelManager : MonoBehaviour
     
     private void ReconnectInventorySystems()
     {
-        // Find the inventory manager
-        var inventoryManager = FindObjectOfType<InventoryManager>();
+        // Find the inventory manager - look for the singleton instance first
+        InventoryManager inventoryManager = InventoryManager.Instance;
+        
+        // If singleton not found, try to find in scene
         if (inventoryManager == null)
         {
-            Debug.LogError("Inventory Manager not found in the scene");
-            return;
+            inventoryManager = FindObjectOfType<InventoryManager>();
+            if (inventoryManager == null)
+            {
+                Debug.LogError("Inventory Manager not found in the scene");
+                return;
+            }
+        }
+        
+        // Explicitly set inventory manager to player
+        if (_currentPlayer != null)
+        {
+            _currentPlayer.SetInventoryManager(inventoryManager);
+            Debug.Log("Inventory Manager explicitly assigned to player");
+        }
+        else
+        {
+            Debug.LogError("Current player is null, can't assign inventory manager");
         }
         
         // Ensure inventory weapon bridge exists and works
-        InventoryWeaponBridge bridge = FindObjectOfType<InventoryWeaponBridge>();
+        InventoryWeaponBridge bridge = _currentPlayer?.GetWeaponBridge();
         if (bridge == null && _currentPlayer != null)
         {
-            bridge = _currentPlayer.gameObject.AddComponent<InventoryWeaponBridge>();
+            bridge = _currentPlayer.GetComponent<InventoryWeaponBridge>();
+            if (bridge == null)
+            {
+                bridge = _currentPlayer.gameObject.AddComponent<InventoryWeaponBridge>();
+            }
         }
         
         // Wait a frame to ensure components are ready
-        StartCoroutine(DelayedInventorySync(bridge));
+        StartCoroutine(DelayedInventorySync(bridge, inventoryManager));
+    }
+
+    private IEnumerator DelayedInventorySync(InventoryWeaponBridge bridge, InventoryManager inventoryManager)
+    {
+        // Wait two frames to ensure everything is initialized
+        yield return null;
+        yield return null;
+        
+        if (bridge != null && inventoryManager != null)
+        {
+            // Set references explicitly using reflection if necessary
+            var weaponManagerField = typeof(InventoryWeaponBridge).GetField("weaponManager", 
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                
+            var inventoryManagerField = typeof(InventoryWeaponBridge).GetField("inventoryManager", 
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                
+            WeaponManager weaponManager = _currentPlayer?.GetComponent<WeaponManager>();
+            
+            if (weaponManagerField != null && weaponManager != null)
+                weaponManagerField.SetValue(bridge, weaponManager);
+                
+            if (inventoryManagerField != null)
+                inventoryManagerField.SetValue(bridge, inventoryManager);
+            
+            // Force syncing weapons with inventory
+            bridge.MapAvailableWeapons();
+            bridge.SyncWeaponsWithInventory();
+            Debug.Log("Inventory systems reconnected successfully");
+        }
+        else
+        {
+            Debug.LogError($"Failed to sync inventory systems. Bridge: {bridge}, InventoryManager: {inventoryManager}");
+        }
     }
 
     private IEnumerator DelayedInventorySync(InventoryWeaponBridge bridge)

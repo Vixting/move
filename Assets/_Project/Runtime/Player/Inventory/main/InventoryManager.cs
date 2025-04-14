@@ -350,5 +350,6 @@ namespace InventorySystem
                 inventoryDocument = GetComponent<UIDocument>();
             }
         }
+        
     }
 }

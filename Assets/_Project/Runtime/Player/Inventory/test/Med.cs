@@ -6,7 +6,10 @@ public class TestItemCreator : MonoBehaviour
     [SerializeField] private Sprite medkitSprite;
     [SerializeField] private Sprite bandageSprite;
     [SerializeField] private Sprite painkillerSprite;
-    
+    [SerializeField] private GameObject medkitPrefab;
+    [SerializeField] private GameObject bandagePrefab;
+    [SerializeField] private GameObject painkillerPrefab;
+        
     // Debug options
     [Header("Debug")]
     [SerializeField] private bool showDebugLogs = true;
@@ -24,6 +27,7 @@ public class TestItemCreator : MonoBehaviour
         medkit.displayName = "Medkit";
         medkit.description = "A comprehensive medical kit for treating various injuries. Restores a significant amount of health.";
         medkit.icon = medkitSprite;
+        medkit.prefab = medkitPrefab;
         medkit.rarity = ItemRarity.Rare;
         medkit.width = 2;
         medkit.height = 2;

@@ -183,7 +183,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 14e9b3070d04ae04ea688c8345164863, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemDatabase: {fileID: 0}
+  itemDatabase: {fileID: 11400000, guid: d10aae280f94f904994ad9cca3f36700, type: 2}
   levelManager: {fileID: 1938952486}
   mainMenuDocument: {fileID: 1251236451}
   mainMenuObject: {fileID: 1251236450}
@@ -1514,6 +1514,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6053579846953004392, guid: 52214ee53fa440443871c3058e5e6b41, type: 3}
+      propertyPath: inventoryManager
+      value: 
+      objectReference: {fileID: 717945403}
     - target: {fileID: 9194186139239215216, guid: 52214ee53fa440443871c3058e5e6b41, type: 3}
       propertyPath: m_LocalPosition.x
       value: 29.652996
@@ -1618,6 +1622,10 @@ PrefabInstance:
       propertyPath: weaponManager
       value: 
       objectReference: {fileID: 1459703955}
+    - target: {fileID: 7281054959588766594, guid: 42e802f3858b48b4c9a6b172f672d1fc, type: 3}
+      propertyPath: medkitSprite
+      value: 
+      objectReference: {fileID: 21300000, guid: a5b6ecdbc26aa9f47b973c7481d1268a, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

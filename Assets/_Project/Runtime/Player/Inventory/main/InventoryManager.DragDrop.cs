@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Linq;
+using UnityEngine.InputSystem;
 
 namespace InventorySystem
 {
-    public partial class InventoryManager //InventoryManager.DragDrop.cs
+    public partial class InventoryManager
     {
         private void StartDragItem(ItemInstance item, Vector2 mousePosition)
         {
@@ -30,7 +31,6 @@ namespace InventorySystem
             
             _draggedItemElement.AddToClassList("dragged-item");
             
-            // Get the actual cell size from existing cells, default to 50 if not found
             int cellSize = 50;
             UQueryBuilder<VisualElement> cellQuery = _root.Query(null, "grid-cell");
             if (cellQuery.First() != null)
@@ -39,11 +39,9 @@ namespace InventorySystem
                 Debug.Log($"Detected cell size: {cellSize}px");
             }
             
-            // Calculate the item size based on its width and height in cells
             int itemWidth = item.GetWidth() * cellSize;
             int itemHeight = item.GetHeight() * cellSize;
             
-            // Explicitly set the size of the dragged item element
             _draggedItemElement.style.width = itemWidth;
             _draggedItemElement.style.height = itemHeight;
             
@@ -84,7 +82,6 @@ namespace InventorySystem
                 _draggedItemElement.style.left = newPosition.x;
                 _draggedItemElement.style.top = newPosition.y;
                 
-                // Add snap functionality with a small delay if enabled
                 if (_enableSnapping)
                 {
                     if (_snapTimer <= 0)
@@ -110,9 +107,8 @@ namespace InventorySystem
             if (_draggedItem == null || _draggedItemElement == null)
                 return;
             
-            Vector2 mousePosition = Input.mousePosition;
+            Vector2 mousePosition = Mouse.current.position.ReadValue();
             
-            // Find the closest valid grid cell
             Vector2? closestCellPosition = null;
             float closestDistance = float.MaxValue;
             string closestContainerId = null;
@@ -154,7 +150,6 @@ namespace InventorySystem
                 }
             }
             
-            // If we found a valid cell, update highlighting
             if (closestCellPosition.HasValue && !string.IsNullOrEmpty(closestContainerId))
             {
                 _draggedItemElement.style.left = closestCellPosition.Value.x - _dragOffset.x;
@@ -187,7 +182,7 @@ namespace InventorySystem
                     _draggedItemElement = InventoryUIHelper.CreateItemVisualElement(_draggedItem, itemTemplate, true);
                     _draggedItemElement.AddToClassList("dragged-item");
                     
-                    Vector2 mousePosition = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
+                    Vector2 mousePosition = Mouse.current.position.ReadValue();
                     _draggedItemElement.style.left = mousePosition.x - _dragOffset.x;
                     _draggedItemElement.style.top = mousePosition.y - _dragOffset.y;
                     
@@ -207,7 +202,6 @@ namespace InventorySystem
             
             bool itemPlaced = false;
             
-            // Reset opacity of original item visual
             if (_draggedItem.container != null)
             {
                 VisualElement existingElement = _root.Q(_draggedItem.instanceId);
@@ -217,10 +211,8 @@ namespace InventorySystem
                 }
             }
             
-            // Create a list of all cells across all containers
             List<(VisualElement cell, string containerId, int x, int y, bool canPlace)> allCells = new List<(VisualElement, string, int, int, bool)>();
             
-            // Find all valid cells for this item
             foreach (var container in _containers.Values)
             {
                 if (container.containerData.restrictedCategories.Contains(_draggedItem.itemData.category))
@@ -249,13 +241,11 @@ namespace InventorySystem
             
             Debug.Log($"Found {allCells.Count} potential cells, filtering for valid placements");
             
-            // Get only valid cells
             var validCells = allCells.Where(c => c.canPlace).ToList();
             Debug.Log($"Found {validCells.Count} valid cells for placement");
             
             if (_magneticDrop && validCells.Count > 0)
             {
-                // Sort by distance to mouse
                 validCells.Sort((a, b) => {
                     Rect aRect = a.cell.worldBound;
                     Rect bRect = b.cell.worldBound;
@@ -264,7 +254,6 @@ namespace InventorySystem
                     return aDistance.CompareTo(bDistance);
                 });
                 
-                // Try to place in the closest valid cell within magnetic distance
                 var closestValidCell = validCells[0];
                 float distance = Vector2.Distance(
                     mousePosition, 
@@ -292,10 +281,8 @@ namespace InventorySystem
                 }
             }
             
-            // If not placed by magnetic drop, try normal placement logic
             if (!itemPlaced)
             {
-                // Check if mouse is in any cell
                 bool foundCellContainingMouse = false;
                 foreach (var cellInfo in allCells)
                 {
@@ -314,7 +301,6 @@ namespace InventorySystem
                         foundCellContainingMouse = true;
                         Debug.Log($"Mouse is inside cell {cell.name}, bounds: {cellRect}");
                         
-                        // Try to place the item
                         Debug.Log($"Trying to place at {containerId} ({x}, {y})");
                         itemPlaced = TryPlaceItemAt(_draggedItem, containerId, new Vector2Int(x, y));
                         
@@ -334,7 +320,6 @@ namespace InventorySystem
                 {
                     Debug.Log("Mouse was not inside any cell. Checking closest valid cells");
                     
-                    // Try using the closest 5 valid cells
                     int cellsToCheck = Math.Min(5, validCells.Count);
                     for (int i = 0; i < cellsToCheck; i++)
                     {
@@ -359,7 +344,6 @@ namespace InventorySystem
                 }
             }
             
-            // If not placed in a grid cell, try equipment slots
             if (!itemPlaced)
             {
                 UQueryBuilder<VisualElement> equipmentSlots = _root.Query(null, "equipment-slot");
@@ -402,7 +386,6 @@ namespace InventorySystem
                 });
             }
             
-            // If item wasn't placed, return to original position
             if (!itemPlaced)
             {
                 Debug.Log("Item wasn't placed, returning to original position");
@@ -425,7 +408,6 @@ namespace InventorySystem
                 }
             }
             
-            // Clean up drag elements
             if (_draggedItemElement != null)
             {
                 _draggedItemElement.RemoveFromHierarchy();
