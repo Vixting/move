@@ -117,33 +117,60 @@ namespace InventorySystem
         {
             if (item == null || !item.CanEquipInSlot(slot))
             {
+                Debug.LogWarning($"[Character] Cannot equip item: invalid item or slot {slot}");
                 return false;
             }
             
             ItemInstance currentItem = GetEquippedItem(slot);
             if (currentItem != null)
             {
-                UnequipItem(slot);
+                Debug.Log($"[Character] Slot {slot} already has {currentItem.itemData.displayName} equipped - removing it first");
+                currentItem.IsEquipped = false;
+                currentItem.EquippedSlot = null;
+                
+                _equippedItems.Remove(slot);
             }
             
+            Debug.Log($"[Character] Equipping {item.itemData.displayName} to slot {slot}");
             _equippedItems[slot] = item;
+            
+            item.IsEquipped = true;
+            item.EquippedSlot = slot;
+            
+            if (item.itemData is WeaponItemData weaponItem)
+            {
+                Debug.Log($"[Character] Equipped weapon {weaponItem.displayName} with {weaponItem.currentAmmoCount} ammo");
+            }
             
             if (item.container != null)
             {
+                Debug.Log($"[Character] Removing item from container {item.container.containerData.id}");
                 item.container.RemoveItem(item);
                 item.container = null;
             }
             
             RecalculateWeight();
+            
+            Debug.Log("[Character] Current equipped items:");
+            foreach (var kvp in _equippedItems)
+            {
+                Debug.Log($"  Slot {kvp.Key}: {(kvp.Value != null ? kvp.Value.itemData.displayName : "None")}");
+            }
+            
             return true;
         }
-        
+                
         public ItemInstance UnequipItem(EquipmentSlot slot)
         {
             if (!_equippedItems.TryGetValue(slot, out ItemInstance item))
             {
                 return null;
             }
+            
+            Debug.Log($"[Character] Unequipping {item.itemData.displayName} from slot {slot}");
+            
+            item.IsEquipped = false;
+            item.EquippedSlot = null;
             
             _equippedItems.Remove(slot);
             RecalculateWeight();

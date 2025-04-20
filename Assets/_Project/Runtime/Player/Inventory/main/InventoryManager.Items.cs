@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace InventorySystem
 {
-    public partial class InventoryManager //InventoryManager.Items.cs
+    public partial class InventoryManager
     {
         private void LoadPlayerInventory()
         {
@@ -212,108 +212,6 @@ namespace InventorySystem
                 RefreshItemUI(item, item.container.containerData.id);
                 onInventoryChanged?.Invoke();
             }
-        }
-    
-        private bool TryPlaceItemAt(ItemInstance item, string containerId, Vector2Int position)
-        {
-            if (item == null)
-            {
-                Debug.LogError("TryPlaceItemAt: Item is null");
-                return false;
-            }
-            
-            if (!_containers.TryGetValue(containerId, out ContainerInstance targetContainer))
-            {
-                Debug.LogError($"TryPlaceItemAt: Container {containerId} not found");
-                return false;
-            }
-            
-            Debug.Log($"TryPlaceItemAt: Attempting to place {item.itemData.displayName} at ({position.x}, {position.y}) in {containerId}");
-            
-            // Store the original container and position
-            ContainerInstance originalContainer = item.container;
-            Vector2Int originalPosition = item.position;
-            
-            // If the item is already in a container, remove it first
-            if (originalContainer != null)
-            {
-                Debug.Log($"Removing item from original container {originalContainer.containerData.id}");
-                originalContainer.RemoveItem(item);
-            }
-            
-            // Check if the item can be placed at the target position
-            bool canPlace = targetContainer.CanPlaceItem(item, position);
-            Debug.Log($"Can place item at target position: {canPlace}");
-            
-            if (canPlace)
-            {
-                // Add the item to the target container
-                bool success = targetContainer.AddItem(item, position);
-                
-                if (success)
-                {
-                    Debug.Log($"Successfully placed item at {containerId} ({position.x}, {position.y})");
-                    
-                    // Update the UI
-                    if (originalContainer != null)
-                    {
-                        Debug.Log($"Refreshing original container UI: {originalContainer.containerData.id}");
-                        RefreshContainerUI(originalContainer.containerData.id);
-                    }
-                    
-                    Debug.Log($"Refreshing target container UI: {containerId}");
-                    RefreshContainerUI(containerId);
-                    
-                    onInventoryChanged?.Invoke();
-                    return true;
-                }
-                else
-                {
-                    Debug.LogError($"AddItem failed despite CanPlaceItem returning true");
-                }
-            }
-            
-            // If we get here, the placement failed
-            Debug.Log($"Item placement failed. Attempting to return to original position");
-            
-            // If the item had an original container, try to put it back
-            if (originalContainer != null)
-            {
-                bool revertSuccess = originalContainer.AddItem(item, originalPosition);
-                
-                if (!revertSuccess)
-                {
-                    Debug.LogError($"Failed to return item to original position. Finding new position.");
-                    Vector2Int? availablePos = originalContainer.FindAvailablePosition(item);
-                    if (availablePos.HasValue)
-                    {
-                        originalContainer.AddItem(item, availablePos.Value);
-                        Debug.Log($"Item returned to new position: {availablePos.Value}");
-                    }
-                    else
-                    {
-                        Debug.LogError($"Could not find any position for the item in the original container!");
-                        
-                        // Last resort: try to find a position in any container
-                        foreach (var container in _containers.Values)
-                        {
-                            availablePos = container.FindAvailablePosition(item);
-                            if (availablePos.HasValue)
-                            {
-                                container.AddItem(item, availablePos.Value);
-                                Debug.Log($"Item placed in container {container.containerData.id} at {availablePos.Value}");
-                                break;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.Log($"Successfully returned item to original position");
-                }
-            }
-            
-            return false;
         }
     }
 }

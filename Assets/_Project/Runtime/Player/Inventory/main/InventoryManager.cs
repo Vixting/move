@@ -5,6 +5,7 @@ using UnityEngine.UIElements;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using System.Linq;
+using UnityEngine.InputSystem;
 
 namespace InventorySystem
 {
@@ -14,12 +15,14 @@ namespace InventorySystem
         [SerializeField] private VisualTreeAsset itemTemplate;
         [SerializeField] private UIDocument inventoryDocument;
         
-        // Drag and drop settings
         [SerializeField] private bool _showGridHelpers = true;
         [SerializeField] private bool _enableSnapping = true;
         [SerializeField] private bool _enableMagneticDrop = true;
         [SerializeField] private float _magneticDropRadius = 150f;
         [SerializeField] private float _snapDelayTime = 0.1f;
+        [SerializeField] private float _dropDistance = 1.5f;
+        [SerializeField] private float _dropHeight = 1.0f;
+        [SerializeField] private float _dropForce = 2.0f;
         
         private float _snapTimer = 0f;
         private bool _magneticDrop = true;
@@ -69,7 +72,6 @@ namespace InventorySystem
                 _character = FindObjectOfType<Character>();
             }
             
-            // Set up drag and drop settings
             _magneticDrop = _enableMagneticDrop;
             _magneticDropDistance = _magneticDropRadius;
             
@@ -110,12 +112,7 @@ namespace InventorySystem
                         SetWeaponManager(_weaponManager);
                     }
                     
-                    InventoryWeaponBridge bridge = player.GetComponent<InventoryWeaponBridge>();
-                    if (bridge != null)
-                    {
-                        bridge.MapAvailableWeapons();
-                        bridge.SyncWeaponsWithInventory();
-                    }
+
                 }
                 
                 if (inventoryDocument != null)
@@ -195,139 +192,6 @@ namespace InventorySystem
             Debug.Log("All references reconnected successfully");
         }
 
-        private void InitializeUI()
-        {
-            if (inventoryDocument == null || inventoryDocument.rootVisualElement == null)
-            {
-                Debug.LogWarning("Inventory document missing or not properly set up");
-                return;
-            }
-            
-            _root = inventoryDocument.rootVisualElement.Q("inventory-root");
-            if (_root == null)
-            {
-                Debug.LogWarning("Inventory root element not found");
-                return;
-            }
-            
-            _inventoryContent = _root.Q("inventory-content");
-            
-            SetupCloseButton();
-            SetupEquipmentUI();
-            CreateSettingsUI();
-            
-            _root.RegisterCallback<PointerDownEvent>(evt => {
-                _root.CapturePointer(evt.pointerId);
-            });
-            
-            _root.RegisterCallback<PointerUpEvent>(evt => {
-                _root.ReleasePointer(evt.pointerId);
-            });
-            
-            _root.RegisterCallback<MouseMoveEvent>(OnMouseMove);
-            _root.RegisterCallback<MouseUpEvent>(OnMouseUp);
-            _root.RegisterCallback<KeyDownEvent>(OnKeyDown);
-            
-            _root.RegisterCallback<MouseDownEvent>(evt => {
-                if (_contextMenu != null)
-                {
-                    _contextMenu.RemoveFromHierarchy();
-                    _contextMenu = null;
-                }
-            });
-            
-            UpdateHealthAndStats();
-        }
-
-        private void CreateSettingsUI()
-        {
-            if (_root == null) return;
-            
-            VisualElement settingsContainer = _root.Q("inventory-settings-container");
-            if (settingsContainer == null)
-            {
-                settingsContainer = new VisualElement();
-                settingsContainer.name = "inventory-settings-container";
-                settingsContainer.style.position = Position.Absolute;
-                settingsContainer.style.top = 10;
-                settingsContainer.style.right = 10;
-                settingsContainer.style.width = 200;
-                settingsContainer.style.backgroundColor = new StyleColor(new Color(0.1f, 0.1f, 0.1f, 0.8f));
-                settingsContainer.style.paddingTop = 5;
-                settingsContainer.style.paddingBottom = 5;
-                settingsContainer.style.paddingLeft = 10;
-                settingsContainer.style.paddingRight = 10;
-                _root.Add(settingsContainer);
-            }
-            
-            Label settingsTitle = new Label("Inventory Settings");
-            settingsTitle.style.unityTextAlign = TextAnchor.MiddleCenter;
-            settingsTitle.style.marginBottom = 10;
-            settingsContainer.Add(settingsTitle);
-            
-            // Grid helpers toggle
-            AddToggleSetting(settingsContainer, "Show Grid Helpers", _showGridHelpers, (evt) => {
-                _showGridHelpers = evt.newValue;
-                RefreshAllContainerUI();
-            });
-            
-            // Snapping toggle
-            AddToggleSetting(settingsContainer, "Enable Grid Snapping", _enableSnapping, (evt) => {
-                _enableSnapping = evt.newValue;
-            });
-            
-            // Magnetic drop toggle
-            AddToggleSetting(settingsContainer, "Enable Magnetic Drop", _enableMagneticDrop, (evt) => {
-                _enableMagneticDrop = evt.newValue;
-                _magneticDrop = evt.newValue;
-            });
-        }
-        
-        private void AddToggleSetting(VisualElement container, string label, bool initialValue, EventCallback<ChangeEvent<bool>> callback)
-        {
-            VisualElement row = new VisualElement();
-            row.style.flexDirection = FlexDirection.Row;
-            row.style.justifyContent = Justify.SpaceBetween;
-            row.style.marginBottom = 5;
-            
-            Label settingLabel = new Label(label);
-            settingLabel.style.width = new Length(70, LengthUnit.Percent);
-            
-            Toggle toggle = new Toggle();
-            toggle.value = initialValue;
-            toggle.RegisterValueChangedCallback(callback);
-            toggle.style.width = new Length(30, LengthUnit.Percent);
-            
-            row.Add(settingLabel);
-            row.Add(toggle);
-            container.Add(row);
-        }
-        
-        private void RefreshAllContainerUI()
-        {
-            foreach (var containerId in _containers.Keys)
-            {
-                RefreshContainerUI(containerId);
-            }
-        }
-        
-        private void SetupCloseButton()
-        {
-            Button closeButton = _root.Q<Button>("close-button");
-            if (closeButton != null)
-            {
-                closeButton.clicked += () => 
-                {
-                    HideInventory();
-                    Player player = FindObjectOfType<Player>();
-                    if (player != null)
-                    {
-                        player.EnableGameplayMode(true);
-                    }
-                };
-            }
-        }
-
         public void SetWeaponManager(WeaponManager weaponManager)
         {
             _weaponManager = weaponManager;
@@ -351,5 +215,191 @@ namespace InventorySystem
             }
         }
         
+        public bool AddItemToInventory(string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId) || GameManager.Instance == null)
+            {
+                Debug.LogWarning("AddItemToInventory: Invalid item ID or GameManager not found");
+                return false;
+            }
+            
+            ItemData itemData = GameManager.Instance.GetItemById(itemId);
+            if (itemData == null)
+            {
+                Debug.LogWarning($"AddItemToInventory: Item with ID '{itemId}' not found");
+                return false;
+            }
+            
+            if (_containers.TryGetValue("backpack", out ContainerInstance backpack))
+            {
+                ItemInstance dummyItem = new ItemInstance(itemData, Vector2Int.zero, backpack);
+                Vector2Int? availablePos = backpack.FindAvailablePosition(dummyItem);
+                
+                if (availablePos.HasValue)
+                {
+                    ItemInstance item = AddItemToContainer(itemData, "backpack", availablePos.Value);
+                    return item != null;
+                }
+            }
+            
+            if (_containers.TryGetValue("stash", out ContainerInstance stash))
+            {
+                ItemInstance dummyItem = new ItemInstance(itemData, Vector2Int.zero, stash);
+                Vector2Int? availablePos = stash.FindAvailablePosition(dummyItem);
+                
+                if (availablePos.HasValue)
+                {
+                    ItemInstance item = AddItemToContainer(itemData, "stash", availablePos.Value);
+                    return item != null;
+                }
+            }
+            
+            Debug.LogWarning($"AddItemToInventory: No space for item '{itemData.displayName}' in any container");
+            return false;
+        }
+        
+        public bool EquipItemFromInventory(string itemId, EquipmentSlot slot)
+        {
+            if (string.IsNullOrEmpty(itemId))
+            {
+                Debug.LogWarning("EquipItemFromInventory: Invalid item ID");
+                return false;
+            }
+            
+            foreach (var container in _containers.Values)
+            {
+                foreach (var item in container.GetAllItems())
+                {
+                    if (item.itemData.id == itemId)
+                    {
+                        return EquipItem(item, slot);
+                    }
+                }
+            }
+            
+            if (GameManager.Instance != null)
+            {
+                ItemData itemData = GameManager.Instance.GetItemById(itemId);
+                if (itemData != null)
+                {
+                    if (_containers.TryGetValue("stash", out ContainerInstance stash))
+                    {
+                        ItemInstance dummyItem = new ItemInstance(itemData, Vector2Int.zero, stash);
+                        Vector2Int? availablePos = stash.FindAvailablePosition(dummyItem);
+                        
+                        if (availablePos.HasValue)
+                        {
+                            ItemInstance item = AddItemToContainer(itemData, "stash", availablePos.Value);
+                            if (item != null)
+                            {
+                                return EquipItem(item, slot);
+                            }
+                        }
+                    }
+                    
+                    Debug.LogWarning($"EquipItemFromInventory: No space to add item '{itemData.displayName}' before equipping");
+                }
+                else
+                {
+                    Debug.LogWarning($"EquipItemFromInventory: Item with ID '{itemId}' not found");
+                }
+            }
+            
+            return false;
+        }
+        
+        public bool HasAmmoForWeapon(string ammoTypeStr)
+        {
+            if (string.IsNullOrEmpty(ammoTypeStr)) return false;
+            
+            List<ItemInstance> ammoItems = FindItemsByCategory(ItemCategory.Ammunition);
+            
+            foreach (var ammo in ammoItems)
+            {
+                if (ammo.itemData is AmmoItemData ammoData)
+                {
+                    if (ammoData.ammoType.ToString() == ammoTypeStr)
+                    {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
+        
+        public bool UseAmmoForWeapon(string ammoTypeStr, int amount)
+        {
+            if (string.IsNullOrEmpty(ammoTypeStr) || amount <= 0) return false;
+            
+            List<ItemInstance> ammoItems = FindItemsByCategory(ItemCategory.Ammunition);
+            int ammoFound = 0;
+            
+            foreach (var ammo in ammoItems)
+            {
+                if (ammo.itemData is AmmoItemData ammoData && ammoData.ammoType.ToString() == ammoTypeStr)
+                {
+                    ammoFound += ammo.stackCount;
+                }
+            }
+            
+            if (ammoFound < amount)
+            {
+                return false;
+            }
+            
+            int ammoToUse = amount;
+            foreach (var ammo in new List<ItemInstance>(ammoItems))
+            {
+                if (ammoToUse <= 0) break;
+                
+                if (ammo.itemData is AmmoItemData ammoData && ammoData.ammoType.ToString() == ammoTypeStr)
+                {
+                    if (ammo.stackCount <= ammoToUse)
+                    {
+                        ammoToUse -= ammo.stackCount;
+                        RemoveItem(ammo);
+                    }
+                    else
+                    {
+                        ammo.stackCount -= ammoToUse;
+                        ammoToUse = 0;
+                        RefreshItemUI(ammo, ammo.container.containerData.id);
+                    }
+                }
+            }
+            
+            onInventoryChanged?.Invoke();
+            return true;
+        }
+        
+        public List<ItemInstance> FindItemsByCategory(ItemCategory category)
+        {
+            List<ItemInstance> result = new List<ItemInstance>();
+            
+            foreach (var container in _containers.Values)
+            {
+                foreach (var item in container.GetAllItems())
+                {
+                    if (item.itemData.category == category)
+                    {
+                        result.Add(item);
+                    }
+                }
+            }
+            
+            return result;
+        }
+
+        public ItemInstance GetItemById(string itemId)
+        {
+            if (string.IsNullOrEmpty(itemId) || _items == null)
+                return null;
+                
+            if (_items.TryGetValue(itemId, out ItemInstance item))
+                return item;
+                
+            return null;
+        }
     }
 }

@@ -25,6 +25,9 @@ public class ItemInstance
     public float currentDurability = 100f;
     public int currentAmmoCount;
     
+    public bool IsEquipped { get; set; } = false;
+    public EquipmentSlot? EquippedSlot { get; set; } = null;
+    
     [SerializeField]
     private List<string> _attachedItemIds = new List<string>();
     
@@ -247,5 +250,19 @@ public class ItemInstance
     public bool CanEquipInSlot(EquipmentSlot slot)
     {
         return itemData.canEquip && itemData.compatibleSlots.Contains(slot);
+    }
+    
+    public void SetEquipped(EquipmentSlot slot)
+    {
+        IsEquipped = true;
+        EquippedSlot = slot;
+        Debug.Log($"Item {itemData?.displayName} marked as equipped in slot {slot}");
+    }
+    
+    public void SetUnequipped()
+    {
+        IsEquipped = false;
+        EquippedSlot = null;
+        Debug.Log($"Item {itemData?.displayName} marked as unequipped");
     }
 }

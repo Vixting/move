@@ -358,73 +358,11 @@ public class LevelManager : MonoBehaviour
             Debug.LogError("Current player is null, can't assign inventory manager");
         }
         
-        // Ensure inventory weapon bridge exists and works
-        InventoryWeaponBridge bridge = _currentPlayer?.GetWeaponBridge();
-        if (bridge == null && _currentPlayer != null)
-        {
-            bridge = _currentPlayer.GetComponent<InventoryWeaponBridge>();
-            if (bridge == null)
-            {
-                bridge = _currentPlayer.gameObject.AddComponent<InventoryWeaponBridge>();
-            }
-        }
-        
-        // Wait a frame to ensure components are ready
-        StartCoroutine(DelayedInventorySync(bridge, inventoryManager));
+
     }
 
-    private IEnumerator DelayedInventorySync(InventoryWeaponBridge bridge, InventoryManager inventoryManager)
-    {
-        // Wait two frames to ensure everything is initialized
-        yield return null;
-        yield return null;
-        
-        if (bridge != null && inventoryManager != null)
-        {
-            // Set references explicitly using reflection if necessary
-            var weaponManagerField = typeof(InventoryWeaponBridge).GetField("weaponManager", 
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                
-            var inventoryManagerField = typeof(InventoryWeaponBridge).GetField("inventoryManager", 
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                
-            WeaponManager weaponManager = _currentPlayer?.GetComponent<WeaponManager>();
-            
-            if (weaponManagerField != null && weaponManager != null)
-                weaponManagerField.SetValue(bridge, weaponManager);
-                
-            if (inventoryManagerField != null)
-                inventoryManagerField.SetValue(bridge, inventoryManager);
-            
-            // Force syncing weapons with inventory
-            bridge.MapAvailableWeapons();
-            bridge.SyncWeaponsWithInventory();
-            Debug.Log("Inventory systems reconnected successfully");
-        }
-        else
-        {
-            Debug.LogError($"Failed to sync inventory systems. Bridge: {bridge}, InventoryManager: {inventoryManager}");
-        }
-    }
 
-    private IEnumerator DelayedInventorySync(InventoryWeaponBridge bridge)
-    {
-        // Wait two frames to ensure everything is initialized
-        yield return null;
-        yield return null;
-        
-        if (bridge != null)
-        {
-            // Force syncing weapons with inventory
-            bridge.MapAvailableWeapons();
-            bridge.SyncWeaponsWithInventory();
-            Debug.Log("Inventory systems reconnected successfully");
-        }
-        else
-        {
-            Debug.LogError("Failed to find or create InventoryWeaponBridge");
-        }
-    }
+
     
     private Transform FindSpawnPoint()
     {

@@ -184,9 +184,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemDatabase: {fileID: 11400000, guid: d10aae280f94f904994ad9cca3f36700, type: 2}
+  weaponDatabase: {fileID: 11400000, guid: c964e4605bb9b894b93204f363fe1b98, type: 2}
   levelManager: {fileID: 1938952486}
   mainMenuDocument: {fileID: 1251236451}
   mainMenuObject: {fileID: 1251236450}
+  weaponItemCreator: {fileID: 717945411}
+  autoSyncWeaponsOnStart: 1
 --- !u!4 &59668408
 Transform:
   m_ObjectHideFlags: 0
@@ -893,6 +896,65 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf8eda6abca213c4ca6f5e9c41a6a503, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &717945411
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 717945395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d91f622b039e7f4da0753875d5b3c05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemDatabase: {fileID: 11400000, guid: d10aae280f94f904994ad9cca3f36700, type: 2}
+  createOnStart: 1
+  addToInventoryAfterCreation: 0
+  updateExistingItems: 1
+  logDebugInfo: 1
+--- !u!114 &717945417
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 717945395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f58114fb0add3e346918da60d05aa575, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  weaponDatabase: {fileID: 11400000, guid: c964e4605bb9b894b93204f363fe1b98, type: 2}
+  itemDatabase: {fileID: 11400000, guid: d10aae280f94f904994ad9cca3f36700, type: 2}
+  weaponItemCreator: {fileID: 717945411}
+  rifleData: {fileID: 11400000, guid: 4ee82cfe814bba142b939e56e009cf41, type: 2}
+  shotgunData: {fileID: 11400000, guid: 1a5d175bfe54df049a880a56f2b27985, type: 2}
+  rifleSlot: 6
+  shotgunSlot: 7
+  initializationDelay: 2
+  weaponSyncDelay: 0.5
+  maxRetryAttempts: 5
+--- !u!114 &717945418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 717945395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcc64210665325e4bafa9e522ce4819f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  characterName: PMC Character
+  maxHealth: 100
+  currentHealth: 100
+  maxEnergy: 100
+  currentEnergy: 100
+  maxHydration: 100
+  currentHydration: 100
+  maxWeight: 70
 --- !u!1 &755936713
 GameObject:
   m_ObjectHideFlags: 0
@@ -1097,6 +1159,10 @@ GameObject:
   - component: {fileID: 1251236452}
   - component: {fileID: 1251236451}
   - component: {fileID: 1251236453}
+  - component: {fileID: 1251236454}
+  - component: {fileID: 1251236457}
+  - component: {fileID: 1251236456}
+  - component: {fileID: 1251236455}
   m_Layer: 5
   m_Name: MainMenu
   m_TagString: Untagged
@@ -1153,6 +1219,60 @@ MonoBehaviour:
   menuDocument: {fileID: 1251236451}
   gameManager: {fileID: 59668407}
   levelManager: {fileID: 1938952486}
+--- !u!114 &1251236454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1251236450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb2a6b241cc03149a6cd9bf043d77f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  menuDocument: {fileID: 1251236451}
+  levelManager: {fileID: 1938952486}
+  inputRebinder: {fileID: 1251236457}
+--- !u!114 &1251236455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1251236450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c2d4e155a7308043b249d9ab72fa728, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1251236456
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1251236450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f6605d564d588046aad6c33969b34e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  menuDocument: {fileID: 1251236451}
+  inputRebinder: {fileID: 1251236457}
+  mainMenuGameObject: {fileID: 0}
+--- !u!114 &1251236457
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1251236450}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1e54bfee9219a444add27ef1bdfa871, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1420504310
 GameObject:
   m_ObjectHideFlags: 0
@@ -1215,8 +1335,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 171eaf285cce9af4eb7c4617ced2bf13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inventoryManager: {fileID: 717945403}
-  weaponManager: {fileID: 1459703955}
+  inventoryManager: {fileID: 0}
+  weaponManager: {fileID: 0}
+  itemDatabase: {fileID: 0}
+  initializationDelay: 0.5
+  maxRetryAttempts: 5
+  validationInterval: 0.5
+  characterFindInterval: 1
+  mainMenuSceneName: MainMenu
+  disableInMainMenu: 1
 --- !u!1 &1666039128
 GameObject:
   m_ObjectHideFlags: 0
@@ -1622,6 +1749,10 @@ PrefabInstance:
       propertyPath: weaponManager
       value: 
       objectReference: {fileID: 1459703955}
+    - target: {fileID: 5313074153434607591, guid: 42e802f3858b48b4c9a6b172f672d1fc, type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 7281054959588766594, guid: 42e802f3858b48b4c9a6b172f672d1fc, type: 3}
       propertyPath: medkitSprite
       value: 
@@ -1633,6 +1764,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3197700919123679644, guid: 42e802f3858b48b4c9a6b172f672d1fc, type: 3}
       insertIndex: -1
       addedObject: {fileID: 717945404}
+    - targetCorrespondingSourceObject: {fileID: 3197700919123679644, guid: 42e802f3858b48b4c9a6b172f672d1fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 717945411}
+    - targetCorrespondingSourceObject: {fileID: 3197700919123679644, guid: 42e802f3858b48b4c9a6b172f672d1fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 717945417}
+    - targetCorrespondingSourceObject: {fileID: 3197700919123679644, guid: 42e802f3858b48b4c9a6b172f672d1fc, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 717945418}
   m_SourcePrefab: {fileID: 100100000, guid: 42e802f3858b48b4c9a6b172f672d1fc, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

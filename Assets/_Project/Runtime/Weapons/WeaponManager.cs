@@ -5,12 +5,12 @@ using System.Linq;
 using SharedTypes;
 using InventorySystem;
 
-public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
+public class WeaponManager : MonoBehaviour
 {
     [SerializeField] private Transform weaponHolder;
     [SerializeField] private LayerMask shootableLayers;
-    [SerializeField] private WeaponData[] availableWeapons;
-   
+    [SerializeField] private WeaponData[] fallbackWeapons;
+    
     private PlayerCamera playerCamera;
     private PlayerCharacter playerCharacter;
     private List<Weapon> weapons = new List<Weapon>();
@@ -36,9 +36,11 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
     private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> aimEndAction;
     private System.Action<UnityEngine.InputSystem.InputAction.CallbackContext> lastWeaponAction;
 
+    private List<WeaponData> activeWeaponData = new List<WeaponData>();
+
     public WeaponData[] GetAvailableWeapons()
     {
-        return availableWeapons;
+        return activeWeaponData.ToArray();
     }
 
     public void Initialize(PlayerCamera camera, PlayerInputActions sharedInputActions, PlayerCharacter character = null, WeaponData[] existingWeapons = null)
@@ -53,7 +55,9 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
         playerCharacter = character;
         
         if (existingWeapons != null && existingWeapons.Length > 0)
-            availableWeapons = existingWeapons;
+            activeWeaponData = new List<WeaponData>(existingWeapons);
+        else
+            activeWeaponData = new List<WeaponData>();
         
         if (inputActions == null)
         {
@@ -72,6 +76,14 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
         aimEndAction = _ => SetAiming(false);
         lastWeaponAction = _ => SwitchToLastWeapon();
         
+        RegisterInputCallbacks();
+        InitializeWeapons();
+    }
+    
+    private void RegisterInputCallbacks()
+    {
+        if (inputActions == null) return;
+        
         inputActions.Gameplay.WeaponSwitch.performed += weaponSwitchAction;
         inputActions.Gameplay.Weapon1.performed += weapon1Action;
         inputActions.Gameplay.Weapon2.performed += weapon2Action;
@@ -82,8 +94,6 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
         inputActions.Gameplay.Aim.started += aimStartAction;
         inputActions.Gameplay.Aim.canceled += aimEndAction;
         inputActions.Gameplay.LastWeapon.performed += lastWeaponAction;
-        
-        InitializeWeapons();
     }
 
     private void SwitchToLastWeapon()
@@ -134,17 +144,17 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
     private void InitializeWeapons()
     {
         slotToIndexMap.Clear();
-        weapons.Clear();
+        ClearWeapons();
         
-        if (availableWeapons == null || availableWeapons.Length == 0)
+        if (activeWeaponData == null || activeWeaponData.Count == 0)
         {
-            Debug.LogError("[WM] No weapons to initialize!");
+            Debug.LogWarning("[WM] No weapons to initialize!");
             return;
         }
         
-        for (int i = 0; i < availableWeapons.Length; i++)
+        for (int i = 0; i < activeWeaponData.Count; i++)
         {
-            var weaponData = availableWeapons[i];
+            var weaponData = activeWeaponData[i];
             if (weaponData != null && weaponData.weaponPrefab != null)
             {
                 GameObject weaponObj = Instantiate(weaponData.weaponPrefab, weaponHolder);
@@ -187,7 +197,7 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
             }
             else
             {
-                Debug.LogError("[WM] Null weapon data or weapon prefab reference found at index " + i);
+                Debug.LogWarning("[WM] Null weapon data or weapon prefab reference found at index " + i);
             }
         }
         
@@ -197,7 +207,7 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
         }
         else
         {
-            Debug.LogError("[WM] No weapons were initialized successfully");
+            Debug.LogWarning("[WM] No weapons were initialized successfully");
         }
     }
     
@@ -355,14 +365,13 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
         if (currentWeaponIndex < 0 || currentWeaponIndex >= weapons.Count) return null;
         
         Weapon currentWeapon = weapons[currentWeaponIndex];
-        string weaponName = currentWeapon.gameObject.name;
         
         foreach (var kvp in slotToIndexMap)
         {
             if (kvp.Value == currentWeaponIndex)
             {
                 int slot = kvp.Key;
-                foreach (var data in availableWeapons)
+                foreach (var data in activeWeaponData)
                 {
                     if (data.weaponSlot == slot)
                         return data;
@@ -370,20 +379,15 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
             }
         }
         
-        foreach (var data in availableWeapons)
-        {
-            if (weaponName.Contains(data.weaponName) || 
-                (data.weaponPrefab != null && weaponName.Contains(data.weaponPrefab.name)))
-                return data;
-        }
-        
-        if (currentWeaponIndex < availableWeapons.Length)
-            return availableWeapons[currentWeaponIndex];
-        
-        return null;
+        return currentWeapon.GetWeaponData();
     }
 
     private void OnDestroy()
+    {
+        UnregisterInputCallbacks();
+    }
+    
+    private void UnregisterInputCallbacks()
     {
         if (inputActions != null)
         {
@@ -452,7 +456,12 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
 
     public void UpdateWeaponsFromInventory(WeaponData[] weaponDatas, Dictionary<int, int> slotAmmoCount)
     {
-        if (weaponDatas == null || weaponDatas.Length == 0) return;
+        if (weaponDatas == null || weaponDatas.Length == 0) 
+        {
+            ClearWeapons();
+            activeWeaponData = new List<WeaponData>();
+            return;
+        }
         
         SetAvailableWeapons(weaponDatas);
         
@@ -472,54 +481,55 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
     
     public void SetAvailableWeapons(WeaponData[] newWeapons)
     {
-        if (newWeapons == null || newWeapons.Length == 0) return;
-        
-        if (availableWeapons != null && availableWeapons.Length == newWeapons.Length)
+        if (newWeapons == null || newWeapons.Length == 0) 
         {
-            bool allMatch = true;
-            for (int i = 0; i < availableWeapons.Length; i++)
+            ClearWeapons();
+            activeWeaponData.Clear();
+            return;
+        }
+        
+        bool weaponsChanged = ShouldReinitializeWeapons(newWeapons);
+        
+        if (!weaponsChanged) 
+        {
+            for (int i = 0; i < newWeapons.Length; i++)
             {
-                if (availableWeapons[i].inventoryItemId != newWeapons[i].inventoryItemId)
+                if (i < activeWeaponData.Count)
                 {
-                    allMatch = false;
-                    break;
+                    activeWeaponData[i].currentAmmo = newWeapons[i].currentAmmo;
                 }
             }
-            
-            if (allMatch) return;
+            return;
         }
         
         int currentSlot = -1;
         if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
         {
-            foreach (var pair in slotToIndexMap)
-            {
-                if (pair.Value == currentWeaponIndex)
-                {
-                    currentSlot = pair.Key;
-                    break;
-                }
-            }
+            currentSlot = GetCurrentWeaponSlot();
         }
         
         Dictionary<string, int> ammoStates = new Dictionary<string, int>();
         foreach (var weapon in weapons)
         {
             WeaponData data = weapon.GetWeaponData();
-            if (data != null)
+            if (data != null && !string.IsNullOrEmpty(data.inventoryItemId))
             {
                 ammoStates[data.inventoryItemId] = weapon.CurrentAmmo;
             }
         }
         
-        availableWeapons = newWeapons;
+        activeWeaponData.Clear();
+        activeWeaponData.AddRange(newWeapons);
+        
         ClearWeapons();
+        
         InitializeWeapons();
         
         foreach (var weapon in weapons)
         {
             WeaponData data = weapon.GetWeaponData();
-            if (data != null && ammoStates.TryGetValue(data.inventoryItemId, out int ammo))
+            if (data != null && !string.IsNullOrEmpty(data.inventoryItemId) && 
+                ammoStates.TryGetValue(data.inventoryItemId, out int ammo))
             {
                 weapon.SetAmmo(ammo);
             }
@@ -535,6 +545,23 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
         }
     }
     
+    private bool ShouldReinitializeWeapons(WeaponData[] newWeapons)
+    {
+        if (activeWeaponData.Count != newWeapons.Length)
+            return true;
+            
+        for (int i = 0; i < activeWeaponData.Count; i++)
+        {
+            if (activeWeaponData[i].inventoryItemId != newWeapons[i].inventoryItemId ||
+                activeWeaponData[i].weaponSlot != newWeapons[i].weaponSlot)
+            {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     public void ClearWeapons()
     {
         if (currentWeaponIndex >= 0 && currentWeaponIndex < weapons.Count)
@@ -544,7 +571,8 @@ public class WeaponManager : MonoBehaviour, IWeaponAmmoEvents
         
         foreach (var weapon in weapons)
         {
-            Destroy(weapon.gameObject);
+            if (weapon && weapon.gameObject)
+                Destroy(weapon.gameObject);
         }
         
         weapons.Clear();

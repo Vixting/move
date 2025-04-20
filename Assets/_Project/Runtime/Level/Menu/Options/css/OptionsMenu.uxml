@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/UI%20Toolkit/MainMenuStyle.uss?fileID=7433441132597879392&amp;guid=e83f39b6f0dea0b4c8b9cafd3dd3e974&amp;type=3#MainMenuStyle" />
+    <engine:VisualElement name="MainContainer" class="main-container" style="font-size: 5px;">
+        <engine:VisualElement name="WindowFrame" class="window-frame">
+            <engine:VisualElement name="TitleBar" class="title-bar">
+                <engine:Label text="Game Options" name="WindowTitle" class="window-title" style="font-size: 10px;" />
+                <engine:Button text="×" name="CloseButton" class="window-button close-button" />
+                <engine:Button text="_" name="MinimizeButton" class="window-button" />
+            </engine:VisualElement>
+            <engine:VisualElement name="MenuContainer" class="menu-container">
+                <engine:VisualElement name="OptionsContainer" class="options-panel">
+                    <engine:VisualElement name="OptionsTabBar" class="options-tab-bar">
+                        <engine:Button text="Audio" name="AudioTabButton" class="options-tab-button selected-tab" />
+                        <engine:Button text="Graphics" name="GraphicsTabButton" class="options-tab-button" />
+                        <engine:Button text="Controls" name="ControlsTabButton" class="options-tab-button" />
+                        <engine:Button text="Keybindings" name="KeybindingsTabButton" class="options-tab-button" />
+                    </engine:VisualElement>
+                    
+                    <engine:VisualElement name="OptionsContent" class="content-container">
+                        <!-- Audio Settings Panel -->
+                        <engine:VisualElement name="AudioPanel" class="content-panel">
+                            <engine:Label text="Audio Settings" class="content-header" />
+                            <engine:VisualElement class="content-separator" />
+                            
+                            <engine:VisualElement class="options-row">
+                                <engine:Label text="Music Volume" class="options-label" />
+                                <engine:Slider name="MusicVolumeSlider" class="options-slider" high-value="1" low-value="0" value="0.75" />
+                            </engine:VisualElement>
+                            
+                            <engine:VisualElement class="options-row">
+                                <engine:Label text="SFX Volume" class="options-label" />
+                                <engine:Slider name="SFXVolumeSlider" class="options-slider" high-value="1" low-value="0" value="0.75" />
+                            </engine:VisualElement>
+                        </engine:VisualElement>
+                        
+                        <!-- Graphics Settings Panel -->
+                        <engine:VisualElement name="GraphicsPanel" class="content-panel" style="display: none;">
+                            <engine:Label text="Graphics Settings" class="content-header" />
+                            <engine:VisualElement class="content-separator" />
+                            
+                            <engine:VisualElement class="options-row">
+                                <engine:Label text="Resolution" class="options-label" />
+                                <engine:DropdownField name="ResolutionDropdown" class="options-dropdown" />
+                            </engine:VisualElement>
+                            
+                            <engine:VisualElement class="options-row">
+                                <engine:Label text="Graphics Quality" class="options-label" />
+                                <engine:DropdownField name="GraphicsDropdown" class="options-dropdown" />
+                            </engine:VisualElement>
+                            
+                            <engine:VisualElement class="options-row">
+                                <engine:Label text="Fullscreen" class="options-label" />
+                                <engine:Toggle name="FullscreenToggle" class="options-toggle" />
+                            </engine:VisualElement>
+                        </engine:VisualElement>
+                        
+                        <!-- Controls Settings Panel -->
+                        <engine:VisualElement name="ControlsPanel" class="content-panel" style="display: none;">
+                            <engine:Label text="Controls Settings" class="content-header" />
+                            <engine:VisualElement class="content-separator" />
+                            
+                            <engine:VisualElement class="options-row">
+                                <engine:Label text="Mouse Sensitivity" class="options-label" />
+                                <engine:Slider name="SensitivitySlider" class="options-slider" high-value="2" low-value="0.1" value="1" />
+                            </engine:VisualElement>
+                            
+                            <engine:VisualElement class="options-row">
+                                <engine:Label text="Invert Y-Axis" class="options-label" />
+                                <engine:Toggle name="InvertYToggle" class="options-toggle" />
+                            </engine:VisualElement>
+                        </engine:VisualElement>
+                        
+                        <!-- Keybindings Panel -->
+                        <engine:VisualElement name="KeybindingsPanel" class="content-panel" style="display: none;">
+                            <engine:Label text="Keyboard & Mouse Bindings" class="content-header" />
+                            <engine:VisualElement class="content-separator" />
+                            
+                            <engine:ScrollView name="KeybindingsScrollView" class="keybindings-scroll-view" />
+                        </engine:VisualElement>
+                    </engine:VisualElement>
+                    
+                    <engine:VisualElement name="OptionsButtons" class="options-buttons">
+                        <engine:Button text="Apply" name="ApplyButton" class="options-button" />
+                        <engine:Button text="Reset" name="ResetButton" class="options-button" />
+                        <engine:Button text="Back" name="BackButton" class="options-button" />
+                    </engine:VisualElement>
+                </engine:VisualElement>
+            </engine:VisualElement>
+            <engine:VisualElement name="StatusBar" class="status-bar">
+                <engine:Label text="Ready" name="StatusText" class="status-text" />
+                <engine:Label text="v1.0" name="VersionText" class="version-text" />
+            </engine:VisualElement>
+        </engine:VisualElement>
+        
+        <!-- Rebind Overlay (Hidden by default) -->
+        <engine:VisualElement name="RebindOverlay" class="rebind-overlay" style="display: none;">
+            <engine:VisualElement class="rebind-dialog">
+                <engine:Label text="Press any key..." name="RebindPromptLabel" class="rebind-prompt" />
+                <engine:Label text="Press ESC to cancel" class="rebind-cancel-text" />
+                <engine:Button text="Cancel" name="RebindCancelButton" class="rebind-cancel-button" />
+            </engine:VisualElement>
+        </engine:VisualElement>
+    </engine:VisualElement>
+</engine:UXML>

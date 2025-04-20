@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace InventorySystem
 {
-    public partial class InventoryManager //InventoryManager.Container
+    public partial class InventoryManager
     {
         private void CreateDefaultContainers()
         {
@@ -177,23 +177,19 @@ namespace InventorySystem
                 return;
             }
             
-            // Log the current container items
             Debug.Log($"Container {containerId} contains {container.GetAllItems().Count} items");
             container.LogAllItems();
             
-            // Get all item elements currently in the UI
             List<VisualElement> itemElements = new List<VisualElement>();
             containerGrid.Query(null, "inventory-item").ForEach(el => itemElements.Add(el));
             Debug.Log($"Found {itemElements.Count} item elements in UI for container {containerId}");
             
-            // Remove all existing item elements
             foreach (var element in itemElements)
             {
                 Debug.Log($"Removing item element: {element.name}");
                 element.RemoveFromHierarchy();
             }
             
-            // Create UI for all items in the container
             foreach (var item in container.GetAllItems())
             {
                 Debug.Log($"Creating UI for item {item.itemData.displayName} at position {item.position}");

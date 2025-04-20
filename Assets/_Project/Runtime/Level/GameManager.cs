@@ -9,10 +9,18 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
     
+    [Header("Database References")]
     [SerializeField] private ItemDatabase itemDatabase;
+    [SerializeField] private WeaponDatabase weaponDatabase;
+    
+    [Header("Game Systems")]
     [SerializeField] private LevelManager levelManager;
     [SerializeField] private UIDocument mainMenuDocument;
     [SerializeField] private GameObject mainMenuObject;
+    [SerializeField] private RuntimeWeaponItemCreator weaponItemCreator;
+    
+    [Header("Weapon Integration")]
+    [SerializeField] private bool autoSyncWeaponsOnStart = true;
     
     private Dictionary<string, WeaponData> _registeredWeapons = new Dictionary<string, WeaponData>();
     private MainMenuController _menuController;
@@ -35,9 +43,37 @@ public class GameManager : MonoBehaviour
         
         if (itemDatabase == null)
         {
-            Debug.LogWarning("Item database not assigned to GameManager");
+            itemDatabase = Resources.Load<ItemDatabase>("ItemDatabase");
         }
         
+        if (weaponDatabase == null)
+        {
+            weaponDatabase = Resources.Load<WeaponDatabase>("WeaponDatabase");
+        }
+        
+        if (weaponItemCreator == null)
+        {
+            weaponItemCreator = FindObjectOfType<RuntimeWeaponItemCreator>();
+            
+            if (weaponItemCreator == null && itemDatabase != null)
+            {
+                GameObject creatorObj = new GameObject("WeaponItemCreator");
+                creatorObj.transform.SetParent(transform);
+                weaponItemCreator = creatorObj.AddComponent<RuntimeWeaponItemCreator>();
+            }
+        }
+        
+        if (weaponDatabase != null)
+        {
+            weaponDatabase.Initialize();
+            
+            if (autoSyncWeaponsOnStart && weaponItemCreator != null)
+            {
+                weaponDatabase.EnsureWeaponItemsExist(weaponItemCreator);
+            }
+        }
+        
+
         if (mainMenuObject != null)
         {
             _menuController = mainMenuObject.GetComponent<MainMenuController>();
@@ -61,6 +97,8 @@ public class GameManager : MonoBehaviour
         }
     }
     
+
+    
     private void Start()
     {
         if (_menuController != null && mainMenuDocument != null)
@@ -83,29 +121,90 @@ public class GameManager : MonoBehaviour
     {
         if (weapons == null) return;
         
+        Debug.Log($"Registering {weapons.Length} weapons");
+        
         foreach (var weapon in weapons)
         {
-            if (!string.IsNullOrEmpty(weapon.inventoryItemId))
+            if (weapon == null) continue;
+            
+            if (string.IsNullOrEmpty(weapon.inventoryItemId))
             {
-                _registeredWeapons[weapon.inventoryItemId] = weapon;
+                weapon.inventoryItemId = System.Guid.NewGuid().ToString();
+                Debug.Log($"Generated new inventory ID for weapon {weapon.weaponName}: {weapon.inventoryItemId}");
+            }
+            
+            _registeredWeapons[weapon.inventoryItemId] = weapon;
+            
+            if (weaponDatabase != null)
+            {
+                weaponDatabase.AddWeapon(weapon);
             }
         }
         
         _savedWeapons = weapons;
+        
+        EnsureWeaponItemsExist();
     }
     
     public WeaponData[] GetSavedWeapons()
     {
-        if (_registeredWeapons.Count == 0) return _savedWeapons;
+        if (weaponDatabase != null)
+        {
+            WeaponData[] dbWeapons = weaponDatabase.GetAllWeapons();
+            if (dbWeapons != null && dbWeapons.Length > 0)
+            {
+                return dbWeapons;
+            }
+        }
         
-        WeaponData[] result = new WeaponData[_registeredWeapons.Count];
-        _registeredWeapons.Values.CopyTo(result, 0);
-        return result;
+        if (_registeredWeapons.Count > 0)
+        {
+            WeaponData[] result = new WeaponData[_registeredWeapons.Count];
+            _registeredWeapons.Values.CopyTo(result, 0);
+            return result;
+        }
+        
+        return _savedWeapons;
     }
     
     public ItemData GetItemById(string id)
     {
         return itemDatabase?.GetItem(id);
+    }
+    
+    public void EnsureWeaponItemsExist()
+    {
+        if (weaponItemCreator == null)
+        {
+            return;
+        }
+        
+        if (weaponDatabase != null)
+        {
+            weaponDatabase.EnsureWeaponItemsExist(weaponItemCreator);
+        }
+        else
+        {
+            weaponItemCreator.CreateWeaponItemsFromGameManager();
+        }
+    }
+    
+    public WeaponData GetWeaponByInventoryItemId(string inventoryItemId)
+    {
+        if (string.IsNullOrEmpty(inventoryItemId)) return null;
+        
+        if (weaponDatabase != null)
+        {
+            WeaponData weapon = weaponDatabase.GetWeaponByInventoryItemId(inventoryItemId);
+            if (weapon != null) return weapon;
+        }
+        
+        if (_registeredWeapons.TryGetValue(inventoryItemId, out WeaponData registeredWeapon))
+        {
+            return registeredWeapon;
+        }
+        
+        return null;
     }
     
     public void SaveGame()
@@ -125,10 +224,10 @@ public class GameManager : MonoBehaviour
             if (weaponManager != null)
             {
                 _savedWeapons = weaponManager.GetAvailableWeapons();
+                RegisterWeapons(_savedWeapons);
             }
         }
     }
-    
     
     public void LoadGame()
     {
@@ -141,12 +240,14 @@ public class GameManager : MonoBehaviour
             }
         }
         
-        if (_playerInstance != null && _savedWeapons != null)
+        if (_playerInstance != null)
         {
             WeaponManager weaponManager = _playerInstance.GetComponent<WeaponManager>();
             if (weaponManager != null)
             {
-                weaponManager.SetAvailableWeapons(_savedWeapons);
+                WeaponData[] weaponsToLoad = GetSavedWeapons();
+                EnsureWeaponItemsExist();
+                weaponManager.SetAvailableWeapons(weaponsToLoad);
             }
         }
     }
@@ -167,19 +268,84 @@ public class GameManager : MonoBehaviour
         {
             _inventoryManager = FindObjectOfType<InventoryManager>();
             
-            if (_inventoryManager != null && _playerInstance != null)
+
+        }
+        
+        OnLevelLoadedEvent?.Invoke(isGameplayLevel);
+    }
+    
+    public void AddWeaponToInventory(string weaponId)
+    {
+        if (_inventoryManager == null || string.IsNullOrEmpty(weaponId))
+        {
+            return;
+        }
+        
+        EnsureWeaponItemsExist();
+        _inventoryManager.AddWeaponToInventory(weaponId);
+    }
+    
+    public void EquipWeapon(string weaponId, EquipmentSlot slot)
+    {
+        if (_inventoryManager == null || string.IsNullOrEmpty(weaponId))
+        {
+            return;
+        }
+        
+        _inventoryManager.EquipItemFromInventory(weaponId, slot);
+    }
+    
+    public void ReloadAllWeapons()
+    {
+        if (_playerInstance == null) return;
+        
+        WeaponManager weaponManager = _playerInstance.GetComponent<WeaponManager>();
+        if (weaponManager == null) return;
+        
+        WeaponData[] weapons = weaponManager.GetAvailableWeapons();
+        
+        foreach (var weapon in weapons)
+        {
+            if (weapon != null)
             {
-                InventoryWeaponBridge bridge = FindObjectOfType<InventoryWeaponBridge>();
-                if (bridge == null)
+                ItemData itemData = GetItemById(weapon.inventoryItemId);
+                if (itemData != null && itemData is WeaponItemData weaponItem)
                 {
-                    bridge = _playerInstance.gameObject.AddComponent<InventoryWeaponBridge>();
+                    weaponItem.currentAmmoCount = weapon.maxAmmo;
+                    weapon.currentAmmo = weapon.maxAmmo;
                 }
-                
-                bridge.SyncWeaponsWithInventory();
             }
         }
         
-        // Notify listeners about the level change
-        OnLevelLoadedEvent?.Invoke(isGameplayLevel);
+
+    }
+    
+    public bool HasAmmoForWeapon(WeaponData weapon)
+    {
+        if (weapon == null || _inventoryManager == null) return false;
+        
+        return _inventoryManager.HasAmmoForWeapon(weapon.compatibleAmmoType.ToString());
+    }
+    
+    public bool UseAmmoForWeapon(WeaponData weapon, int amount)
+    {
+        if (weapon == null || _inventoryManager == null) return false;
+        
+        return _inventoryManager.UseAmmoForWeapon(weapon.compatibleAmmoType.ToString(), amount);
+    }
+    
+    public WeaponData CreateWeapon(string weaponName, WeaponType type, float damage, int maxAmmo)
+    {
+        WeaponData weaponData = ScriptableObject.CreateInstance<WeaponData>();
+        weaponData.weaponName = weaponName;
+        weaponData.weaponType = type;
+        weaponData.damage = damage;
+        weaponData.maxAmmo = maxAmmo;
+        weaponData.currentAmmo = maxAmmo;
+        weaponData.inventoryItemId = System.Guid.NewGuid().ToString();
+        
+        RegisterWeapons(new WeaponData[] { weaponData });
+        
+        return weaponData;
     }
 }

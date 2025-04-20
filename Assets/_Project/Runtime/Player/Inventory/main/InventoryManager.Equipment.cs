@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace InventorySystem
 {
-    public partial class InventoryManager //InventoryManager.Equipment.cs
+    public partial class InventoryManager
     {
         private void SetupEquipmentUI()
         {
@@ -68,32 +68,93 @@ namespace InventorySystem
             }
         }
         
-        private void UpdateEquipmentSlotUI(EquipmentSlot slot, ItemInstance item)
+    private void UpdateEquipmentSlotUI(EquipmentSlot slot, ItemInstance item)
+    {
+        string slotName = GetSlotElementName(slot);
+        VisualElement slotElement = _root?.Q(slotName);
+        
+        if (slotElement == null)
         {
-            string slotName = GetSlotElementName(slot);
-            VisualElement slotElement = _root?.Q(slotName);
-            
-            if (slotElement == null) return;
-            
-            VisualElement existingItemVisual = slotElement.Q(null, "equipment-item-icon");
-            if (existingItemVisual != null)
-            {
-                existingItemVisual.RemoveFromHierarchy();
-            }
-            
-            if (item != null)
-            {
-                VisualElement itemIcon = new VisualElement();
-                itemIcon.AddToClassList("equipment-item-icon");
-                
-                if (item.itemData.icon != null)
-                {
-                    itemIcon.style.backgroundImage = new StyleBackground(item.itemData.icon);
-                }
-                
-                slotElement.Add(itemIcon);
-            }
+            Debug.LogError($"[InventoryManager] UpdateEquipmentSlotUI: Slot element '{slotName}' not found");
+            return;
         }
+        
+        slotElement.style.visibility = Visibility.Visible;
+        slotElement.style.display = DisplayStyle.Flex;
+        slotElement.style.opacity = 1;
+        
+        VisualElement existingItemVisual = slotElement.Q(null, "equipment-item-icon");
+        if (existingItemVisual != null)
+        {
+            Debug.Log($"[InventoryManager] Removing existing item icon from slot {slot}");
+            existingItemVisual.RemoveFromHierarchy();
+        }
+        
+        if (item != null)
+        {
+            Debug.Log($"[InventoryManager] Creating UI for equipped item: {item.itemData.displayName} in slot {slot}");
+            
+            VisualElement itemIcon = new VisualElement();
+            itemIcon.name = "equipment-item-icon-" + item.instanceId;
+            itemIcon.AddToClassList("equipment-item-icon");
+            
+            itemIcon.style.visibility = Visibility.Visible;
+            itemIcon.style.display = DisplayStyle.Flex;
+            itemIcon.style.opacity = 1;
+            
+            itemIcon.style.width = new StyleLength(new Length(100, LengthUnit.Percent));
+            itemIcon.style.height = new StyleLength(new Length(100, LengthUnit.Percent));
+            
+            if (item.itemData.icon != null)
+            {
+                Debug.Log($"[InventoryManager] Item has icon, setting background image");
+                itemIcon.style.backgroundImage = new StyleBackground(item.itemData.icon);
+            }
+            else
+            {
+                Debug.LogWarning($"[InventoryManager] Item {item.itemData.displayName} has no icon! Creating fallback display");
+                
+                Label fallbackText = new Label(item.itemData.displayName.Substring(0, Math.Min(3, item.itemData.displayName.Length)).ToUpper());
+                fallbackText.style.unityTextAlign = TextAnchor.MiddleCenter;
+                fallbackText.style.fontSize = 14;
+                fallbackText.style.color = new StyleColor(Color.white);
+                
+                fallbackText.style.visibility = Visibility.Visible;
+                fallbackText.style.display = DisplayStyle.Flex;
+                fallbackText.style.opacity = 1;
+                
+                itemIcon.Add(fallbackText);
+            }
+            
+            if (item.itemData is WeaponItemData weaponItem && 
+                (slot == EquipmentSlot.Primary || slot == EquipmentSlot.Secondary || slot == EquipmentSlot.Holster))
+            {
+                Label ammoLabel = new Label($"{weaponItem.currentAmmoCount}");
+                ammoLabel.AddToClassList("weapon-ammo-counter");
+                ammoLabel.style.backgroundColor = new StyleColor(new Color(0, 0, 0, 0.7f));
+                ammoLabel.style.color = new StyleColor(Color.white);
+                ammoLabel.style.paddingLeft = 5;
+                ammoLabel.style.paddingRight = 5;
+                ammoLabel.style.fontSize = 10;
+                ammoLabel.style.position = Position.Absolute;
+                ammoLabel.style.bottom = 2;
+                ammoLabel.style.right = 2;
+                
+                ammoLabel.style.visibility = Visibility.Visible;
+                ammoLabel.style.display = DisplayStyle.Flex;
+                ammoLabel.style.opacity = 1;
+                
+                itemIcon.Add(ammoLabel);
+            }
+            
+            Debug.Log($"[InventoryManager] Adding item icon to slot element");
+            slotElement.Add(itemIcon);
+        }
+        else
+        {
+            Debug.Log($"[InventoryManager] Slot {slot} is now empty");
+        }
+    }
         
         private string GetSlotElementName(EquipmentSlot slot)
         {
@@ -136,14 +197,23 @@ namespace InventorySystem
         {
             if (item == null || !item.CanEquipInSlot(slot))
             {
+                Debug.LogWarning($"[InventoryManager] Cannot equip item: item is null or cannot be equipped in slot {slot}");
                 return false;
             }
             
-            if (_character == null) return false;
+            if (_character == null)
+            {
+                Debug.LogError("[InventoryManager] Cannot equip item: character is null");
+                return false;
+            }
+            
+            bool isWeapon = item.itemData is WeaponItemData;
+            Debug.Log($"[InventoryManager] Equipping {(isWeapon ? "weapon" : "item")} {item.itemData.displayName} to slot {slot}");
             
             ItemInstance currentItem = _character.GetEquippedItem(slot);
             if (currentItem != null)
             {
+                Debug.Log($"[InventoryManager] Unequipping current item in slot {slot}: {currentItem.itemData.displayName}");
                 UnequipItem(slot);
             }
             
@@ -151,21 +221,31 @@ namespace InventorySystem
             
             if (equipped)
             {
+                Debug.Log($"[InventoryManager] Successfully equipped {item.itemData.displayName} to slot {slot}");
+                
                 if (item.container != null)
                 {
                     string containerId = item.container.containerData.id;
+                    Debug.Log($"[InventoryManager] Removing item from container {containerId}");
                     item.container.RemoveItem(item);
                     RefreshContainerUI(containerId);
                 }
                 
+                Debug.Log($"[InventoryManager] Updating UI for slot {slot} with item {item.itemData.displayName}");
                 UpdateEquipmentSlotUI(slot, item);
                 
                 if (item.itemData is WeaponItemData weaponItem)
                 {
+                    Debug.Log($"[InventoryManager] Invoking onEquipWeapon event for {weaponItem.displayName} in slot {slot}");
                     onEquipWeapon?.Invoke(weaponItem, slot);
                 }
                 
+                Debug.Log("[InventoryManager] Invoking onInventoryChanged event");
                 onInventoryChanged?.Invoke();
+            }
+            else
+            {
+                Debug.LogError($"[InventoryManager] Character.EquipItem failed for item {item.itemData.displayName} in slot {slot}");
             }
             
             return equipped;

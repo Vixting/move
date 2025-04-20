@@ -34,19 +34,71 @@ namespace InventorySystem
         public WeaponData gameplayWeaponData;
         public string weaponId;
 
+        public void SyncWithWeaponData(WeaponData weaponData)
+        {
+            if (weaponData == null) return;
+            
+            // Sync IDs
+            id = weaponData.inventoryItemId;
+            weaponId = weaponData.WeaponId;
+            
+            // Sync other properties
+            displayName = weaponData.weaponName;
+            description = weaponData.description;
+            icon = weaponData.weaponIcon;
+            prefab = weaponData.weaponPrefab;
+            
+            // Weapon stats
+            weaponType = (WeaponType)weaponData.weaponType;
+            damage = weaponData.damage;
+            fireRate = weaponData.fireRateRPM;
+            recoilVertical = weaponData.recoilVertical;
+            recoilHorizontal = weaponData.recoilHorizontal;
+            ergonomics = weaponData.ergonomics;
+            accuracy = weaponData.accuracy;
+            
+            // Ammo
+            maxAmmoCount = weaponData.maxAmmo;
+            currentAmmoCount = weaponData.currentAmmo;
+            compatibleAmmo = (AmmoType)weaponData.compatibleAmmoType;
+            
+            // Dimensions
+            foldable = weaponData.foldable;
+            folded = weaponData.folded;
+            width = weaponData.width;
+            height = weaponData.height;
+            foldedWidth = weaponData.foldedWidth;
+            foldedHeight = weaponData.foldedHeight;
+            
+            // Durability
+            durability = (int)weaponData.durability;
+            maxDurability = (int)weaponData.maxDurability;
+            
+            // Store reference
+            gameplayWeaponData = weaponData;
+            
+            // Update properties
+            OnValidate();
+        }
+
         public override void OnValidate()
         {
             category = ItemCategory.Weapon;
             canStack = false;
             canEquip = true;
             
+            // Define compatible slots based on weapon type
             compatibleSlots.Clear();
             switch (weaponType)
             {
                 case WeaponType.Pistol:
                     compatibleSlots.Add(EquipmentSlot.Holster);
+                    compatibleSlots.Add(EquipmentSlot.Secondary);
                     break;
                 case WeaponType.SMG:
+                    compatibleSlots.Add(EquipmentSlot.Primary);
+                    compatibleSlots.Add(EquipmentSlot.Secondary);
+                    break;
                 case WeaponType.AssaultRifle:
                 case WeaponType.Shotgun:
                 case WeaponType.SniperRifle:
@@ -54,7 +106,45 @@ namespace InventorySystem
                     compatibleSlots.Add(EquipmentSlot.Secondary);
                     break;
                 case WeaponType.Melee:
+                    compatibleSlots.Add(EquipmentSlot.Holster);
                     break;
+            }
+            
+            // Set weapon dimensions based on type and folded state
+            if (weaponType == WeaponType.Pistol)
+            {
+                width = 2;
+                height = 1;
+                foldedWidth = 2;
+                foldedHeight = 1;
+            }
+            else if (weaponType == WeaponType.SMG)
+            {
+                width = 3;
+                height = 1;
+                foldedWidth = 2;
+                foldedHeight = 1;
+            }
+            else if (weaponType == WeaponType.AssaultRifle)
+            {
+                width = 4;
+                height = 1;
+                foldedWidth = 2;
+                foldedHeight = 1;
+            }
+            else if (weaponType == WeaponType.Shotgun)
+            {
+                width = 4;
+                height = 1;
+                foldedWidth = 2;
+                foldedHeight = 1;
+            }
+            else if (weaponType == WeaponType.SniperRifle)
+            {
+                width = 5;
+                height = 1;
+                foldedWidth = 3;
+                foldedHeight = 1;
             }
             
             properties.Clear();
@@ -83,26 +173,13 @@ namespace InventorySystem
             if (gameplayWeaponData != null)
             {
                 gameplayWeaponData.inventoryItemId = id;
+                weaponId = gameplayWeaponData.WeaponId;
+                
                 gameplayWeaponData.maxAmmo = maxAmmoCount;
                 gameplayWeaponData.currentAmmo = currentAmmoCount;
                 gameplayWeaponData.recoilAmount = recoilVertical / 1000f;
                 gameplayWeaponData.impactForce = damage * 0.5f;
-                gameplayWeaponData.weaponSlot = MapWeaponTypeToSlot(weaponType);
                 gameplayWeaponData.compatibleAmmoType = (global::AmmoType)compatibleAmmo;
-            }
-        }
-        
-        private int MapWeaponTypeToSlot(WeaponType type)
-        {
-            switch (type)
-            {
-                case WeaponType.Pistol: return 3;
-                case WeaponType.SMG: return 2;
-                case WeaponType.AssaultRifle: return 1;
-                case WeaponType.Shotgun: return 4;
-                case WeaponType.SniperRifle: return 5;
-                case WeaponType.Melee: return 6;
-                default: return 1;
             }
         }
         
@@ -132,7 +209,6 @@ namespace InventorySystem
             newWeaponData.weaponName = displayName;
             newWeaponData.weaponPrefab = prefab;
             newWeaponData.weaponIcon = icon;
-            newWeaponData.weaponSlot = MapWeaponTypeToSlot(weaponType);
             newWeaponData.inventoryItemId = id;
             
             newWeaponData.maxAmmo = maxAmmoCount;

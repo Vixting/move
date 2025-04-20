@@ -10,7 +10,6 @@ public class Player : MonoBehaviour
     [SerializeField] private InventoryManager inventoryManager;
     [SerializeField] private Character characterData;
     
-    private InventoryWeaponBridge _weaponBridge;
     
     public PlayerInputActions _inputActions;
     
@@ -26,8 +25,20 @@ public class Player : MonoBehaviour
     {
         if (_initialized) return;
         
+        Debug.Log("Initializing Player");
+        
         _inputActions = new PlayerInputActions();
         _inputActions.Enable();
+        
+        if (characterData == null)
+        {
+            characterData = GetComponent<Character>();
+            if (characterData == null)
+            {
+                characterData = gameObject.AddComponent<Character>();
+                Debug.Log("Created Character component on Player");
+            }
+        }
         
         if (playerCharacter != null)
             playerCharacter.Initialize();
@@ -35,15 +46,80 @@ public class Player : MonoBehaviour
         if (playerCamera != null && playerCharacter != null)
             playerCamera.Initialize(playerCharacter.GetCameraTarget(), playerCharacter);
        
-        WeaponData[] existingWeapons = GameManager.Instance?.GetSavedWeapons();
+        // Get or create weapons with null checks
+        WeaponData[] existingWeapons = null;
         
+        if (GameManager.Instance != null)
+        {
+            existingWeapons = GameManager.Instance.GetSavedWeapons();
+            
+            if (existingWeapons == null || existingWeapons.Length == 0)
+            {
+                Debug.Log("No weapons found, creating default weapons");
+                
+                WeaponData defaultWeapon = GameManager.Instance.CreateWeapon(
+                    "Player Handgun", 
+                    WeaponType.Pistol, 
+                    15f, 
+                    12
+                );
+                
+                if (defaultWeapon != null)
+                {
+                    // Ensure weapon IDs are valid
+                    if (string.IsNullOrEmpty(defaultWeapon.WeaponId))
+                    {
+                        // This will trigger ID generation via the getter
+                        string id = defaultWeapon.WeaponId;
+                    }
+                    
+                    if (string.IsNullOrEmpty(defaultWeapon.inventoryItemId))
+                    {
+                        defaultWeapon.inventoryItemId = System.Guid.NewGuid().ToString();
+                        Debug.Log($"Generated inventory item ID for default weapon: {defaultWeapon.inventoryItemId}");
+                    }
+                    
+                    existingWeapons = new WeaponData[] { defaultWeapon };
+                    GameManager.Instance.RegisterWeapons(existingWeapons);
+                }
+            }
+        }
+        
+        // Initialize weapon manager with null safety
         if (weaponManager != null && playerCamera != null)
         {
-            weaponManager.Initialize(playerCamera, _inputActions, playerCharacter, existingWeapons);
-            
-            if (GameManager.Instance != null && existingWeapons == null)
+            try
             {
-                GameManager.Instance.RegisterWeapons(weaponManager.GetAvailableWeapons());
+                weaponManager.Initialize(playerCamera, _inputActions, playerCharacter, existingWeapons);
+                
+                if (GameManager.Instance != null && existingWeapons == null)
+                {
+                    WeaponData[] availableWeapons = weaponManager.GetAvailableWeapons();
+                    
+                    if (availableWeapons != null && availableWeapons.Length > 0)
+                    {
+                        // Ensure all weapon IDs are valid before registering
+                        foreach (var weapon in availableWeapons)
+                        {
+                            if (weapon != null)
+                            {
+                                // This will trigger ID generation via getters if needed
+                                string weaponId = weapon.WeaponId;
+                                
+                                if (string.IsNullOrEmpty(weapon.inventoryItemId))
+                                {
+                                    weapon.inventoryItemId = System.Guid.NewGuid().ToString();
+                                }
+                            }
+                        }
+                        
+                        GameManager.Instance.RegisterWeapons(availableWeapons);
+                    }
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"Error initializing WeaponManager: {e.Message}\n{e.StackTrace}");
             }
         }
         
@@ -52,15 +128,19 @@ public class Player : MonoBehaviour
             if (weaponManager != null)
             {
                 inventoryManager.SetWeaponManager(weaponManager);
-                EnsureWeaponBridge();
             }
         }
        
-        _inputActions.Gameplay.Aim.started += OnAimStarted;
-        _inputActions.Gameplay.Aim.canceled += OnAimCanceled;
-        _inputActions.Gameplay.Inventory.performed += OnInventoryToggle;
-        _inputActions.UI.InventoryClose.performed += OnInventoryToggle;
+        // Register input callbacks
+        if (_inputActions != null)
+        {
+            _inputActions.Gameplay.Aim.started += OnAimStarted;
+            _inputActions.Gameplay.Aim.canceled += OnAimCanceled;
+            _inputActions.Gameplay.Inventory.performed += OnInventoryToggle;
+            _inputActions.UI.InventoryClose.performed += OnInventoryToggle;
+        }
         
+        // Set initial game mode
         if (IsGameplayScene())
         {
             EnableGameplayMode(true);
@@ -71,40 +151,14 @@ public class Player : MonoBehaviour
         }
         
         _initialized = true;
+        
+        // Final sync after initialization is complete
     }
     
-    private void EnsureWeaponBridge()
-    {
-        _weaponBridge = GetComponent<InventoryWeaponBridge>();
-        
-        if (_weaponBridge == null)
-        {
-            _weaponBridge = gameObject.AddComponent<InventoryWeaponBridge>();
-        }
-        
-        if (_weaponBridge != null)
-        {
-            var weaponManagerField = typeof(InventoryWeaponBridge).GetField("weaponManager", 
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                
-            var inventoryManagerField = typeof(InventoryWeaponBridge).GetField("inventoryManager", 
-                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                
-            if (weaponManagerField != null)
-                weaponManagerField.SetValue(_weaponBridge, weaponManager);
-                
-            if (inventoryManagerField != null)
-                inventoryManagerField.SetValue(_weaponBridge, inventoryManager);
-                
-            _weaponBridge.MapAvailableWeapons();
-            _weaponBridge.SyncWeaponsWithInventory();
-        }
-    }
+
     
-    public InventoryWeaponBridge GetWeaponBridge()
-    {
-        return _weaponBridge;
-    }
+
+    
     
     private void OnInventoryToggle(InputAction.CallbackContext context)
     {
@@ -113,16 +167,17 @@ public class Player : MonoBehaviour
         {
             Debug.Log("Inventory toggle triggered");
             
-            if (_inputActions.Gameplay.enabled)
+            if (_inputActions != null)
             {
-                // Coming from gameplay mode - open inventory
-                inventoryManager.ShowInventory();
-            }
-            else if (_inputActions.UI.enabled)
-            {
-                // Coming from UI mode - close inventory
-                inventoryManager.HideInventory();
-                EnableGameplayMode(true);
+                if (_inputActions.Gameplay.enabled)
+                {
+                    inventoryManager.ShowInventory();
+                }
+                else if (_inputActions.UI.enabled)
+                {
+                    inventoryManager.HideInventory();
+                    EnableGameplayMode(true);
+                }
             }
         }
     }
@@ -135,7 +190,7 @@ public class Player : MonoBehaviour
             return;
         }
         
-        if (!_isInputEnabled)
+        if (!_isInputEnabled || _inputActions == null)
             return;
             
         var input = _inputActions.Gameplay;
@@ -170,7 +225,7 @@ public class Player : MonoBehaviour
            
             var CharacterInput = new CharacterInput
             {
-                Rotation = playerCamera.transform.rotation,
+                Rotation = playerCamera != null ? playerCamera.transform.rotation : transform.rotation,
                 Move = input.Move.ReadValue<Vector2>(),
                 Jump = input.Jump.WasPressedThisFrame(),
                 JumpSustain = input.Jump.IsPressed(),
@@ -231,7 +286,6 @@ public class Player : MonoBehaviour
             playerCharacter.SetPosition(position);
     }
     
-    // Modify this method in Player.cs
     public void EnableGameplayMode(bool enable)
     {
         _isInputEnabled = enable;
@@ -241,7 +295,6 @@ public class Player : MonoBehaviour
             weaponManager.SetEnabled(enable);
         }
         
-        // Add this block to properly toggle input action maps
         if (_inputActions != null)
         {
             if (enable)
@@ -281,7 +334,6 @@ public class Player : MonoBehaviour
         if (weaponManager != null && inventoryManager != null)
         {
             inventoryManager.SetWeaponManager(weaponManager);
-            EnsureWeaponBridge();
         }
     }
         
@@ -298,5 +350,10 @@ public class Player : MonoBehaviour
     public Character GetCharacter()
     {
         return characterData;
+    }
+    
+    public WeaponManager GetWeaponManager()
+    {
+        return weaponManager;
     }
 }

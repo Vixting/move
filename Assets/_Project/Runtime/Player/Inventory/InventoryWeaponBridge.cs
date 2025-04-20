@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using InventorySystem;
 
 namespace InventorySystem
@@ -9,15 +10,35 @@ namespace InventorySystem
     {
         [SerializeField] private InventoryManager inventoryManager;
         [SerializeField] private WeaponManager weaponManager;
+        [SerializeField] private ItemDatabase itemDatabase;
+        [SerializeField] private float initializationDelay = 0.5f;
+        [SerializeField] private int maxRetryAttempts = 5;
+        [SerializeField] private float validationInterval = 0.5f;
+        [SerializeField] private float characterFindInterval = 1.0f;
+        
+        // Scene context checks
+        [SerializeField] private string mainMenuSceneName = "MainMenu";
+        [SerializeField] private bool disableInMainMenu = true;
 
         private Dictionary<string, WeaponData> _weaponDataMap = new Dictionary<string, WeaponData>();
-        private Dictionary<int, int> _slotAmmoState = new Dictionary<int, int>();
+        private Dictionary<EquipmentSlot, int> _equipSlotToWeaponSlot = new Dictionary<EquipmentSlot, int>();
+        private Dictionary<int, int> _weaponSlotAmmoState = new Dictionary<int, int>();
         private bool _initialized = false;
         private bool _subscribed = false;
+        private int _retryCount = 0;
+        private float _lastValidationTime = 0f;
+        private float _lastCharacterFindTime = 0f;
+        private Character _cachedCharacter = null;
+        private bool _isInGameplay = false;
 
         private void Awake()
         {
+            _equipSlotToWeaponSlot[EquipmentSlot.Primary] = 1;
+            _equipSlotToWeaponSlot[EquipmentSlot.Secondary] = 2;
+            _equipSlotToWeaponSlot[EquipmentSlot.Holster] = 3;
+            
             TryFindRequiredComponents();
+            CheckCurrentSceneContext();
         }
 
         private void OnEnable()
@@ -30,6 +51,34 @@ namespace InventorySystem
             {
                 SubscribeToEvents();
             }
+            
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+        
+        private void OnDisable()
+        {
+            UnsubscribeFromEvents();
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+        
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            CheckCurrentSceneContext();
+        }
+        
+        private void CheckCurrentSceneContext()
+        {
+            Scene currentScene = SceneManager.GetActiveScene();
+            _isInGameplay = (currentScene.name != mainMenuSceneName);
+            
+            if (!_isInGameplay && disableInMainMenu && weaponManager != null)
+            {
+                // Clear all weapons if we're in the main menu
+                weaponManager.ClearWeapons();
+                Debug.Log("[InventoryWeaponBridge] Main menu detected, cleared all weapons");
+            }
+            
+            Debug.Log($"[InventoryWeaponBridge] Scene context: {currentScene.name}, IsGameplay: {_isInGameplay}");
         }
 
         private void Start()
@@ -39,16 +88,138 @@ namespace InventorySystem
 
         private IEnumerator DelayedInitialization()
         {
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(initializationDelay);
             
             TryInitialize();
             
             if (_initialized)
             {
-                MapAvailableWeapons();
+                // Only proceed if we're in a gameplay scene
+                if (_isInGameplay)
+                {
+                    MapAvailableWeapons();
+                    
+                    yield return new WaitForSeconds(0.1f);
+                    
+                    // Keep trying to sync weapons until character is found
+                    StartCoroutine(RetryCharacterFind());
+                }
+                else
+                {
+                    Debug.Log("[InventoryWeaponBridge] Not in gameplay scene, skipping weapon initialization");
+                }
+            }
+        }
+
+        private IEnumerator RetryCharacterFind()
+        {
+            if (!_isInGameplay) yield break;
+            
+            int attempts = 0;
+            while (attempts < 10)
+            {
+                if (FindCharacter() != null)
+                {
+                    SyncWeaponsWithInventory();
+                    break;
+                }
                 
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.5f);
+                attempts++;
+            }
+        }
+
+        private void Update()
+        {
+            if (!_initialized || !_isInGameplay) return;
+            
+            // Periodically check for character
+            if (Time.time - _lastCharacterFindTime > characterFindInterval)
+            {
+                var character = FindCharacter();
+                if (character != null)
+                {
+                    if (_cachedCharacter == null)
+                    {
+                        // Character was found for the first time
+                        Debug.Log("[InventoryWeaponBridge] Character found, forcing weapon sync");
+                        SyncWeaponsWithInventory();
+                    }
+                    
+                    _cachedCharacter = character;
+                }
+                _lastCharacterFindTime = Time.time;
+            }
+            
+            // Periodically validate weapons if we have a character
+            if (_cachedCharacter != null && Time.time - _lastValidationTime > validationInterval)
+            {
+                ValidateWeaponsWithInventory();
+                _lastValidationTime = Time.time;
+            }
+        }
+
+        private Character FindCharacter()
+        {
+            if (inventoryManager == null)
+                return null;
                 
+            return inventoryManager.GetCharacter();
+        }
+
+        private void ValidateWeaponsWithInventory()
+        {
+            if (!_initialized || !_isInGameplay || inventoryManager == null || weaponManager == null)
+                return;
+
+            Character character = _cachedCharacter;
+            if (character == null)
+            {
+                character = FindCharacter();
+                if (character == null)
+                    return;
+                    
+                _cachedCharacter = character;
+            }
+
+            bool needsSync = false;
+            WeaponData[] activeWeapons = weaponManager.GetAvailableWeapons();
+
+            if (activeWeapons == null || activeWeapons.Length == 0)
+                return;
+
+            // Check if any active weapon is not properly equipped
+            foreach (WeaponData weaponData in activeWeapons)
+            {
+                if (weaponData == null || string.IsNullOrEmpty(weaponData.inventoryItemId))
+                    continue;
+
+                bool foundInEquipment = false;
+                foreach (EquipmentSlot slot in _equipSlotToWeaponSlot.Keys)
+                {
+                    if (_equipSlotToWeaponSlot[slot] == weaponData.weaponSlot)
+                    {
+                        ItemInstance item = character.GetEquippedItem(slot);
+                        if (item != null && item.itemData is WeaponItemData weaponItem && 
+                            weaponItem.id == weaponData.inventoryItemId)
+                        {
+                            foundInEquipment = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!foundInEquipment)
+                {
+                    Debug.LogWarning($"[InventoryWeaponBridge] Weapon {weaponData.weaponName} (slot {weaponData.weaponSlot}) is not in the inventory equipment slots! Forcing sync.");
+                    needsSync = true;
+                    break;
+                }
+            }
+
+            // If validation failed, re-sync from inventory to weapons
+            if (needsSync)
+            {
                 SyncWeaponsWithInventory();
             }
         }
@@ -64,6 +235,9 @@ namespace InventorySystem
                 if (weaponManager == null)
                     weaponManager = FindObjectOfType<WeaponManager>();
             }
+            
+            if (itemDatabase == null)
+                itemDatabase = FindObjectOfType<ItemDatabase>();
         }
 
         private void TryInitialize()
@@ -82,31 +256,44 @@ namespace InventorySystem
             SubscribeToEvents();
             
             _initialized = true;
+            _retryCount = 0;
+            
+            // Check scene context on initialization
+            CheckCurrentSceneContext();
+            
+            // Clear weapons if in main menu
+            if (!_isInGameplay && disableInMainMenu && weaponManager != null)
+            {
+                weaponManager.ClearWeapons();
+            }
         }
 
         private IEnumerator RetryInitialization()
         {
-            float elapsedTime = 0f;
-            float maxWaitTime = 5f;
+            _retryCount++;
+            float waitTime = 0.5f * _retryCount;
             
-            while (!_initialized && elapsedTime < maxWaitTime)
+            Debug.Log($"Retrying initialization (attempt {_retryCount}/{maxRetryAttempts}) in {waitTime} seconds");
+            
+            if (_retryCount >= maxRetryAttempts)
             {
-                yield return new WaitForSeconds(0.5f);
-                elapsedTime += 0.5f;
+                Debug.LogError("Failed to initialize InventoryWeaponBridge after maximum retry attempts");
+                yield break;
+            }
+            
+            yield return new WaitForSeconds(waitTime);
+            
+            TryFindRequiredComponents();
+            
+            if (inventoryManager != null && weaponManager != null)
+            {
+                TryInitialize();
                 
-                TryFindRequiredComponents();
-                
-                if (inventoryManager != null && weaponManager != null)
+                if (_initialized && _isInGameplay)
                 {
-                    TryInitialize();
-                    
-                    if (_initialized)
-                    {
-                        MapAvailableWeapons();
-                        yield return new WaitForSeconds(0.2f);
-                        SyncWeaponsWithInventory();
-                        break;
-                    }
+                    MapAvailableWeapons();
+                    yield return new WaitForSeconds(0.2f);
+                    SyncWeaponsWithInventory();
                 }
             }
         }
@@ -118,10 +305,12 @@ namespace InventorySystem
                 inventoryManager.onEquipWeapon -= OnEquipWeapon;
                 inventoryManager.onUnequipWeapon -= OnUnequipWeapon;
                 inventoryManager.onUpdateWeaponAmmo -= OnUpdateWeaponAmmo;
+                inventoryManager.onInventoryChanged.RemoveListener(OnInventoryChanged);
                 
                 inventoryManager.onEquipWeapon += OnEquipWeapon;
                 inventoryManager.onUnequipWeapon += OnUnequipWeapon;
                 inventoryManager.onUpdateWeaponAmmo += OnUpdateWeaponAmmo;
+                inventoryManager.onInventoryChanged.AddListener(OnInventoryChanged);
             }
 
             if (weaponManager != null)
@@ -129,12 +318,6 @@ namespace InventorySystem
                 weaponManager.onWeaponChanged.RemoveListener(OnWeaponChanged);
                 
                 weaponManager.onWeaponChanged.AddListener(OnWeaponChanged);
-                
-                if (weaponManager is IWeaponAmmoEvents ammoEvents)
-                {
-                    ammoEvents.onWeaponAmmoChanged -= OnWeaponAmmoChanged;
-                    ammoEvents.onWeaponAmmoChanged += OnWeaponAmmoChanged;
-                }
             }
             
             _subscribed = true;
@@ -147,115 +330,185 @@ namespace InventorySystem
                 inventoryManager.onEquipWeapon -= OnEquipWeapon;
                 inventoryManager.onUnequipWeapon -= OnUnequipWeapon;
                 inventoryManager.onUpdateWeaponAmmo -= OnUpdateWeaponAmmo;
+                inventoryManager.onInventoryChanged.RemoveListener(OnInventoryChanged);
             }
 
             if (weaponManager != null)
             {
                 weaponManager.onWeaponChanged.RemoveListener(OnWeaponChanged);
-                
-                if (weaponManager is IWeaponAmmoEvents ammoEvents)
-                {
-                    ammoEvents.onWeaponAmmoChanged -= OnWeaponAmmoChanged;
-                }
             }
             
             _subscribed = false;
         }
-
-        private void OnDisable()
+        
+        private void OnInventoryChanged()
         {
-            UnsubscribeFromEvents();
+            if (!_isInGameplay) return;
+            StartCoroutine(DelayedInventorySync());
         }
-
-        private void OnDestroy()
+        
+        private IEnumerator DelayedInventorySync()
         {
-            UnsubscribeFromEvents();
+            yield return new WaitForSeconds(0.1f);
+            if (_isInGameplay)
+            {
+                SyncWeaponsWithInventory();
+            }
         }
 
         public void MapAvailableWeapons()
         {
+            if (!_isInGameplay) return;
+            
             _weaponDataMap.Clear();
 
-            if (weaponManager == null) 
+            if (GameManager.Instance != null)
             {
-                return;
-            }
-
-            WeaponData[] weapons = weaponManager.GetAvailableWeapons();
-            if (weapons == null) 
-            {
-                return;
-            }
-            
-            foreach (var weapon in weapons)
-            {
-                if (weapon != null && !string.IsNullOrEmpty(weapon.inventoryItemId))
+                if (itemDatabase != null)
                 {
-                    _weaponDataMap[weapon.inventoryItemId] = weapon;
+                    Debug.Log("Using ItemDatabase to map weapons");
+                    var allItems = itemDatabase.GetAllItems();
+                    foreach (var item in allItems)
+                    {
+                        if (item is WeaponItemData weaponItem)
+                        {
+                            WeaponData weaponData = weaponItem.ToWeaponData();
+                            if (weaponData != null && !string.IsNullOrEmpty(weaponData.inventoryItemId))
+                            {
+                                _weaponDataMap[weaponData.inventoryItemId] = weaponData;
+                                Debug.Log($"Mapped weapon: {weaponData.weaponName} (ID: {weaponData.inventoryItemId})");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.Log("No ItemDatabase found, using GameManager to map weapons");
+                    List<ItemData> weaponItems = new List<ItemData>();
+                    
+                    foreach (WeaponData weaponData in GameManager.Instance.GetSavedWeapons())
+                    {
+                        if (!string.IsNullOrEmpty(weaponData.inventoryItemId))
+                        {
+                            ItemData itemData = GameManager.Instance.GetItemById(weaponData.inventoryItemId);
+                            if (itemData != null && itemData is WeaponItemData)
+                            {
+                                weaponItems.Add(itemData);
+                            }
+                            
+                            _weaponDataMap[weaponData.inventoryItemId] = weaponData;
+                            Debug.Log($"Mapped weapon from GameManager: {weaponData.weaponName} (ID: {weaponData.inventoryItemId})");
+                        }
+                    }
                 }
             }
+            
+            Debug.Log($"Total mapped weapons: {_weaponDataMap.Count}");
         }
 
         public void SyncWeaponsWithInventory()
         {
+            // Skip syncing if we're in the main menu
+            if (!_isInGameplay)
+            {
+                if (weaponManager != null && disableInMainMenu)
+                {
+                    weaponManager.ClearWeapons();
+                }
+                return;
+            }
+            
             if (!_initialized)
             {
                 TryInitialize();
-                if (!_initialized) return;
+                if (!_initialized) 
+                {
+                    if (_retryCount < maxRetryAttempts) 
+                    {
+                        _retryCount++;
+                        TryFindRequiredComponents();
+                        TryInitialize();
+                    }
+                    
+                    if (!_initialized)
+                    {
+                        Debug.LogWarning("Cannot sync weapons: InventoryWeaponBridge not initialized yet");
+                        return;
+                    }
+                }
             }
             
             if (inventoryManager == null || weaponManager == null)
             {
+                Debug.LogWarning("Cannot sync weapons: Missing InventoryManager or WeaponManager");
                 return;
             }
 
             try
             {
-                InventorySystem.Character character = null;
-                int retryCount = 0;
-                
-                while (character == null && retryCount < 3)
+                Character character = _cachedCharacter;
+                if (character == null)
                 {
-                    character = inventoryManager.GetCharacter();
-                    if (character == null)
-                    {
-                        retryCount++;
-                        System.Threading.Thread.Sleep(100);
-                    }
+                    character = FindCharacter();
                 }
                 
                 if (character == null)
                 {
+                    Debug.LogWarning("Could not find character to sync weapons");
                     return;
                 }
+                
+                _cachedCharacter = character;
+                Debug.Log("[InventoryWeaponBridge] Found character, syncing weapons");
 
                 List<WeaponData> equippedWeapons = new List<WeaponData>();
                 Dictionary<int, int> slotAmmoCount = new Dictionary<int, int>();
+                _weaponSlotAmmoState.Clear();
 
-                foreach (EquipmentSlot slot in new[] { EquipmentSlot.Primary, EquipmentSlot.Secondary, EquipmentSlot.Holster })
+                // Get only equipped weapons
+                foreach (EquipmentSlot slot in System.Enum.GetValues(typeof(EquipmentSlot)))
                 {
+                    if (!_equipSlotToWeaponSlot.ContainsKey(slot))
+                        continue;
+                    
                     ItemInstance item = character.GetEquippedItem(slot);
                     if (item != null && item.itemData is WeaponItemData weaponItem)
                     {
                         WeaponData weaponData = GetWeaponDataForItem(weaponItem);
                         if (weaponData != null)
                         {
-                            int weaponSlot = GetWeaponSlotFromEquipmentSlot(slot);
+                            // Assign weapon slot based on equipment slot
+                            int weaponSlot = _equipSlotToWeaponSlot[slot];
                             weaponData.weaponSlot = weaponSlot;
                             
+                            // Update ammo
                             weaponData.currentAmmo = weaponItem.currentAmmoCount;
                             
                             equippedWeapons.Add(weaponData);
                             slotAmmoCount[weaponSlot] = weaponItem.currentAmmoCount;
                             
-                            _slotAmmoState[weaponSlot] = weaponItem.currentAmmoCount;
+                            _weaponSlotAmmoState[weaponSlot] = weaponItem.currentAmmoCount;
+                            
+                            Debug.Log($"Synced weapon {weaponItem.displayName} from {slot} to weapon slot {weaponSlot}");
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Could not get WeaponData for item {weaponItem.displayName} (ID: {weaponItem.id})");
                         }
                     }
                 }
 
+                // Update weapon manager with ONLY equipped weapons
+                Debug.Log($"Updating WeaponManager with {equippedWeapons.Count} equipped weapons");
+                
                 if (equippedWeapons.Count > 0)
                 {
                     weaponManager.UpdateWeaponsFromInventory(equippedWeapons.ToArray(), slotAmmoCount);
+                }
+                else
+                {
+                    // No weapons equipped, clear all weapons
+                    weaponManager.UpdateWeaponsFromInventory(new WeaponData[0], new Dictionary<int, int>());
                 }
             }
             catch (System.Exception e)
@@ -271,6 +524,7 @@ namespace InventorySystem
                 return data;
             }
 
+            // If not found, try remapping
             MapAvailableWeapons();
             
             if (_weaponDataMap.TryGetValue(itemData.id, out WeaponData remappedData))
@@ -278,182 +532,134 @@ namespace InventorySystem
                 return remappedData;
             }
 
+            // Last resort - convert directly
+            Debug.LogWarning($"Converting WeaponItemData to WeaponData directly for {itemData.displayName} (ID: {itemData.id})");
             return itemData.ToWeaponData();
         }
 
         private void OnEquipWeapon(WeaponItemData weaponItem, EquipmentSlot slot)
         {
-            if (weaponManager == null) return;
+            if (!_isInGameplay || weaponManager == null || !_equipSlotToWeaponSlot.ContainsKey(slot)) return;
 
-            WeaponData weaponData = GetWeaponDataForItem(weaponItem);
-            if (weaponData != null)
-            {
-                int weaponSlot = GetWeaponSlotFromEquipmentSlot(slot);
-                weaponData.weaponSlot = weaponSlot;
-                weaponData.currentAmmo = weaponItem.currentAmmoCount;
-
-                WeaponData[] currentWeapons = weaponManager.GetAvailableWeapons();
-                List<WeaponData> updatedWeapons = new List<WeaponData>();
-
-                bool weaponAdded = false;
-                for (int i = 0; i < currentWeapons.Length; i++)
-                {
-                    if (currentWeapons[i].weaponSlot == weaponSlot)
-                    {
-                        updatedWeapons.Add(weaponData);
-                        weaponAdded = true;
-                    }
-                    else
-                    {
-                        updatedWeapons.Add(currentWeapons[i]);
-                    }
-                }
-
-                if (!weaponAdded)
-                {
-                    updatedWeapons.Add(weaponData);
-                }
-
-                _slotAmmoState[weaponSlot] = weaponItem.currentAmmoCount;
-
-                Dictionary<int, int> slotAmmoCount = new Dictionary<int, int>(_slotAmmoState);
-                weaponManager.UpdateWeaponsFromInventory(updatedWeapons.ToArray(), slotAmmoCount);
-            }
+            Debug.Log($"Weapon {weaponItem.displayName} equipped to slot {slot}");
+            
+            // Trigger a full sync to update all weapons
+            SyncWeaponsWithInventory();
         }
 
         private void OnUnequipWeapon(EquipmentSlot slot)
         {
-            if (weaponManager == null) return;
+            if (!_isInGameplay || weaponManager == null || !_equipSlotToWeaponSlot.ContainsKey(slot)) return;
 
-            int weaponSlot = GetWeaponSlotFromEquipmentSlot(slot);
-            WeaponData[] currentWeapons = weaponManager.GetAvailableWeapons();
-            List<WeaponData> updatedWeapons = new List<WeaponData>();
-
-            for (int i = 0; i < currentWeapons.Length; i++)
-            {
-                if (currentWeapons[i].weaponSlot != weaponSlot)
-                {
-                    updatedWeapons.Add(currentWeapons[i]);
-                }
-            }
-
-            if (_slotAmmoState.ContainsKey(weaponSlot))
-            {
-                _slotAmmoState.Remove(weaponSlot);
-            }
-
-            Dictionary<int, int> slotAmmoCount = new Dictionary<int, int>(_slotAmmoState);
-            weaponManager.UpdateWeaponsFromInventory(updatedWeapons.ToArray(), slotAmmoCount);
+            Debug.Log($"Weapon unequipped from slot {slot}");
+            
+            // Trigger a full sync to update all weapons
+            SyncWeaponsWithInventory();
         }
 
         private void OnUpdateWeaponAmmo(WeaponItemData weaponItem)
         {
-            if (weaponManager == null) return;
+            if (!_isInGameplay || weaponManager == null) return;
 
-            foreach (EquipmentSlot slot in new[] { EquipmentSlot.Primary, EquipmentSlot.Secondary, EquipmentSlot.Holster })
+            Character character = _cachedCharacter;
+            if (character == null)
             {
-                int weaponSlot = GetWeaponSlotFromEquipmentSlot(slot);
-                WeaponData[] currentWeapons = weaponManager.GetAvailableWeapons();
-
-                foreach (var weapon in currentWeapons)
+                character = FindCharacter();
+                if (character == null) return;
+                _cachedCharacter = character;
+            }
+            
+            foreach (EquipmentSlot slot in _equipSlotToWeaponSlot.Keys)
+            {
+                ItemInstance equippedItem = character.GetEquippedItem(slot);
+                if (equippedItem != null && equippedItem.itemData is WeaponItemData && equippedItem.itemData.id == weaponItem.id)
                 {
-                    if (weapon.inventoryItemId == weaponItem.id && weapon.weaponSlot == weaponSlot)
+                    int weaponSlot = _equipSlotToWeaponSlot[slot];
+                    WeaponData[] currentWeapons = weaponManager.GetAvailableWeapons();
+
+                    foreach (var weapon in currentWeapons)
                     {
-                        Weapon activeWeapon = weaponManager.GetActiveWeapon();
-                        if (activeWeapon != null && activeWeapon.GetWeaponData() == weapon)
+                        if (weapon.inventoryItemId == weaponItem.id && weapon.weaponSlot == weaponSlot)
                         {
-                            activeWeapon.SetAmmo(weaponItem.currentAmmoCount);
+                            Weapon activeWeapon = weaponManager.GetActiveWeapon();
+                            if (activeWeapon != null && activeWeapon.GetWeaponData() == weapon)
+                            {
+                                activeWeapon.SetAmmo(weaponItem.currentAmmoCount);
+                            }
+                            
+                            weapon.currentAmmo = weaponItem.currentAmmoCount;
+                            _weaponSlotAmmoState[weaponSlot] = weaponItem.currentAmmoCount;
+                            break;
                         }
-                        
-                        weapon.currentAmmo = weaponItem.currentAmmoCount;
-                        _slotAmmoState[weaponSlot] = weaponItem.currentAmmoCount;
-                        break;
                     }
+                    break;
                 }
             }
         }
 
         private void OnWeaponChanged(WeaponData weaponData, int currentAmmo)
         {
-            if (inventoryManager == null || string.IsNullOrEmpty(weaponData.inventoryItemId)) return;
+            if (!_isInGameplay || inventoryManager == null || string.IsNullOrEmpty(weaponData.inventoryItemId)) return;
 
-            InventorySystem.Character character = inventoryManager.GetCharacter();
-            if (character == null) return;
-
-            EquipmentSlot slot = GetEquipmentSlotFromWeaponSlot(weaponData.weaponSlot);
-            ItemInstance equippedItem = character.GetEquippedItem(slot);
-
-            if (equippedItem != null && equippedItem.itemData is WeaponItemData weaponItem)
+            Character character = _cachedCharacter;
+            if (character == null)
             {
-                if (weaponItem.id == weaponData.inventoryItemId)
+                character = FindCharacter();
+                if (character == null) return;
+                _cachedCharacter = character;
+            }
+
+            foreach (EquipmentSlot slot in _equipSlotToWeaponSlot.Keys)
+            {
+                int weaponSlot = _equipSlotToWeaponSlot[slot];
+                if (weaponData.weaponSlot == weaponSlot)
                 {
-                    weaponItem.currentAmmoCount = currentAmmo;
-                    _slotAmmoState[weaponData.weaponSlot] = currentAmmo;
+                    ItemInstance equippedItem = character.GetEquippedItem(slot);
+                    if (equippedItem != null && equippedItem.itemData is WeaponItemData weaponItem)
+                    {
+                        if (weaponItem.id == weaponData.inventoryItemId)
+                        {
+                            weaponItem.currentAmmoCount = currentAmmo;
+                            _weaponSlotAmmoState[weaponSlot] = currentAmmo;
+                        }
+                    }
+                    break;
                 }
             }
         }
 
         private void OnWeaponAmmoChanged(WeaponData weaponData, int newAmmo)
         {
-            if (inventoryManager == null || string.IsNullOrEmpty(weaponData.inventoryItemId)) return;
+            if (!_isInGameplay || inventoryManager == null || string.IsNullOrEmpty(weaponData.inventoryItemId)) return;
 
-            InventorySystem.Character character = inventoryManager.GetCharacter();
-            if (character == null) return;
-
-            EquipmentSlot slot = GetEquipmentSlotFromWeaponSlot(weaponData.weaponSlot);
-            ItemInstance equippedItem = character.GetEquippedItem(slot);
-
-            if (equippedItem != null && equippedItem.itemData is WeaponItemData weaponItem)
+            Character character = _cachedCharacter;
+            if (character == null)
             {
-                if (weaponItem.id == weaponData.inventoryItemId)
+                character = FindCharacter();
+                if (character == null) return;
+                _cachedCharacter = character;
+            }
+
+            foreach (EquipmentSlot slot in _equipSlotToWeaponSlot.Keys)
+            {
+                int weaponSlot = _equipSlotToWeaponSlot[slot];
+                if (weaponData.weaponSlot == weaponSlot)
                 {
-                    weaponItem.currentAmmoCount = newAmmo;
-                    _slotAmmoState[weaponData.weaponSlot] = newAmmo;
+                    ItemInstance equippedItem = character.GetEquippedItem(slot);
+                    if (equippedItem != null && equippedItem.itemData is WeaponItemData weaponItem)
+                    {
+                        if (weaponItem.id == weaponData.inventoryItemId)
+                        {
+                            weaponItem.currentAmmoCount = newAmmo;
+                            _weaponSlotAmmoState[weaponSlot] = newAmmo;
+                            inventoryManager.UpdateWeaponAmmo(weaponItem, newAmmo);
+                        }
+                    }
+                    break;
                 }
             }
         }
 
-        private int GetWeaponSlotFromEquipmentSlot(EquipmentSlot slot)
-        {
-            switch (slot)
-            {
-                case EquipmentSlot.Primary:
-                    return 1;
-                case EquipmentSlot.Secondary:
-                    return 2;
-                case EquipmentSlot.Holster:
-                    return 3;
-                default:
-                    return -1;
-            }
-        }
-
-        private EquipmentSlot GetEquipmentSlotFromWeaponSlot(int weaponSlot)
-        {
-            switch (weaponSlot)
-            {
-                case 1:
-                    return EquipmentSlot.Primary;
-                case 2:
-                    return EquipmentSlot.Secondary;
-                case 3:
-                    return EquipmentSlot.Holster;
-                default:
-                    return EquipmentSlot.Primary;
-            }
-        }
-        
-        private void Update()
-        {
-            if (!_initialized)
-            {
-                TryInitialize();
-            }
-        }
-    }
-    
-    public interface IWeaponAmmoEvents
-    {
-        event System.Action<WeaponData, int> onWeaponAmmoChanged;
+        public event System.Action<WeaponData, int> onWeaponAmmoChanged;
     }
 }
