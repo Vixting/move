@@ -1,0 +1,467 @@
+/* Main Container Styles */
+.main-container {
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+    background-image: url("project://database/Assets/Windows_SideBar_Underside.png?fileID=21300000&guid=5513a2182c3ad5d45b406b1b43c2130b&type=3#Windows_SideBar_Underside");
+    padding: 40px;
+}
+
+/* Window Frame Styles */
+.window-frame {
+    width: 800px;
+    height: 600px;
+    background-color: rgb(192, 192, 192);
+    border-width: 2px;
+    border-color: rgb(223, 223, 223) rgb(64, 64, 64) rgb(64, 64, 64) rgb(223, 223, 223);
+    flex-direction: column;
+}
+
+/* Title Bar Styles */
+.title-bar {
+    height: 30px;
+    background-color: rgb(0, 0, 128);
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 6px;
+}
+
+.window-title {
+    color: rgb(255, 255, 255);
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.window-button {
+    width: 25px;
+    height: 24px;
+    margin-right: 2px;
+    background-color: rgb(192, 192, 192);
+    border-width: 1px;
+    border-color: rgb(223, 223, 223) rgb(64, 64, 64) rgb(64, 64, 64) rgb(223, 223, 223);
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 16px;
+    -unity-text-align: middle-center;
+    padding: 0;
+}
+
+.window-button:hover {
+    background-color: rgb(210, 210, 210);
+}
+
+.window-button:active {
+    border-color: rgb(64, 64, 64) rgb(223, 223, 223) rgb(223, 223, 223) rgb(64, 64, 64);
+}
+
+.close-button {
+    color: black;
+}
+
+/* Menu Container */
+.menu-container {
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+/* Sidebar Styles */
+.sidebar-container {
+    width: 200px;
+    background-color: rgb(192, 192, 192);
+    border-right-width: 1px;
+    border-right-color: rgb(128, 128, 128);
+    padding: 10px;
+}
+
+.sidebar-header {
+    font-size: 16px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    -unity-font-style: bold;
+    margin-bottom: 5px;
+}
+
+.sidebar-separator {
+    height: 2px;
+    background-color: rgb(128, 128, 128);
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.menu-button {
+    height: 40px;
+    margin: 2px 0;
+    background-color: rgb(192, 192, 192);
+    border-width: 1px;
+    border-color: rgb(223, 223, 223) rgb(64, 64, 64) rgb(64, 64, 64) rgb(223, 223, 223);
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 14px;
+    -unity-text-align: middle-left;
+    padding-left: 10px;
+}
+
+.menu-button:hover {
+    background-color: rgb(210, 210, 210);
+}
+
+.menu-button:active {
+    border-color: rgb(64, 64, 64) rgb(223, 223, 223) rgb(223, 223, 223) rgb(64, 64, 64);
+}
+
+.selected-button {
+    background-color: rgb(180, 180, 180);
+    border-color: rgb(64, 64, 64) rgb(223, 223, 223) rgb(223, 223, 223) rgb(64, 64, 64);
+}
+
+/* Content Container Styles */
+.content-container {
+    flex-grow: 1;
+    background-color: rgb(255, 255, 255);
+    padding: 15px;
+}
+
+.content-panel {
+    flex-grow: 1;
+}
+
+.content-header {
+    font-size: 18px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    -unity-font-style: bold;
+    margin-bottom: 5px;
+}
+
+.content-separator {
+    height: 1px;
+    background-color: rgb(128, 128, 128);
+    margin-top: 5px;
+    margin-bottom: 15px;
+}
+
+.content-text {
+    font-size: 14px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    margin-bottom: 20px;
+}
+
+.game-logo {
+    width: 300px;
+    height: 200px;
+    background-image: url("project://database/Assets/Windows_Button.png?fileID=21300000&guid=5e315e818f312d341bb0d8e6410c487f&type=3#Windows_Button");
+    align-self: center;
+    margin: 20px;
+}
+
+.action-button {
+    width: 200px;
+    height: 40px;
+    background-color: rgb(0, 0, 128);
+    color: white;
+    border-width: 1px;
+    border-color: rgb(223, 223, 223) rgb(64, 64, 64) rgb(64, 64, 64) rgb(223, 223, 223);
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 16px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    align-self: center;
+    margin-top: 20px;
+}
+
+.action-button:hover {
+    background-color: rgb(0, 0, 160);
+}
+
+.action-button:active {
+    border-color: rgb(64, 64, 64) rgb(223, 223, 223) rgb(223, 223, 223) rgb(64, 64, 64);
+}
+
+/* Level Selection Styles */
+.levels-scroll-view {
+    flex-grow: 1;
+}
+
+.level-button {
+    height: 60px;
+    margin: 5px 0;
+    background-color: rgb(192, 192, 192);
+    border-width: 1px;
+    border-color: rgb(223, 223, 223) rgb(64, 64, 64) rgb(64, 64, 64) rgb(223, 223, 223);
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 16px;
+    -unity-text-align: middle-left;
+    padding-left: 15px;
+}
+
+.level-button:hover {
+    background-color: rgb(210, 210, 210);
+}
+
+.level-button:active {
+    border-color: rgb(64, 64, 64) rgb(223, 223, 223) rgb(223, 223, 223) rgb(64, 64, 64);
+}
+
+.disabled-button {
+    opacity: 0.5;
+    color: rgb(128, 128, 128);
+}
+
+/* Status Bar */
+.status-bar {
+    height: 25px;
+    background-color: rgb(192, 192, 192);
+    border-top-width: 1px;
+    border-top-color: rgb(128, 128, 128);
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+}
+
+.status-text {
+    font-size: 12px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+}
+
+.version-text {
+    font-size: 12px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+}
+
+/* Options Panel Styles */
+.options-panel {
+    flex-grow: 1;
+    padding: 10px;
+}
+
+.options-section {
+    margin-bottom: 20px;
+}
+
+.options-section-header {
+    font-size: 16px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    -unity-font-style: bold;
+    margin-bottom: 15px;
+}
+
+.options-help-text {
+    font-size: 12px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    color: rgb(90, 90, 90);
+    margin: 5px 0 10px 0;
+}
+
+.options-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0;
+}
+
+.options-label {
+    width: 150px;
+    font-size: 14px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+}
+
+.options-slider {
+    flex-grow: 1;
+    margin-left: 10px;
+    height: 20px;
+}
+
+.options-toggle {
+    height: 20px;
+    margin-left: 10px;
+}
+
+.options-dropdown {
+    height: 25px;
+    min-width: 250px;
+    background-color: rgb(255, 255, 255);
+    border-width: 1px;
+    border-color: rgb(64, 64, 64) rgb(223, 223, 223) rgb(223, 223, 223) rgb(64, 64, 64);
+    padding: 2px 5px;
+    margin-left: 10px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 12px;
+}
+
+/* Tab Bar Styles */
+.options-tab-bar {
+    flex-direction: row;
+    height: 35px;
+    margin-bottom: 1px;
+}
+
+.options-tab-button {
+    flex-grow: 1;
+    background-color: rgb(192, 192, 192);
+    border-width: 1px;
+    border-color: rgb(223, 223, 223) rgb(64, 64, 64) rgb(64, 64, 64) rgb(223, 223, 223);
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 14px;
+    -unity-text-align: middle-center;
+    margin: 0 2px;
+}
+
+.options-tab-button:hover {
+    background-color: rgb(210, 210, 210);
+}
+
+.selected-tab {
+    background-color: rgb(180, 180, 180);
+    border-color: rgb(64, 64, 64) rgb(223, 223, 223) rgb(223, 223, 223) rgb(64, 64, 64);
+    -unity-font-style: bold;
+}
+
+.options-tab-separator {
+    height: 1px;
+    background-color: rgb(128, 128, 128);
+    margin-bottom: 15px;
+}
+
+/* Button Styles */
+.options-buttons {
+    flex-direction: row;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding: 10px;
+    border-top-width: 1px;
+    border-top-color: rgb(128, 128, 128);
+}
+
+.options-button {
+    width: 120px;
+    height: 30px;
+    margin-left: 10px;
+    background-color: rgb(192, 192, 192);
+    border-width: 1px;
+    border-color: rgb(223, 223, 223) rgb(64, 64, 64) rgb(64, 64, 64) rgb(223, 223, 223);
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 14px;
+    -unity-text-align: middle-center;
+}
+
+.options-button:hover {
+    background-color: rgb(210, 210, 210);
+}
+
+.options-button:active {
+    border-color: rgb(64, 64, 64) rgb(223, 223, 223) rgb(223, 223, 223) rgb(64, 64, 64);
+}
+
+/* Keybinding Styles */
+.keybindings-scroll-view {
+    height: 300px;
+    border-width: 1px;
+    border-color: rgb(128, 128, 128);
+    background-color: rgb(255, 255, 255);
+}
+
+.keybinding-section-header {
+    background-color: rgb(0, 0, 128);
+    padding: 5px;
+    margin-top: 10px;
+}
+
+.keybinding-section-title {
+    color: rgb(255, 255, 255);
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 14px;
+    -unity-font-style: bold;
+}
+
+.keybinding-row {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(200, 200, 200);
+}
+
+.keybinding-row:hover {
+    background-color: rgb(240, 240, 240);
+}
+
+.keybinding-action-label {
+    width: 200px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 12px;
+}
+
+.keybinding-value-label {
+    width: 150px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 12px;
+    -unity-font-style: bold;
+    color: rgb(0, 0, 128);
+}
+
+.keybinding-rebind-button {
+    width: 80px;
+    height: 25px;
+    background-color: rgb(192, 192, 192);
+    border-width: 1px;
+    border-color: rgb(223, 223, 223) rgb(64, 64, 64) rgb(64, 64, 64) rgb(223, 223, 223);
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 12px;
+    -unity-text-align: middle-center;
+}
+
+.keybinding-rebind-button:hover {
+    background-color: rgb(210, 210, 210);
+}
+
+.keybinding-rebind-button:active {
+    border-color: rgb(64, 64, 64) rgb(223, 223, 223) rgb(223, 223, 223) rgb(64, 64, 64);
+}
+
+/* Rebind Overlay Styles */
+.rebind-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    align-items: center;
+    justify-content: center;
+}
+
+.rebind-dialog {
+    width: 400px;
+    height: 200px;
+    background-color: rgb(192, 192, 192);
+    border-width: 2px;
+    border-color: rgb(223, 223, 223) rgb(64, 64, 64) rgb(64, 64, 64) rgb(223, 223, 223);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.rebind-prompt {
+    font-size: 20px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    -unity-font-style: bold;
+    margin-bottom: 20px;
+}
+
+.rebind-cancel-text {
+    font-size: 14px;
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    margin-bottom: 20px;
+    color: rgb(90, 90, 90);
+}
+
+.rebind-cancel-button {
+    width: 100px;
+    height: 30px;
+    background-color: rgb(192, 192, 192);
+    border-width: 1px;
+    border-color: rgb(223, 223, 223) rgb(64, 64, 64) rgb(64, 64, 64) rgb(223, 223, 223);
+    -unity-font-definition: url("project://database/Assets/UI%20Toolkit/RetroWindowsGUI/M%208pt.ttf?fileID=12800000&guid=de2ae95f940341549a02c2ab27392596&type=3#M 8pt");
+    font-size: 14px;
+    -unity-text-align: middle-center;
+}

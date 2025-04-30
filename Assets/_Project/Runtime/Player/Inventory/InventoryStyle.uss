@@ -349,164 +349,55 @@ Button:active {
     z-index: 3;
 }
 
-.ammo-counter {
-    position: absolute;
-    bottom: 20px;
-    right: 2px;
-    background-color: rgba(0, 0, 0, 0.7);
-    padding: 1px 5px;
-    border-radius: 2px;
-    border-width: 1px;
-    border-color: rgba(160, 160, 160, 0.4);
-    z-index: 3;
+.inventory-panel.expanded {
+    width: 60% !important;
+    min-width: 500px;
+    transition: width 0.3s ease;
 }
 
-.ammo-text {
-    font-size: 11px;
-    -unity-font-style: bold;
-    color: rgb(200, 200, 100);
-}
-
-.rotation-indicator {
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 12px;
-    height: 12px;
-    background-image: resource('UI/rotate_icon');
-    -unity-background-scale-mode: scale-to-fit;
-    z-index: 3;
-}
-
-.dragged-item {
-    position: absolute !important;
-    pointer-events: none;
-    opacity: 0.8;
-    scale: 1.05;
-    z-index: 1000;
-}
-
-.item-info-panel {
-    position: absolute;
-    top: 50px;
-    right: 50px;
-    width: 300px;
-    background-color: rgba(24, 24, 24, 0.95);
-    border-width: 1px;
-    border-color: rgb(80, 80, 80);
-    display: none;
-    z-index: 100;
-    border-radius: 3px;
-    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
-}
-
-.item-info-header {
+.expanded .inventory-containers {
     flex-direction: row;
-    padding-bottom: 10px;
-    border-bottom-width: 1px;
-    border-color: rgb(66, 66, 66);
-    margin-bottom: 10px;
-    background-color: rgba(16, 16, 16, 0.7);
-    border-radius: 3px 3px 0 0;
-    padding: 8px;
-}
-
-.item-info-icon {
-    width: 50px;
-    height: 50px;
-    -unity-background-scale-mode: scale-to-fit;
-    margin-right: 10px;
-    border-radius: 2px;
-    border-width: 1px;
-    border-color: rgba(255, 255, 255, 0.2);
-    background-color: rgba(40, 40, 40, 0.8);
-}
-
-.item-info-name {
-    font-size: 16px;
-    -unity-font-style: bold;
-    flex-grow: 1;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.item-info-category {
-    font-size: 12px;
-    color: rgb(160, 160, 160);
-    align-self: flex-start;
-    background-color: rgba(0, 0, 0, 0.4);
-    padding: 2px 5px;
-    border-radius: 2px;
-}
-
-.item-info-description {
-    font-size: 12px;
-    color: rgb(200, 200, 200);
-    white-space: normal;
-    margin: 10px 8px;
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 5px;
-    border-radius: 2px;
-}
-
-.item-properties-container {
-    margin: 5px 8px 10px 8px;
-    background-color: rgba(0, 0, 0, 0.2);
-    padding: 5px;
-    border-radius: 2px;
-}
-
-.item-property-row {
-    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: space-between;
-    padding: 4px 0;
-    border-bottom-width: 1px;
-    border-color: rgba(80, 80, 80, 0.3);
 }
 
-.property-name {
-    font-size: 12px;
-    color: rgb(160, 160, 160);
+.expanded .container-section {
+    width: 48%;
+    margin-bottom: 20px;
 }
 
-.property-value {
-    font-size: 12px;
-    -unity-text-align: middle-right;
-    -unity-font-style: bold;
+.expanded .container-grid {
+    min-height: 200px;
 }
 
-.item-info-weight, .item-info-dimensions {
-    font-size: 12px;
-    color: rgb(160, 160, 160);
-    margin: 0 8px 5px 8px;
+.expanded #backpack-container {
+    width: 100%;
 }
 
-.item-action-buttons {
-    flex-direction: row;
-    justify-content: flex-end;
-    margin: 10px 8px;
-    padding-top: 5px;
-    border-top-width: 1px;
-    border-color: rgba(80, 80, 80, 0.5);
+.expanded #backpack-grid {
+    min-height: 300px;
 }
 
-.item-action-button {
-    margin-left: 5px;
-    font-size: 12px;
-    background-color: rgba(40, 40, 40, 0.8);
-    transition-duration: 0.15s;
+.main-menu-mode .equipment-panel {
+    width: 35%;
+    min-width: 300px;
 }
 
-.item-action-button:hover {
-    background-color: rgba(60, 60, 60, 0.9);
-    scale: 1.05;
+.main-menu-mode .stash-panel {
+    width: 60%;
+    min-width: 500px;
 }
 
-.discard-button {
-    background-color: rgba(120, 40, 40, 0.8);
+.main-menu-mode .equipment-panel {
+    margin-right: 10px;
 }
 
-.discard-button:hover {
-    background-color: rgba(160, 60, 60, 0.9);
+.main-menu-mode .character-view {
+    height: 250px;
+}
+
+.main-menu-mode .inventory-panel {
+    display: none;
 }
 
 .bottom-hud {
@@ -566,38 +457,29 @@ Button:active {
     background-color: rgb(80, 160, 80);
 }
 
-.unity-tooltip {
-    background-color: rgba(20, 20, 20, 0.95);
+.item-info-panel {
+    position: absolute;
+    top: 50px;
+    right: 50px;
+    width: 300px;
+    background-color: rgba(24, 24, 24, 0.95);
     border-width: 1px;
-    border-color: rgb(100, 100, 100);
-    padding: 5px;
-    font-size: 12px;
+    border-color: rgb(80, 80, 80);
+    display: none;
+    z-index: 100;
     border-radius: 3px;
-    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.6);
+    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
 }
 
-.common-item .item-border {
-    border-color: rgb(180, 180, 180);
-}
-
-.uncommon-item .item-border {
-    border-color: rgb(80, 200, 80);
-    box-shadow: 0px 0px 5px rgba(80, 200, 80, 0.3);
-}
-
-.rare-item .item-border {
-    border-color: rgb(80, 80, 230);
-    box-shadow: 0px 0px 5px rgba(80, 80, 230, 0.3);
-}
-
-.epic-item .item-border {
-    border-color: rgb(200, 80, 200);
-    box-shadow: 0px 0px 5px rgba(200, 80, 200, 0.3);
-}
-
-.legendary-item .item-border {
-    border-color: rgb(255, 204, 0);
-    box-shadow: 0px 0px 8px rgba(255, 204, 0, 0.4);
+.item-info-header {
+    flex-direction: row;
+    padding-bottom: 10px;
+    border-bottom-width: 1px;
+    border-color: rgb(66, 66, 66);
+    margin-bottom: 10px;
+    background-color: rgba(16, 16, 16, 0.7);
+    border-radius: 3px 3px 0 0;
+    padding: 8px;
 }
 
 .context-menu {
@@ -641,45 +523,6 @@ Button:active {
     color: white;
 }
 
-.discard-button {
-    background-color: rgba(120, 60, 60, 0.8);
-}
-
-.discard-button:hover {
-    background-color: rgba(180, 80, 80, 0.9);
-}
-.split-stack-dialog {
-    position: absolute;
-    background-color: rgba(24, 24, 24, 0.95);
-    border-width: 1px;
-    border-color: rgb(80, 80, 80);
-    border-radius: 3px;
-    padding: 10px;
-    width: 250px;
-    z-index: 1001;
-    box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.5);
-    left: 50%;
-    top: 50%;
-    translate: -50% -50%;
-}
-
-.split-stack-title {
-    font-size: 14px;
-    -unity-font-style: bold;
-    margin-bottom: 10px;
-    -unity-text-align: middle-center;
-}
-
-.split-stack-slider {
-    margin: 10px 0;
-}
-
-.split-stack-buttons {
-    flex-direction: row;
-    justify-content: space-between;
-    margin-top: 10px;
-}
-
 .inventory-item, .item-border, .item-icon, Image {
     opacity: 1 !important;
     visibility: visible !important;
@@ -689,4 +532,3 @@ Button:active {
 Image {
     --unity-image-tint-color: rgba(255, 255, 255, 1) !important;
 }
-

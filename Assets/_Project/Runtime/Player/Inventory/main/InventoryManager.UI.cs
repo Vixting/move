@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 
 namespace InventorySystem
 {
-    public partial class InventoryManager
+    public partial class InventoryManager : MonoBehaviour
     {
         private void InitializeUI()
         {
@@ -25,7 +25,7 @@ namespace InventorySystem
             
             SetupCloseButton();
             SetupEquipmentUI();
-            CreateSettingsUI();
+            //CreateSettingsUI();
             
             _root.RegisterCallback<PointerDownEvent>(evt => {
                 _root.CapturePointer(evt.pointerId);
@@ -90,7 +90,6 @@ namespace InventorySystem
             });
         }
 
-
         private void AddToggleSetting(VisualElement container, string label, bool initialValue, EventCallback<ChangeEvent<bool>> callback)
         {
             VisualElement row = new VisualElement();
@@ -119,69 +118,20 @@ namespace InventorySystem
                 closeButton.clicked += () => 
                 {
                     HideInventory();
-                    Player player = FindObjectOfType<Player>();
-                    if (player != null)
+                    if (_isInMainMenu)
                     {
-                        player.EnableGameplayMode(true);
+                        _isInMainMenu = false;
+                        _onStashCloseCallback?.Invoke();
+                    }
+                    else
+                    {
+                        Player player = FindObjectOfType<Player>();
+                        if (player != null)
+                        {
+                            player.EnableGameplayMode(true);
+                        }
                     }
                 };
-            }
-        }
-        
-        public void ShowInventory()
-        {
-            ReconnectAllReferences();
-           
-            if (_root != null)
-            {
-                _root.style.display = DisplayStyle.Flex;
-                _root.Focus();
-            }
-           
-            Player player = FindObjectOfType<Player>();
-            if (player != null)
-            {
-                player.EnableGameplayMode(false);
-            }
-        }
-       
-        public void HideInventory()
-        {
-            if (_root != null)
-            {
-                _root.style.display = DisplayStyle.None;
-               
-                VisualElement infoPanel = _root.Q("item-info-panel");
-                if (infoPanel != null)
-                {
-                    infoPanel.style.display = DisplayStyle.None;
-                }
-               
-                if (_contextMenu != null)
-                {
-                    _contextMenu.RemoveFromHierarchy();
-                    _contextMenu = null;
-                }
-            }
-        }
-       
-        public void ToggleInventory()
-        {
-            if (_root == null)
-            {
-                Debug.LogError("Inventory root is null in ToggleInventory, cannot toggle inventory");
-                return;
-            }
-           
-            Debug.Log($"ToggleInventory called - current display: {_root.style.display}");
-           
-            if (_root.style.display == DisplayStyle.None)
-            {
-                ShowInventory();
-            }
-            else
-            {
-                HideInventory();
             }
         }
     }

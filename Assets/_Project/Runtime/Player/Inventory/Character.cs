@@ -27,19 +27,20 @@ namespace InventorySystem
     
     public class Character : MonoBehaviour
     {
-        [SerializeField] private string characterName = "PMC Character";
-        [SerializeField] private float maxHealth = 100f;
-        [SerializeField] private float currentHealth = 100f;
-        [SerializeField] private float maxEnergy = 100f;
-        [SerializeField] private float currentEnergy = 100f;
-        [SerializeField] private float maxHydration = 100f;
-        [SerializeField] private float currentHydration = 100f;
-        [SerializeField] private float maxWeight = 70f;
+        [SerializeField] protected string characterName = "PMC Character";
+        [SerializeField] protected float maxHealth = 100f;
+        [SerializeField] protected float currentHealth = 100f;
+        [SerializeField] protected float maxEnergy = 100f;
+        [SerializeField] protected float currentEnergy = 100f;
+        [SerializeField] protected float maxHydration = 100f;
+        [SerializeField] protected float currentHydration = 100f;
+        [SerializeField] protected float maxWeight = 70f;
         
-        private Dictionary<EquipmentSlot, ItemInstance> _equippedItems = new Dictionary<EquipmentSlot, ItemInstance>();
-        private float _currentWeight = 0f;
+        protected Dictionary<EquipmentSlot, ItemInstance> _equippedItems = new Dictionary<EquipmentSlot, ItemInstance>();
+        protected float _currentWeight = 0f;
+        protected bool _isDead = false;
         
-        public CharacterInventoryData InventoryData { get; private set; }
+        public CharacterInventoryData InventoryData { get; protected set; }
         
         public string CharacterName => characterName;
         public float MaxHealth => maxHealth;
@@ -52,59 +53,95 @@ namespace InventorySystem
         public float CurrentWeight => _currentWeight;
         
         public event Action<float, float> OnWeightChanged;
+        public event Action<float, float> OnHealthChanged;
+        public event Action OnDeath;
 
-        public void LoadInventory()
-{
-        // If you have saved inventory data, load it here
-        
-        // Example implementation:
-        if (InventoryData == null || InventoryData.Items.Count == 0)
+        public virtual void LoadInventory()
         {
-            // Initialize with default items if needed
-            InventoryData = new CharacterInventoryData();
+            // If you have saved inventory data, load it here
             
-            // You can add default starting items here if desired
+            // Example implementation:
+            if (InventoryData == null || InventoryData.Items.Count == 0)
+            {
+                // Initialize with default items if needed
+                InventoryData = new CharacterInventoryData();
+                
+                // You can add default starting items here if desired
+            }
+            
+            // Notify inventory manager to refresh
+            if (InventoryManager.Instance != null)
+            {
+                InventoryManager.Instance.onInventoryChanged?.Invoke();
+            }
         }
         
-        // Notify inventory manager to refresh
-        if (InventoryManager.Instance != null)
-        {
-            InventoryManager.Instance.onInventoryChanged?.Invoke();
-        }
-    }
-        
-        private void Awake()
+        protected virtual void Awake()
         {
             InventoryData = new CharacterInventoryData();
             RecalculateWeight();
         }
         
-        public void Heal(float amount)
+        public virtual void TakeDamage(float damage)
         {
-            currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+            if (_isDead) return;
+            
+            float previousHealth = currentHealth;
+            currentHealth = Mathf.Max(0, currentHealth - damage);
+            
+            OnHealthChanged?.Invoke(currentHealth, maxHealth);
+            
+            if (currentHealth <= 0 && previousHealth > 0)
+            {
+                _isDead = true;
+                OnDeath?.Invoke();
+            }
         }
         
-        public void ConsumeEnergy(float amount)
+        public virtual void Heal(float amount)
+        {
+            if (_isDead) return;
+            
+            float previousHealth = currentHealth;
+            currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+            
+            if (currentHealth != previousHealth)
+            {
+                OnHealthChanged?.Invoke(currentHealth, maxHealth);
+            }
+        }
+        
+        public virtual void ConsumeEnergy(float amount)
         {
             currentEnergy = Mathf.Max(0, currentEnergy - amount);
         }
         
-        public void RestoreEnergy(float amount)
+        public virtual void RestoreEnergy(float amount)
         {
             currentEnergy = Mathf.Min(currentEnergy + amount, maxEnergy);
         }
         
-        public void ConsumeHydration(float amount)
+        public virtual void ConsumeHydration(float amount)
         {
             currentHydration = Mathf.Max(0, currentHydration - amount);
         }
         
-        public void RestoreHydration(float amount)
+        public virtual void RestoreHydration(float amount)
         {
             currentHydration = Mathf.Min(currentHydration + amount, maxHydration);
         }
         
-        public ItemInstance GetEquippedItem(EquipmentSlot slot)
+        public virtual bool IsDead()
+        {
+            return _isDead;
+        }
+        
+        public virtual float GetHealthPercent()
+        {
+            return Mathf.Clamp01(currentHealth / maxHealth);
+        }
+        
+        public virtual ItemInstance GetEquippedItem(EquipmentSlot slot)
         {
             if (_equippedItems.TryGetValue(slot, out ItemInstance item))
             {
@@ -113,7 +150,7 @@ namespace InventorySystem
             return null;
         }
         
-        public bool EquipItem(ItemInstance item, EquipmentSlot slot)
+        public virtual bool EquipItem(ItemInstance item, EquipmentSlot slot)
         {
             if (item == null || !item.CanEquipInSlot(slot))
             {
@@ -160,7 +197,7 @@ namespace InventorySystem
             return true;
         }
                 
-        public ItemInstance UnequipItem(EquipmentSlot slot)
+        public virtual ItemInstance UnequipItem(EquipmentSlot slot)
         {
             if (!_equippedItems.TryGetValue(slot, out ItemInstance item))
             {
@@ -178,7 +215,7 @@ namespace InventorySystem
             return item;
         }
         
-        private void RecalculateWeight()
+        protected virtual void RecalculateWeight()
         {
             float weight = 0f;
             
@@ -207,7 +244,7 @@ namespace InventorySystem
             OnWeightChanged?.Invoke(_currentWeight, maxWeight);
         }
         
-        public void SaveInventory()
+        public virtual void SaveInventory()
         {
             InventoryData = new CharacterInventoryData();
             
@@ -265,7 +302,7 @@ namespace InventorySystem
             }
         }
         
-        public Dictionary<string, ContainerInstance> GetContainers()
+        public virtual Dictionary<string, ContainerInstance> GetContainers()
         {
             InventoryManager inventoryManager = InventoryManager.Instance;
             if (inventoryManager != null)

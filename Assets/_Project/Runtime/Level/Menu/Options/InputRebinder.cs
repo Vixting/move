@@ -147,6 +147,15 @@ public class InputRebinder : MonoBehaviour
             .Start();
     }
     
+    // Add method to cancel an in-progress rebinding
+    public void CancelRebinding()
+    {
+        if (_rebindingOperation != null)
+        {
+            _rebindingOperation.Cancel();
+        }
+    }
+    
     private void OnRebindFinished()
     {
         if (_rebindingOperation == null) return;
@@ -202,6 +211,9 @@ public class InputRebinder : MonoBehaviour
     {
         Dictionary<string, List<KeyBindingInfo>> result = new Dictionary<string, List<KeyBindingInfo>>();
         
+        if (_inputActions == null || _inputActions.asset == null)
+            return result;
+            
         foreach (var actionMap in _inputActions.asset.actionMaps)
         {
             List<KeyBindingInfo> bindings = new List<KeyBindingInfo>();

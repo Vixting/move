@@ -24,6 +24,10 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private Player playerPrefab;
     [SerializeField] private CanvasGroup loadingScreenCanvasGroup;
     
+    [Header("Zombie Settings")]
+    [SerializeField] private bool enableZombies = true;
+    [SerializeField] private ZombieManager zombieManager;
+    
     private static LevelManager _instance;
     private Player _currentPlayer;
     private int _currentLevelIndex = -1;
@@ -144,6 +148,16 @@ public class LevelManager : MonoBehaviour
     {
         StartCoroutine(LoadSceneRoutine(mainMenuSceneName, -1));
     }
+    
+    public void ReturnToMainMenu()
+    {
+        if (zombieManager != null)
+        {
+            zombieManager.ClearAllZombies();
+        }
+        
+        LoadMainMenu();
+    }
 
     public void LoadLevel(int levelIndex)
     {
@@ -182,13 +196,17 @@ public class LevelManager : MonoBehaviour
         if (_isLoading) yield break;
         _isLoading = true;
         
+        if (zombieManager != null)
+        {
+            zombieManager.ClearAllZombies();
+        }
+        
         if (loadingScreenCanvasGroup != null)
         {
             loadingScreenCanvasGroup.gameObject.SetActive(true);
             yield return FadeLoadingScreen(1);
         }
 
-        // Save current state before loading
         if (GameManager.Instance != null)
         {
             GameManager.Instance.SaveGame();
@@ -242,7 +260,6 @@ public class LevelManager : MonoBehaviour
 
         _currentLevelIndex = levelIndex;
 
-        // Wait a bit longer to ensure everything is loaded
         yield return new WaitForSeconds(0.2f);
 
         bool isGameplayLevel = _currentLevelIndex >= 0;
@@ -252,19 +269,20 @@ public class LevelManager : MonoBehaviour
             SpawnPlayer();
             SaveProgress();
             
-            // Wait an additional frame to ensure player is fully initialized
             yield return null;
             
-            // Explicitly re-establish inventory connections
             ReconnectInventorySystems();
+            
+            if (enableZombies)
+            {
+                InitializeZombieManager();
+            }
         }
         
         if (GameManager.Instance != null)
         {
-            // Trigger level loaded event
             GameManager.Instance.OnLevelLoaded(isGameplayLevel);
             
-            // Load game state if in gameplay level
             if (isGameplayLevel)
             {
                 GameManager.Instance.LoadGame();
@@ -331,12 +349,28 @@ public class LevelManager : MonoBehaviour
         _currentPlayer.EnableGameplayMode(true);
     }
     
+    private void InitializeZombieManager()
+    {
+        if (zombieManager == null)
+        {
+            zombieManager = FindObjectOfType<ZombieManager>();
+            
+            if (zombieManager == null && ZombieManager.Instance == null)
+            {
+                GameObject zombieManagerObj = new GameObject("ZombieManager");
+                zombieManager = zombieManagerObj.AddComponent<ZombieManager>();
+            }
+            else if (zombieManager == null)
+            {
+                zombieManager = ZombieManager.Instance;
+            }
+        }
+    }
+    
     private void ReconnectInventorySystems()
     {
-        // Find the inventory manager - look for the singleton instance first
         InventoryManager inventoryManager = InventoryManager.Instance;
         
-        // If singleton not found, try to find in scene
         if (inventoryManager == null)
         {
             inventoryManager = FindObjectOfType<InventoryManager>();
@@ -347,7 +381,6 @@ public class LevelManager : MonoBehaviour
             }
         }
         
-        // Explicitly set inventory manager to player
         if (_currentPlayer != null)
         {
             _currentPlayer.SetInventoryManager(inventoryManager);
@@ -357,12 +390,7 @@ public class LevelManager : MonoBehaviour
         {
             Debug.LogError("Current player is null, can't assign inventory manager");
         }
-        
-
     }
-
-
-
     
     private Transform FindSpawnPoint()
     {

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using System.Linq;
 using UnityEngine.InputSystem;
+using UnityEngine.Events;
 
 namespace InventorySystem
 {
@@ -23,6 +23,10 @@ namespace InventorySystem
         [SerializeField] private float _dropDistance = 1.5f;
         [SerializeField] private float _dropHeight = 1.0f;
         [SerializeField] private float _dropForce = 2.0f;
+        
+        [SerializeField] private InventoryMode _currentMode = InventoryMode.Full;
+        private bool _isInMainMenu = false;
+        private Action _onStashCloseCallback;
         
         private float _snapTimer = 0f;
         private bool _magneticDrop = true;
@@ -52,6 +56,8 @@ namespace InventorySystem
         public static InventoryManager Instance => _instance;
         
         private bool _initialized = false;
+        
+        public InventoryMode CurrentMode => _currentMode;
         
         private void Awake()
         {
@@ -111,8 +117,6 @@ namespace InventorySystem
                     {
                         SetWeaponManager(_weaponManager);
                     }
-                    
-
                 }
                 
                 if (inventoryDocument != null)
@@ -120,6 +124,8 @@ namespace InventorySystem
                     inventoryDocument.gameObject.SetActive(true);
                     HideInventory();
                 }
+                
+                SetInventoryMode(InventoryMode.NoStash);
             }
             else
             {
@@ -127,6 +133,8 @@ namespace InventorySystem
                 {
                     inventoryDocument.gameObject.SetActive(false);
                 }
+                
+                SetInventoryMode(InventoryMode.MainMenuMode);
             }
         }
         
@@ -142,6 +150,209 @@ namespace InventorySystem
             LoadPlayerInventory();
             ReconnectAllReferences();
             _initialized = true;
+        }
+        
+        public void SetInventoryMode(InventoryMode mode)
+        {
+            _currentMode = mode;
+            
+            switch (mode)
+            {
+                case InventoryMode.Full:
+                    _isInMainMenu = false;
+                    ShowAllPanels();
+                    break;
+                    
+                case InventoryMode.MainMenuMode:
+                    _isInMainMenu = true;
+                    ShowMainMenuMode();
+                    break;
+                    
+                case InventoryMode.LootingOnly:
+                    _isInMainMenu = false;
+                    break;
+                    
+                case InventoryMode.NoStash:
+                    _isInMainMenu = false;
+                    ShowGameplayMode();
+                    break;
+            }
+            
+            Debug.Log($"Inventory mode set to: {_currentMode}");
+        }
+
+        private void ShowAllPanels()
+        {
+            if (_root == null) return;
+            
+            _root.RemoveFromClassList("main-menu-mode");
+            
+            VisualElement equipmentPanel = _root.Q("equipment-panel");
+            VisualElement playerInventoryPanel = _root.Q("player-inventory-panel");
+            VisualElement stashPanel = _root.Q("stash-panel");
+            
+            if (equipmentPanel != null)
+                equipmentPanel.style.display = DisplayStyle.Flex;
+                        
+            if (playerInventoryPanel != null)
+            {
+                playerInventoryPanel.style.display = DisplayStyle.Flex;
+                playerInventoryPanel.style.width = new StyleLength(new Length(35, LengthUnit.Percent));
+                playerInventoryPanel.RemoveFromClassList("expanded");
+            }
+                        
+            if (stashPanel != null)
+            {
+                stashPanel.style.display = DisplayStyle.Flex;
+                stashPanel.style.width = new StyleLength(new Length(40, LengthUnit.Percent));
+            }
+                        
+            Label characterName = _root.Q<Label>("character-name");
+            if (characterName != null)
+                characterName.text = "PMC Character";
+                        
+            Button closeButton = _root.Q<Button>("close-button");
+            if (closeButton != null)
+            {
+                closeButton.clicked -= OnStashCloseButtonClicked;
+                closeButton.clicked += () => 
+                {
+                    HideInventory();
+                    Player player = FindObjectOfType<Player>();
+                    if (player != null)
+                    {
+                        player.EnableGameplayMode(true);
+                    }
+                };
+            }
+            
+            VisualElement inventoryContent = _root.Q("inventory-content");
+            if (inventoryContent != null)
+            {
+                inventoryContent.style.flexDirection = FlexDirection.Row;
+            }
+        }
+        
+        private void ShowMainMenuMode()
+        {
+            if (_root == null) return;
+            
+            _root.AddToClassList("main-menu-mode");
+            
+            VisualElement equipmentPanel = _root.Q("equipment-panel");
+            VisualElement playerInventoryPanel = _root.Q("player-inventory-panel");
+            VisualElement stashPanel = _root.Q("stash-panel");
+            
+            // Show equipment and player inventory panels, as well as stash
+            if (equipmentPanel != null)
+                equipmentPanel.style.display = DisplayStyle.Flex;
+                
+            if (playerInventoryPanel != null)
+                playerInventoryPanel.style.display = DisplayStyle.Flex;
+                
+            if (stashPanel != null)
+            {
+                stashPanel.style.display = DisplayStyle.Flex;
+                stashPanel.style.width = new StyleLength(new Length(40, LengthUnit.Percent));
+            }
+            
+            // Adjust the widths of the panels for better layout
+            if (playerInventoryPanel != null)
+            {
+                playerInventoryPanel.style.width = new StyleLength(new Length(35, LengthUnit.Percent));
+            }
+            
+            if (equipmentPanel != null)
+            {
+                equipmentPanel.style.width = new StyleLength(new Length(25, LengthUnit.Percent));
+            }
+            
+            // Update title
+            Label characterName = _root.Q<Label>("character-name");
+            if (characterName != null)
+                characterName.text = "Character & Stash Management";
+                
+            // Update close button action
+            Button closeButton = _root.Q<Button>("close-button");
+            if (closeButton != null)
+            {
+                closeButton.clicked -= () => HideInventory();
+                closeButton.clicked += OnStashCloseButtonClicked;
+            }
+            
+            // Reorganize the inventory content for main menu layout
+            VisualElement inventoryContent = _root.Q("inventory-content");
+            if (inventoryContent != null)
+            {
+                inventoryContent.style.flexDirection = FlexDirection.Row;
+            }
+        }
+        
+        private void ShowGameplayMode()
+        {
+            if (_root == null) return;
+            
+            _root.RemoveFromClassList("main-menu-mode");
+            
+            VisualElement equipmentPanel = _root.Q("equipment-panel");
+            VisualElement playerInventoryPanel = _root.Q("player-inventory-panel");
+            VisualElement stashPanel = _root.Q("stash-panel");
+            
+            if (equipmentPanel != null)
+                equipmentPanel.style.display = DisplayStyle.Flex;
+                
+            if (playerInventoryPanel != null)
+            {
+                playerInventoryPanel.style.display = DisplayStyle.Flex;
+                playerInventoryPanel.style.width = new StyleLength(new Length(60, LengthUnit.Percent));
+                
+                playerInventoryPanel.AddToClassList("expanded");
+            }
+                
+            if (stashPanel != null)
+                stashPanel.style.display = DisplayStyle.None;
+            
+            Label characterName = _root.Q<Label>("character-name");
+            if (characterName != null)
+                characterName.text = "PMC Character";
+                
+            Button closeButton = _root.Q<Button>("close-button");
+            if (closeButton != null)
+            {
+                closeButton.clicked -= OnStashCloseButtonClicked;
+                closeButton.clicked += () => 
+                {
+                    HideInventory();
+                    Player player = FindObjectOfType<Player>();
+                    if (player != null)
+                    {
+                        player.EnableGameplayMode(true);
+                    }
+                };
+            }
+            
+            VisualElement inventoryContent = _root.Q("inventory-content");
+            if (inventoryContent != null)
+            {
+                inventoryContent.style.flexDirection = FlexDirection.Row;
+            }
+        }
+        
+        private void OnStashCloseButtonClicked()
+        {
+            HideInventory();
+            
+            if (_isInMainMenu)
+            {
+                _isInMainMenu = false;
+                
+                _onStashCloseCallback?.Invoke();
+            }
+        }
+        
+        public void SetStashCloseCallback(Action callback)
+        {
+            _onStashCloseCallback = callback;
         }
         
         private void ReconnectAllReferences()
@@ -215,6 +426,98 @@ namespace InventorySystem
             }
         }
         
+        public void ShowInventory()
+        {
+            ReconnectAllReferences();
+           
+            if (_root != null)
+            {
+                _root.style.display = DisplayStyle.Flex;
+                _root.Focus();
+                
+                switch (_currentMode)
+                {
+                    case InventoryMode.Full:
+                        ShowAllPanels();
+                        break;
+                        
+                    case InventoryMode.MainMenuMode:
+                        ShowMainMenuMode();
+                        break;
+                        
+                    case InventoryMode.NoStash:
+                        ShowGameplayMode();
+                        break;
+                        
+                    case InventoryMode.LootingOnly:
+                        break;
+                }
+            }
+           
+            if (!_isInMainMenu)
+            {
+                Player player = FindObjectOfType<Player>();
+                if (player != null)
+                {
+                    player.EnableGameplayMode(false);
+                }
+            }
+        }
+       
+        public void HideInventory()
+        {
+            if (_root != null)
+            {
+                _root.style.display = DisplayStyle.None;
+               
+                VisualElement infoPanel = _root.Q("item-info-panel");
+                if (infoPanel != null)
+                {
+                    infoPanel.style.display = DisplayStyle.None;
+                }
+               
+                if (_contextMenu != null)
+                {
+                    _contextMenu.RemoveFromHierarchy();
+                    _contextMenu = null;
+                }
+            }
+        }
+       
+        public void ToggleInventory()
+        {
+            if (_root == null)
+            {
+                Debug.LogError("Inventory root is null in ToggleInventory, cannot toggle inventory");
+                return;
+            }
+           
+            Debug.Log($"ToggleInventory called - current display: {_root.style.display}");
+           
+            if (_root.style.display == DisplayStyle.None)
+            {
+                ShowInventory();
+            }
+            else
+            {
+                HideInventory();
+                
+                if (_isInMainMenu && _onStashCloseCallback != null)
+                {
+                    _isInMainMenu = false;
+                    _onStashCloseCallback.Invoke();
+                }
+                else if (!_isInMainMenu)
+                {
+                    Player player = FindObjectOfType<Player>();
+                    if (player != null)
+                    {
+                        player.EnableGameplayMode(true);
+                    }
+                }
+            }
+        }
+
         public bool AddItemToInventory(string itemId)
         {
             if (string.IsNullOrEmpty(itemId) || GameManager.Instance == null)
@@ -400,6 +703,32 @@ namespace InventorySystem
                 return item;
                 
             return null;
+        }
+
+        public bool IsItemInStash(string itemInstanceId)
+        {
+            if (string.IsNullOrEmpty(itemInstanceId))
+                return false;
+                
+            if (_items.TryGetValue(itemInstanceId, out ItemInstance item))
+            {
+                return item.containerId == "stash";
+            }
+            
+            return false;
+        }
+
+        public bool IsItemInPlayerInventory(string itemInstanceId)
+        {
+            if (string.IsNullOrEmpty(itemInstanceId))
+                return false;
+                
+            if (_items.TryGetValue(itemInstanceId, out ItemInstance item))
+            {
+                return item.containerId != "stash";
+            }
+            
+            return false;
         }
     }
 }

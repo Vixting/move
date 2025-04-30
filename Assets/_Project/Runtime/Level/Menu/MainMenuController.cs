@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using InventorySystem;
 
 public class MainMenuController : MonoBehaviour
 {
@@ -23,6 +24,7 @@ public class MainMenuController : MonoBehaviour
     private Button level3Button;
     private Button closeButton;
     private Button minimizeButton;
+    private Button inventoryButton;
     
     private VisualElement audioPanel;
     private VisualElement graphicsPanel;
@@ -62,6 +64,7 @@ public class MainMenuController : MonoBehaviour
     private bool optionsInitialized = false;
     
     private Player playerReference;
+    private bool isInventoryOpen = false;
     
     private void Awake()
     {
@@ -136,6 +139,7 @@ public class MainMenuController : MonoBehaviour
         level3Button = root.Q<Button>("Level3Button");
         closeButton = root.Q<Button>("CloseButton");
         minimizeButton = root.Q<Button>("MinimizeButton");
+        inventoryButton = root.Q<Button>("InventoryButton");
         
         if (playButton != null)
             playButton.clicked += () => ShowPanel(playPanel);
@@ -169,11 +173,99 @@ public class MainMenuController : MonoBehaviour
             
         if (minimizeButton != null)
             minimizeButton.clicked += MinimizeWindow;
+            
+        if (inventoryButton != null)
+        {
+            inventoryButton.clicked += OpenInventoryStash;
+        }
+        else
+        {
+            AddInventoryButton(root);
+        }
+        
+        if (rebindOverlay != null)
+        {
+            rebindOverlay.style.display = DisplayStyle.None;
+        }
         
         ShowPanel(playPanel);
         SetStatusText("Ready");
         
         UpdateLevelButtonsState();
+    }
+    
+    private void AddInventoryButton(VisualElement root)
+    {
+        VisualElement menuBar = root.Q("MenuBar");
+        if (menuBar == null) return;
+        
+        int targetIndex = -1;
+        for (int i = 0; i < menuBar.childCount; i++)
+        {
+            if (menuBar[i].name == "LevelsButton")
+            {
+                targetIndex = i + 1;
+                break;
+            }
+        }
+        
+        inventoryButton = new Button();
+        inventoryButton.name = "InventoryButton";
+        inventoryButton.text = "Inventory";
+        inventoryButton.AddToClassList("menu-button");
+        inventoryButton.clicked += OpenInventoryStash;
+        
+        if (targetIndex >= 0 && targetIndex < menuBar.childCount)
+        {
+            menuBar.Insert(targetIndex, inventoryButton);
+        }
+        else
+        {
+            menuBar.Add(inventoryButton);
+        }
+    }
+    
+    private void OpenInventoryStash()
+    {
+        if (menuDocument != null && menuDocument.rootVisualElement != null)
+        {
+            menuDocument.rootVisualElement.style.display = DisplayStyle.None;
+        }
+        
+        InventoryManager inventoryManager = InventoryManager.Instance;
+        if (inventoryManager == null)
+        {
+            inventoryManager = FindObjectOfType<InventoryManager>();
+        }
+        
+        if (inventoryManager != null)
+        {
+            inventoryManager.SetStashCloseCallback(() => {
+                isInventoryOpen = false;
+                
+                if (menuDocument != null && menuDocument.rootVisualElement != null)
+                {
+                    menuDocument.rootVisualElement.style.display = DisplayStyle.Flex;
+                }
+                
+                SetStatusText("Returned from stash");
+            });
+            
+            inventoryManager.SetInventoryMode(InventoryMode.MainMenuMode);
+            inventoryManager.ShowInventory();
+            isInventoryOpen = true;
+            
+            SetStatusText("Inventory opened");
+        }
+        else
+        {
+            if (menuDocument != null && menuDocument.rootVisualElement != null)
+            {
+                menuDocument.rootVisualElement.style.display = DisplayStyle.Flex;
+            }
+            
+            SetStatusText("Error: Inventory system not found");
+        }
     }
     
     private void ShowOptionsMenu()
@@ -340,6 +432,10 @@ public class MainMenuController : MonoBehaviour
     {
         if (rebindingInProgress && inputRebinder != null)
         {
+            inputRebinder.CancelRebinding();
+            rebindingInProgress = false;
+            if (rebindOverlay != null)
+                rebindOverlay.style.display = DisplayStyle.None;
         }
     }
     
@@ -395,16 +491,19 @@ public class MainMenuController : MonoBehaviour
         
         allBindings = inputRebinder.GetAllBindings();
         
-        if (allBindings.ContainsKey("Gameplay"))
+        if (allBindings != null)
         {
-            AddKeybindingSectionHeader("Gameplay Controls");
-            AddKeybindingRows("Gameplay", allBindings["Gameplay"]);
-        }
-        
-        if (allBindings.ContainsKey("UI"))
-        {
-            AddKeybindingSectionHeader("UI Controls");
-            AddKeybindingRows("UI", allBindings["UI"]);
+            if (allBindings.ContainsKey("Gameplay"))
+            {
+                AddKeybindingSectionHeader("Gameplay Controls");
+                AddKeybindingRows("Gameplay", allBindings["Gameplay"]);
+            }
+            
+            if (allBindings.ContainsKey("UI"))
+            {
+                AddKeybindingSectionHeader("UI Controls");
+                AddKeybindingRows("UI", allBindings["UI"]);
+            }
         }
     }
     
@@ -443,7 +542,7 @@ public class MainMenuController : MonoBehaviour
             
             rebindButton.clicked += () => 
             {
-                if (!rebindingInProgress)
+                if (!rebindingInProgress && inputRebinder != null)
                 {
                     rebindPromptLabel.text = $"Press a key for '{binding.DisplayName}'";
                     inputRebinder.StartRebinding(actionMapName, binding.ActionName, binding.BindingIndex);
@@ -692,7 +791,6 @@ public class MainMenuController : MonoBehaviour
         }
         else
         {
-            Debug.LogError("LevelManager reference not set in MainMenuController");
             SetStatusText("Error: LevelManager not found");
         }
     }

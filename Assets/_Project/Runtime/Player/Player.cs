@@ -10,11 +10,11 @@ public class Player : MonoBehaviour
     [SerializeField] private InventoryManager inventoryManager;
     [SerializeField] private Character characterData;
     
-    
     public PlayerInputActions _inputActions;
     
     private bool _isInputEnabled = true;
     private bool _initialized = false;
+    private bool _isPaused = false;
    
     void Start()
     {
@@ -46,7 +46,6 @@ public class Player : MonoBehaviour
         if (playerCamera != null && playerCharacter != null)
             playerCamera.Initialize(playerCharacter.GetCameraTarget(), playerCharacter);
        
-        // Get or create weapons with null checks
         WeaponData[] existingWeapons = null;
         
         if (GameManager.Instance != null)
@@ -66,10 +65,8 @@ public class Player : MonoBehaviour
                 
                 if (defaultWeapon != null)
                 {
-                    // Ensure weapon IDs are valid
                     if (string.IsNullOrEmpty(defaultWeapon.WeaponId))
                     {
-                        // This will trigger ID generation via the getter
                         string id = defaultWeapon.WeaponId;
                     }
                     
@@ -85,7 +82,6 @@ public class Player : MonoBehaviour
             }
         }
         
-        // Initialize weapon manager with null safety
         if (weaponManager != null && playerCamera != null)
         {
             try
@@ -98,12 +94,10 @@ public class Player : MonoBehaviour
                     
                     if (availableWeapons != null && availableWeapons.Length > 0)
                     {
-                        // Ensure all weapon IDs are valid before registering
                         foreach (var weapon in availableWeapons)
                         {
                             if (weapon != null)
                             {
-                                // This will trigger ID generation via getters if needed
                                 string weaponId = weapon.WeaponId;
                                 
                                 if (string.IsNullOrEmpty(weapon.inventoryItemId))
@@ -131,16 +125,15 @@ public class Player : MonoBehaviour
             }
         }
        
-        // Register input callbacks
         if (_inputActions != null)
         {
             _inputActions.Gameplay.Aim.started += OnAimStarted;
             _inputActions.Gameplay.Aim.canceled += OnAimCanceled;
             _inputActions.Gameplay.Inventory.performed += OnInventoryToggle;
             _inputActions.UI.InventoryClose.performed += OnInventoryToggle;
+            _inputActions.Gameplay.Pause.performed += OnPausePerformed;
         }
         
-        // Set initial game mode
         if (IsGameplayScene())
         {
             EnableGameplayMode(true);
@@ -151,14 +144,7 @@ public class Player : MonoBehaviour
         }
         
         _initialized = true;
-        
-        // Final sync after initialization is complete
     }
-    
-
-    
-
-    
     
     private void OnInventoryToggle(InputAction.CallbackContext context)
     {
@@ -190,7 +176,7 @@ public class Player : MonoBehaviour
             return;
         }
         
-        if (!_isInputEnabled || _inputActions == null)
+        if (!_isInputEnabled || _inputActions == null || _isPaused)
             return;
             
         var input = _inputActions.Gameplay;
@@ -239,7 +225,7 @@ public class Player : MonoBehaviour
    
     void LateUpdate()
     {
-        if (!_isInputEnabled || playerCamera == null || playerCharacter == null)
+        if (!_isInputEnabled || playerCamera == null || playerCharacter == null || _isPaused)
             return;
             
         playerCamera.UpdatePosition(playerCharacter.GetCameraTarget());
@@ -252,6 +238,7 @@ public class Player : MonoBehaviour
             _inputActions.Gameplay.Aim.started -= OnAimStarted;
             _inputActions.Gameplay.Aim.canceled -= OnAimCanceled;
             _inputActions.Gameplay.Inventory.performed -= OnInventoryToggle;
+            _inputActions.Gameplay.Pause.performed -= OnPausePerformed;
             _inputActions.Dispose();
         }
     }
@@ -279,6 +266,29 @@ public class Player : MonoBehaviour
         if (playerCamera != null)
             playerCamera.SetAiming(false);
     }
+    
+    private void OnPausePerformed(InputAction.CallbackContext context)
+    {
+        PauseMenuController pauseMenuController = FindObjectOfType<PauseMenuController>();
+        
+        if (pauseMenuController != null)
+        {
+            if (pauseMenuController.IsPauseMenuActive())
+            {
+                pauseMenuController.HidePauseMenu();
+                _isPaused = false;
+            }
+            else
+            {
+                pauseMenuController.ShowPauseMenu();
+                _isPaused = true;
+            }
+        }
+        else
+        {
+            Debug.LogWarning("PauseMenuController not found in scene");
+        }
+    }
    
     public void Teleport(Vector3 position)
     {
@@ -289,6 +299,7 @@ public class Player : MonoBehaviour
     public void EnableGameplayMode(bool enable)
     {
         _isInputEnabled = enable;
+        _isPaused = !enable;
         
         if (weaponManager != null)
         {

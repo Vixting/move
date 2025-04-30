@@ -9,17 +9,17 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
     
-    [Header("Database References")]
     [SerializeField] private ItemDatabase itemDatabase;
     [SerializeField] private WeaponDatabase weaponDatabase;
     
-    [Header("Game Systems")]
     [SerializeField] private LevelManager levelManager;
     [SerializeField] private UIDocument mainMenuDocument;
     [SerializeField] private GameObject mainMenuObject;
     [SerializeField] private RuntimeWeaponItemCreator weaponItemCreator;
     
-    [Header("Weapon Integration")]
+    [SerializeField] private bool autoInitializeInventory = true;
+    [SerializeField] private bool persistInventoryBetweenScenes = true;
+    
     [SerializeField] private bool autoSyncWeaponsOnStart = true;
     
     private Dictionary<string, WeaponData> _registeredWeapons = new Dictionary<string, WeaponData>();
@@ -73,7 +73,6 @@ public class GameManager : MonoBehaviour
             }
         }
         
-
         if (mainMenuObject != null)
         {
             _menuController = mainMenuObject.GetComponent<MainMenuController>();
@@ -95,15 +94,52 @@ public class GameManager : MonoBehaviour
            
             _menuController.SetupMenu(mainMenuDocument, levelManager);
         }
+        
+        InitializeInventoryManager();
     }
-    
-
     
     private void Start()
     {
         if (_menuController != null && mainMenuDocument != null)
         {
             _menuController.SetupMenu(mainMenuDocument, levelManager);
+        }
+    }
+    
+    private void InitializeInventoryManager()
+    {
+        if (_inventoryManager == null || !persistInventoryBetweenScenes)
+        {
+            _inventoryManager = FindObjectOfType<InventoryManager>();
+            
+            if (_inventoryManager == null && autoInitializeInventory)
+            {
+                GameObject inventoryObj = new GameObject("InventoryManager");
+                inventoryObj.transform.SetParent(transform);
+                _inventoryManager = inventoryObj.AddComponent<InventoryManager>();
+                
+                if (!inventoryObj.GetComponent<UIDocument>())
+                {
+                    UIDocument doc = inventoryObj.AddComponent<UIDocument>();
+                }
+                
+                if (!inventoryObj.GetComponent<Character>())
+                {
+                    inventoryObj.AddComponent<Character>();
+                }
+                
+                DontDestroyOnLoad(inventoryObj);
+            }
+            
+            if (_inventoryManager != null)
+            {
+                _inventoryManager.SetStashCloseCallback(() => {
+                    if (mainMenuObject != null)
+                    {
+                        mainMenuObject.SetActive(true);
+                    }
+                });
+            }
         }
     }
     
@@ -121,8 +157,6 @@ public class GameManager : MonoBehaviour
     {
         if (weapons == null) return;
         
-        Debug.Log($"Registering {weapons.Length} weapons");
-        
         foreach (var weapon in weapons)
         {
             if (weapon == null) continue;
@@ -130,7 +164,6 @@ public class GameManager : MonoBehaviour
             if (string.IsNullOrEmpty(weapon.inventoryItemId))
             {
                 weapon.inventoryItemId = System.Guid.NewGuid().ToString();
-                Debug.Log($"Generated new inventory ID for weapon {weapon.weaponName}: {weapon.inventoryItemId}");
             }
             
             _registeredWeapons[weapon.inventoryItemId] = weapon;
@@ -266,12 +299,36 @@ public class GameManager : MonoBehaviour
         
         if (isGameplayLevel)
         {
-            _inventoryManager = FindObjectOfType<InventoryManager>();
+            InitializeInventoryManager();
             
-
+            if (_inventoryManager != null)
+            {
+                _inventoryManager.SetInventoryMode(InventoryMode.NoStash);
+            }
+        }
+        else
+        {
+            if (_inventoryManager != null)
+            {
+                _inventoryManager.SetInventoryMode(InventoryMode.MainMenuMode);
+            }
         }
         
         OnLevelLoadedEvent?.Invoke(isGameplayLevel);
+    }
+    
+    public void OpenInventoryFromMainMenu()
+    {
+        if (_inventoryManager == null)
+        {
+            InitializeInventoryManager();
+        }
+        
+        if (_inventoryManager != null)
+        {
+            _inventoryManager.SetInventoryMode(InventoryMode.MainMenuMode);
+            _inventoryManager.ShowInventory();
+        }
     }
     
     public void AddWeaponToInventory(string weaponId)
@@ -282,7 +339,7 @@ public class GameManager : MonoBehaviour
         }
         
         EnsureWeaponItemsExist();
-        _inventoryManager.AddWeaponToInventory(weaponId);
+        _inventoryManager.AddItemToInventory(weaponId);
     }
     
     public void EquipWeapon(string weaponId, EquipmentSlot slot)
@@ -316,8 +373,6 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
-        
-
     }
     
     public bool HasAmmoForWeapon(WeaponData weapon)

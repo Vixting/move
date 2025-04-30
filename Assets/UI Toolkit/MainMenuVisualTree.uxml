@@ -1,45 +1,129 @@
-<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/UI%20Toolkit/MainMenuStyle.uss?fileID=7433441132597879392&amp;guid=e83f39b6f0dea0b4c8b9cafd3dd3e974&amp;type=3#MainMenuStyle" />
-    <engine:VisualElement name="MainContainer" class="main-container" style="font-size: 5px;">
-        <engine:VisualElement name="WindowFrame" class="window-frame">
-            <engine:VisualElement name="TitleBar" class="title-bar">
-                <engine:Label text="Game Menu" name="WindowTitle" class="window-title" style="font-size: 10px;" />
-                <engine:Button text="×" name="CloseButton" class="window-button close-button" />
-                <engine:Button text="_" name="MinimizeButton" class="window-button" />
-            </engine:VisualElement>
-            <engine:VisualElement name="MenuContainer" class="menu-container">
-                <engine:VisualElement name="SidebarContainer" class="sidebar-container">
-                    <engine:Label text="Menu" class="sidebar-header" />
-                    <engine:VisualElement class="sidebar-separator" />
-                    <engine:Button text="Play Game" name="PlayButton" class="menu-button selected-button" />
-                    <engine:Button text="Levels" name="LevelsButton" class="menu-button" />
-                    <engine:Button text="Options" name="OptionsButton" class="menu-button" />
-                    <engine:Button text="Credits" name="CreditsButton" class="menu-button" />
-                    <engine:Button text="Exit" name="ExitButton" class="menu-button" />
-                </engine:VisualElement>
-                <engine:VisualElement name="ContentContainer" class="content-container">
-                    <engine:VisualElement name="PlayPanel" class="content-panel">
-                        <engine:Label text="Welcome to the Game" class="content-header" />
-                        <engine:VisualElement class="content-separator" />
-                        <engine:Label text="Select an option from the menu to begin your adventure." class="content-text" />
-                        <engine:VisualElement name="GameLogo" class="game-logo" />
-                        <engine:Button text="Quick Start" name="QuickStartButton" class="action-button" />
-                    </engine:VisualElement>
-                    <engine:VisualElement name="LevelsPanel" class="content-panel" style="display: none;">
-                        <engine:Label text="Select Level" class="content-header" />
-                        <engine:VisualElement class="content-separator" />
-                        <engine:ScrollView name="LevelsList" class="levels-scroll-view">
-                            <engine:Button text="Level 1: NPST" name="Level1Button" class="level-button" />
-                            <engine:Button text="Level 2: Coming Soon" name="Level2Button" class="level-button disabled-button" />
-                            <engine:Button text="Level 3: Coming Soon" name="Level3Button" class="level-button disabled-button" />
-                        </engine:ScrollView>
-                    </engine:VisualElement>
-                </engine:VisualElement>
-            </engine:VisualElement>
-            <engine:VisualElement name="StatusBar" class="status-bar">
-                <engine:Label text="Ready" name="StatusText" class="status-text" />
-                <engine:Label text="v1.0" name="VersionText" class="version-text" />
-            </engine:VisualElement>
-        </engine:VisualElement>
-    </engine:VisualElement>
-</engine:UXML>
+<?xml version="1.0" encoding="utf-8"?>
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <Style src="MainMenuStyle.uss" />
+    
+    <VisualElement name="MainContainer" class="main-container">
+        <VisualElement name="Header" class="header">
+            <Label name="GameTitle" text="YOUR GAME TITLE" class="game-title" />
+            <VisualElement name="WindowControls" class="window-controls">
+                <Button name="MinimizeButton" text="_" class="window-button" />
+                <Button name="CloseButton" text="X" class="window-button" />
+            </VisualElement>
+        </VisualElement>
+        
+        <VisualElement name="Content" class="content">
+            <VisualElement name="MenuBar" class="menu-bar">
+                <Button name="PlayButton" text="Play" class="menu-button" />
+                <Button name="LevelsButton" text="Levels" class="menu-button" />
+                <Button name="InventoryButton" text="Inventory" class="menu-button" />  <!-- Added Inventory Button -->
+                <Button name="OptionsButton" text="Options" class="menu-button" />
+                <Button name="CreditsButton" text="Credits" class="menu-button" />
+                <Button name="ExitButton" text="Exit" class="menu-button" />
+            </VisualElement>
+            
+            <VisualElement name="PanelContainer" class="panel-container">
+                <!-- Play Panel -->
+                <VisualElement name="PlayPanel" class="panel">
+                    <Label text="Welcome to the Game" class="panel-title" />
+                    <VisualElement class="panel-content">
+                        <Button name="QuickStartButton" text="Quick Start" class="action-button" />
+                        <!-- Additional play options could go here -->
+                    </VisualElement>
+                </VisualElement>
+                
+                <!-- Levels Panel -->
+                <VisualElement name="LevelsPanel" class="panel">
+                    <Label text="Select Level" class="panel-title" />
+                    <VisualElement class="panel-content">
+                        <ScrollView>
+                            <Button name="Level1Button" text="Level 1: Tutorial" class="level-button" />
+                            <Button name="Level2Button" text="Level 2: Coming Soon" class="level-button disabled-button" />
+                            <Button name="Level3Button" text="Level 3: Coming Soon" class="level-button disabled-button" />
+                        </ScrollView>
+                    </VisualElement>
+                </VisualElement>
+                
+                <!-- Options Panel -->
+                <VisualElement name="OptionsPanel" class="panel">
+                    <Label text="Options" class="panel-title" />
+                    <VisualElement class="options-container">
+                        <!-- Options Tab Buttons -->
+                        <VisualElement class="tab-buttons">
+                            <Button name="AudioTabButton" text="Audio" class="tab-button" />
+                            <Button name="GraphicsTabButton" text="Graphics" class="tab-button" />
+                            <Button name="ControlsTabButton" text="Controls" class="tab-button" />
+                            <Button name="KeybindingsTabButton" text="Keybindings" class="tab-button" />
+                        </VisualElement>
+                        
+                        <!-- Audio Settings Panel -->
+                        <VisualElement name="AudioPanel" class="options-panel">
+                            <VisualElement class="option-row">
+                                <Label text="Music Volume" class="option-label" />
+                                <Slider name="MusicVolumeSlider" low-value="0" high-value="1" value="0.75" class="option-slider" />
+                            </VisualElement>
+                            <VisualElement class="option-row">
+                                <Label text="SFX Volume" class="option-label" />
+                                <Slider name="SFXVolumeSlider" low-value="0" high-value="1" value="0.75" class="option-slider" />
+                            </VisualElement>
+                        </VisualElement>
+                        
+                        <!-- Graphics Settings Panel -->
+                        <VisualElement name="GraphicsPanel" class="options-panel">
+                            <VisualElement class="option-row">
+                                <Label text="Resolution" class="option-label" />
+                                <DropdownField name="ResolutionDropdown" class="option-dropdown" />
+                            </VisualElement>
+                            <VisualElement class="option-row">
+                                <Label text="Graphics Quality" class="option-label" />
+                                <DropdownField name="GraphicsDropdown" class="option-dropdown" />
+                            </VisualElement>
+                            <VisualElement class="option-row">
+                                <Label text="Fullscreen" class="option-label" />
+                                <Toggle name="FullscreenToggle" value="true" class="option-toggle" />
+                            </VisualElement>
+                        </VisualElement>
+                        
+                        <!-- Controls Settings Panel -->
+                        <VisualElement name="ControlsPanel" class="options-panel">
+                            <VisualElement class="option-row">
+                                <Label text="Mouse Sensitivity" class="option-label" />
+                                <Slider name="SensitivitySlider" low-value="0.1" high-value="2" value="1" class="option-slider" />
+                            </VisualElement>
+                            <VisualElement class="option-row">
+                                <Label text="Invert Y-Axis" class="option-label" />
+                                <Toggle name="InvertYToggle" value="false" class="option-toggle" />
+                            </VisualElement>
+                        </VisualElement>
+                        
+                        <!-- Keybindings Panel -->
+                        <VisualElement name="KeybindingsPanel" class="options-panel">
+                            <ScrollView name="KeybindingsScrollView" class="keybindings-scroll">
+                                <!-- Keybindings will be populated dynamically -->
+                            </ScrollView>
+                        </VisualElement>
+                        
+                        <!-- Option Buttons -->
+                        <VisualElement class="options-buttons">
+                            <Button name="ApplyButton" text="Apply" class="option-button" />
+                            <Button name="ResetButton" text="Reset to Default" class="option-button" />
+                            <Button name="BackOptionsButton" text="Back" class="option-button" />
+                        </VisualElement>
+                    </VisualElement>
+                </VisualElement>
+            </VisualElement>
+        </VisualElement>
+        
+        <VisualElement name="Footer" class="footer">
+            <Label name="StatusText" text="Ready" class="status-text" />
+            <Label text="Version 0.1" class="version-text" />
+        </VisualElement>
+    </VisualElement>
+    
+    <!-- Rebind Overlay for key rebinding process -->
+    <VisualElement name="RebindOverlay" class="rebind-overlay">
+        <VisualElement class="rebind-panel">
+            <Label name="RebindPromptLabel" text="Press a key to bind..." class="rebind-prompt" />
+            <Button name="RebindCancelButton" text="Cancel" class="rebind-cancel-button" />
+        </VisualElement>
+    </VisualElement>
+</UXML>

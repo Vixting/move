@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <Style src="PauseMenuStyle.uss" />
+    
+    <VisualElement name="MainContainer" class="main-container">
+        <VisualElement name="Header" class="header">
+            <Label name="GameTitle" text="GAME PAUSED" class="game-title" />
+            <VisualElement name="WindowControls" class="window-controls">
+                <Button name="MinimizeButton" text="_" class="window-button" />
+                <Button name="CloseButton" text="X" class="window-button" />
+            </VisualElement>
+        </VisualElement>
+        
+        <VisualElement name="Content" class="content">
+            <VisualElement name="MenuBar" class="menu-bar">
+                <Button name="ResumeButton" text="Resume" class="menu-button" />
+                <Button name="InventoryButton" text="Inventory" class="menu-button" />
+                <Button name="OptionsButton" text="Options" class="menu-button" />
+                <Button name="MainMenuButton" text="Main Menu" class="menu-button" />
+                <Button name="ExitButton" text="Exit" class="menu-button" />
+            </VisualElement>
+            
+            <VisualElement name="PanelContainer" class="panel-container">
+                <!-- Resume Panel -->
+                <VisualElement name="ResumePanel" class="panel">
+                    <Label text="Game Paused" class="panel-title" />
+                    <VisualElement class="panel-content">
+                        <Label text="The game has been paused. You can resume the game, access your inventory, or change game options." class="content-text" />
+                        <Button name="QuickResumeButton" text="Resume Game" class="action-button" />
+                    </VisualElement>
+                </VisualElement>
+                
+                <!-- Options Panel -->
+                <VisualElement name="OptionsPanel" class="panel" style="display: none;">
+                    <Label text="Options" class="panel-title" />
+                    <VisualElement class="options-container">
+                        <!-- Options Tab Buttons -->
+                        <VisualElement class="tab-buttons">
+                            <Button name="AudioTabButton" text="Audio" class="tab-button" />
+                            <Button name="GraphicsTabButton" text="Graphics" class="tab-button" />
+                            <Button name="ControlsTabButton" text="Controls" class="tab-button" />
+                            <Button name="KeybindingsTabButton" text="Keybindings" class="tab-button" />
+                        </VisualElement>
+                        
+                        <!-- Audio Settings Panel -->
+                        <VisualElement name="AudioPanel" class="options-panel">
+                            <VisualElement class="option-row">
+                                <Label text="Music Volume" class="option-label" />
+                                <Slider name="MusicVolumeSlider" low-value="0" high-value="1" value="0.75" class="option-slider" />
+                            </VisualElement>
+                            <VisualElement class="option-row">
+                                <Label text="SFX Volume" class="option-label" />
+                                <Slider name="SFXVolumeSlider" low-value="0" high-value="1" value="0.75" class="option-slider" />
+                            </VisualElement>
+                        </VisualElement>
+                        
+                        <!-- Graphics Settings Panel -->
+                        <VisualElement name="GraphicsPanel" class="options-panel" style="display: none;">
+                            <VisualElement class="option-row">
+                                <Label text="Resolution" class="option-label" />
+                                <DropdownField name="ResolutionDropdown" class="option-dropdown" />
+                            </VisualElement>
+                            <VisualElement class="option-row">
+                                <Label text="Graphics Quality" class="option-label" />
+                                <DropdownField name="GraphicsDropdown" class="option-dropdown" />
+                            </VisualElement>
+                            <VisualElement class="option-row">
+                                <Label text="Fullscreen" class="option-label" />
+                                <Toggle name="FullscreenToggle" value="true" class="option-toggle" />
+                            </VisualElement>
+                        </VisualElement>
+                        
+                        <!-- Controls Settings Panel -->
+                        <VisualElement name="ControlsPanel" class="options-panel" style="display: none;">
+                            <VisualElement class="option-row">
+                                <Label text="Mouse Sensitivity" class="option-label" />
+                                <Slider name="SensitivitySlider" low-value="0.1" high-value="2" value="1" class="option-slider" />
+                            </VisualElement>
+                            <VisualElement class="option-row">
+                                <Label text="Invert Y-Axis" class="option-label" />
+                                <Toggle name="InvertYToggle" value="false" class="option-toggle" />
+                            </VisualElement>
+                        </VisualElement>
+                        
+                        <!-- Keybindings Panel -->
+                        <VisualElement name="KeybindingsPanel" class="options-panel" style="display: none;">
+                            <ScrollView name="KeybindingsScrollView" class="keybindings-scroll">
+                                <!-- Keybindings will be populated dynamically -->
+                            </ScrollView>
+                        </VisualElement>
+                        
+                        <!-- Option Buttons -->
+                        <VisualElement class="options-buttons">
+                            <Button name="ApplyButton" text="Apply" class="option-button" />
+                            <Button name="ResetButton" text="Reset to Default" class="option-button" />
+                            <Button name="BackOptionsButton" text="Back" class="option-button" />
+                        </VisualElement>
+                    </VisualElement>
+                </VisualElement>
+            </VisualElement>
+        </VisualElement>
+        
+        <VisualElement name="Footer" class="footer">
+            <Label name="StatusText" text="Game Paused" class="status-text" />
+            <Label text="Version 0.1" class="version-text" />
+        </VisualElement>
+    </VisualElement>
+    
+    <!-- Rebind Overlay for key rebinding process -->
+    <VisualElement name="RebindOverlay" class="rebind-overlay">
+        <VisualElement class="rebind-panel">
+            <Label name="RebindPromptLabel" text="Press a key to bind..." class="rebind-prompt" />
+            <Button name="RebindCancelButton" text="Cancel" class="rebind-cancel-button" />
+        </VisualElement>
+    </VisualElement>
+</UXML>

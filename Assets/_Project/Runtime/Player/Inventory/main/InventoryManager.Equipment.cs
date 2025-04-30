@@ -259,17 +259,31 @@ namespace InventorySystem
             
             if (item != null)
             {
-                if (!_containers.TryGetValue("stash", out ContainerInstance container))
+                // Determine target container based on current inventory mode
+                string targetContainerId = "stash";
+                
+                // If in gameplay mode (NoStash), add to backpack instead
+                if (_currentMode == InventoryMode.NoStash)
                 {
-                    Debug.LogError("Stash container not found");
-                    return null;
+                    targetContainerId = "backpack";
+                }
+                
+                if (!_containers.TryGetValue(targetContainerId, out ContainerInstance container))
+                {
+                    // Fallback to backpack if main target isn't available
+                    if (!_containers.TryGetValue("backpack", out container))
+                    {
+                        Debug.LogError($"Neither {targetContainerId} nor backpack container found");
+                        _character.EquipItem(item, slot); // Re-equip the item
+                        return null;
+                    }
                 }
                 
                 Vector2Int? availablePos = container.FindAvailablePosition(item);
                 if (availablePos.HasValue)
                 {
                     container.AddItem(item, availablePos.Value);
-                    CreateItemUI(item, "stash");
+                    CreateItemUI(item, targetContainerId);
                     
                     if (item.itemData is WeaponItemData)
                     {
@@ -282,8 +296,34 @@ namespace InventorySystem
                 }
                 else
                 {
-                    Debug.LogWarning("No available space in stash for unequipped item");
-                    _character.EquipItem(item, slot);
+                    // If the primary target is full, try the other container
+                    string alternateContainer = (targetContainerId == "stash") ? "backpack" : "stash";
+                    
+                    // Only try alternate container if it's accessible in current mode
+                    if (_currentMode != InventoryMode.NoStash || alternateContainer != "stash")
+                    {
+                        if (_containers.TryGetValue(alternateContainer, out ContainerInstance altContainer))
+                        {
+                            availablePos = altContainer.FindAvailablePosition(item);
+                            if (availablePos.HasValue)
+                            {
+                                altContainer.AddItem(item, availablePos.Value);
+                                CreateItemUI(item, alternateContainer);
+                                
+                                if (item.itemData is WeaponItemData)
+                                {
+                                    onUnequipWeapon?.Invoke(slot);
+                                }
+                                
+                                UpdateEquipmentSlotUI(slot, null);
+                                onInventoryChanged?.Invoke();
+                                return item;
+                            }
+                        }
+                    }
+                    
+                    Debug.LogWarning("No available space in containers for unequipped item");
+                    _character.EquipItem(item, slot); // Re-equip the item since there's nowhere to put it
                     return null;
                 }
             }

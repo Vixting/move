@@ -61,6 +61,7 @@ public class PlayerCamera : MonoBehaviour
     private Vector2 previousLookInput;
     private Vector2 currentMoveInput;
     private bool _isAiming;
+    private float _lastDeltaTime;
     
     public void Initialize(Transform target, PlayerCharacter character)
     {
@@ -78,18 +79,13 @@ public class PlayerCamera : MonoBehaviour
         if (mainCamera == null)
             mainCamera = Camera.main;
 
-        // IMPORTANT: Don't automatically add AudioListener - let LevelManager handle this
-        // Instead, check if we should have one based on whether we're the main camera
         if (mainCamera != null && mainCamera == Camera.main)
         {
-            // Only ensure the main camera has a listener
             AudioListener existingListener = mainCamera.gameObject.GetComponent<AudioListener>();
             if (existingListener != null)
             {
-                // Make sure it's enabled
                 existingListener.enabled = true;
             }
-            // We no longer automatically add a listener if one doesn't exist
         }
     }
 
@@ -106,6 +102,21 @@ public class PlayerCamera : MonoBehaviour
 
     public void UpdateRotation()
     {
+        // Store the last valid delta time to use when timeScale is 0
+        if (Time.timeScale > 0)
+        {
+            _lastDeltaTime = Time.deltaTime;
+        }
+        
+        // Use a safe delta time (either actual delta time or last valid delta time)
+        float safeDeltaTime = Time.timeScale > 0 ? Time.deltaTime : _lastDeltaTime;
+        
+        // Don't process rotation updates when game is paused
+        if (Time.timeScale <= 0)
+        {
+            return;
+        }
+        
         float pitch = -_input.Look.y * mouseSensitivity;
         float yaw = _input.Look.x * mouseSensitivity;
         
@@ -113,7 +124,7 @@ public class PlayerCamera : MonoBehaviour
         _eulerAngles.y += yaw;
         _eulerAngles.x = Mathf.Clamp(_eulerAngles.x, -89f, 89f);
         
-        var velocity = (transform.position - _lastPosition) / Time.deltaTime;
+        var velocity = (transform.position - _lastPosition) / safeDeltaTime;
         var horizontalSpeed = Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude;
         
         float verticalAngleMultiplier = Mathf.Cos(Mathf.Deg2Rad * Mathf.Abs(_eulerAngles.x));
@@ -125,9 +136,9 @@ public class PlayerCamera : MonoBehaviour
         );
         
         _targetSwayRotation = Vector3.ClampMagnitude(_targetSwayRotation, maxSwayAngle);
-        _currentSwayRotation = Vector3.Lerp(_currentSwayRotation, _targetSwayRotation, Time.deltaTime * swayLerpSpeed);
+        _currentSwayRotation = Vector3.Lerp(_currentSwayRotation, _targetSwayRotation, safeDeltaTime * swayLerpSpeed);
         
-        _smoothedMoveX = Mathf.SmoothDamp(_smoothedMoveX, _input.Move.x, ref _moveXVelocity, leanSmoothTime);
+        _smoothedMoveX = Mathf.SmoothDamp(_smoothedMoveX, _input.Move.x, ref _moveXVelocity, leanSmoothTime, float.MaxValue, safeDeltaTime);
         _targetLeanAngle = -_smoothedMoveX * movementLeanAmount;
         
         if (_character != null && _character.IsSliding())
@@ -137,7 +148,7 @@ public class PlayerCamera : MonoBehaviour
         }
         
         _targetLeanAngle = Mathf.Clamp(_targetLeanAngle, -maxLeanAngle, maxLeanAngle);
-        _currentLeanAngle = Mathf.SmoothDamp(_currentLeanAngle, _targetLeanAngle, ref _leanVelocity, leanSmoothTime);
+        _currentLeanAngle = Mathf.SmoothDamp(_currentLeanAngle, _targetLeanAngle, ref _leanVelocity, leanSmoothTime, float.MaxValue, safeDeltaTime);
         
         transform.rotation = Quaternion.Euler(_eulerAngles);
         
@@ -159,6 +170,12 @@ public class PlayerCamera : MonoBehaviour
 
     public void UpdatePosition(Transform target)
     {
+        // Don't update position when game is paused
+        if (Time.timeScale <= 0)
+        {
+            return;
+        }
+        
         Vector3 targetPosition = target.position;
         Vector3 eyeOffset = new Vector3(0f, characterEyeHeight, 0f);
         transform.position = targetPosition + eyeOffset;
@@ -182,20 +199,27 @@ public class PlayerCamera : MonoBehaviour
     {
         if (mainCamera == null) return;
         
+        // Don't update FOV when game is paused
+        if (Time.timeScale <= 0)
+        {
+            return;
+        }
+        
+        float safeDeltaTime = Time.timeScale > 0 ? Time.deltaTime : _lastDeltaTime;
+        
         float targetBaseFOV = _isAiming ? aimDownSightsFOV : baseFOV;
         
         var velocity = _character != null ? _character.GetVelocity() : Vector3.zero;
         var horizontalSpeed = Vector3.ProjectOnPlane(velocity, Vector3.up).magnitude;
         var speedFactor = Mathf.InverseLerp(minSpeedForFOV, maxSpeedForFOV, horizontalSpeed);
         
-        // If aiming, reduce or eliminate FOV increase from speed
         float fovIncrease = _isAiming ? maxFOVIncrease * 0.25f * speedFactor : maxFOVIncrease * speedFactor;
         var targetSpeedFOV = targetBaseFOV + fovIncrease;
         
-        _impactFOVOffset = Mathf.Lerp(_impactFOVOffset, 0f, Time.deltaTime * impactRecoverySpeed);
+        _impactFOVOffset = Mathf.Lerp(_impactFOVOffset, 0f, safeDeltaTime * impactRecoverySpeed);
         _targetFOV = targetSpeedFOV + _impactFOVOffset;
         
-        _currentFOV = Mathf.Lerp(_currentFOV, _targetFOV, Time.deltaTime * fovLerpSpeed);
+        _currentFOV = Mathf.Lerp(_currentFOV, _targetFOV, safeDeltaTime * fovLerpSpeed);
         mainCamera.fieldOfView = _currentFOV;
     }
     
